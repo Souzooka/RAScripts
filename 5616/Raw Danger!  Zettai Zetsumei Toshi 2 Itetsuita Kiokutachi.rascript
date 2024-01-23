@@ -9,10 +9,15 @@ function is_JP() => byte(0x100120) == 0x86
 
 // EU memory
 function EU_Player() => dword(0x6003A4)
+function EU_PlayerFromIndex(id) => dword(0x5eae00 + (id * 4))
 function EU_CompassID() => byte(0x48FAE8)
 function EU_BodyHeat() => float(EU_Player() + 0x000370)
 function EU_WetLevel() => word(0x64781C)
 function EU_Flags() => 0x609470
+function EU_MapObjs() => 0x492460
+function EU_MapTimeFrames() => dword(0x48F49C)
+function EU_LoadedMapPack() => dword(0x48F4F0)
+function EU_CutsceneFlag() => byte(0x48F900)
 
 // Map IDs
 function EU_AreaID() => dword(0x492450)
@@ -24,10 +29,15 @@ function EU_MapWithGateID() => EU_MapID() * 100 + EU_GateID()
 
 // JP memory (TODO; doublecheck all of these)
 function JP_Player() => dword(0x5FEDA4)
+function JP_PlayerFromIndex(id) => dword(0x5E9800 + (id * 4))
 function JP_CompassID() => byte(0x48E4E8)
 function JP_BodyHeat() => float(JP_Player() + 0x000370)
 function JP_WetLevel() => word(0x644FDC)
 function JP_Flags() => 0x607E70
+function JP_MapObjs() => 0x490E60
+function JP_MapTimeFrames() => dword(0x48DE9C)
+function JP_LoadedMapPack() => dword(0x48DEF0)
+function JP_CutsceneFlag() => byte(0x48E300)
 
 // Map IDs
 function JP_AreaID() => dword(0x490E50)
@@ -39,11 +49,40 @@ function JP_MapWithGateID() => JP_MapID() * 100 + JP_GateID()
 
 // General functions
 
-function isInTutorial()
+function IsInTutorial()
 {
-    return (is_EU() && EU_MapID() == 019900) || (is_JP && JP_MapID() == 019900)
+    return (is_EU() && EU_MapID() == 019900) || (is_JP() && JP_MapID() == 019900)
 }
 
+function IsInCutscene()
+{
+    return (is_EU() && EU_CutsceneFlag() == 1) || (is_JP() && JP_CutsceneFlag() == 1)
+}
+
+function LoadProtection()
+{
+    // Returns true if we aren't loading a map
+    // (MapTimeFrames is 0 in title screen, load screens, etc.)
+    MIN_FRAMES = 3
+    
+    return (is_EU() && EU_MapTimeFrames() >= MIN_FRAMES) ||
+           (is_JP() && JP_MapTimeFrames() >= MIN_FRAMES)
+}
+
+// Map Objects
+function MapObjGet(mapobjs, index)
+{
+    MAPOBJ_SIZE = 0x2A0
+    return mapobjs + (index * MAPOBJ_SIZE)
+}
+
+function MapObjIsActive(mapobj)
+{
+    ACTIVE_OFFSET = 0xF
+    return byte(mapobj + ACTIVE_OFFSET)
+}
+
+// Flags
 function FlagGet(flags, flag)
 {
     // Returns a memory accessor for a particular game flag
@@ -89,6 +128,28 @@ achievement(
     description="Obtain the rank of 'Master' in the tutorial.",
     points=5,
     trigger=TRIGGER_DisasterPrepared()
+)
+
+// Not sure exactly what this map object is, but it's set to inactive at the start of the cutscene,
+// and active afterwards. Doesn't appear to be touched otherwise in this map.
+MAPOBJ_GEO = 1485
+function EU_TRIGGER_HiImGeo()
+{
+    active_accessor = MapObjIsActive(MapObjGet(EU_MapObjs(), MAPOBJ_GEO))
+    return IsInCutscene() && EU_MapID() == 010100 && prev(active_accessor) == 0 && active_accessor == 1
+}
+function JP_TRIGGER_HiImGeo()
+{
+    active_accessor = MapObjIsActive(MapObjGet(JP_MapObjs(), MAPOBJ_GEO))
+    return IsInCutscene() && JP_MapID() == 010100 && prev(active_accessor) == 0 && active_accessor == 1
+}
+function TRIGGER_HiImGeo() => (is_JP() && JP_TRIGGER_HiImGeo()) || (is_EU() && EU_TRIGGER_HiImGeo())
+
+achievement(
+    title="Hi, I'm Geo!",
+    description="In the underground convention center, find a costume of Geo as Joshua.",
+    points=1,
+    trigger=TRIGGER_HiImGeo()
 )
 
 // ACHIEVEMENTS END
