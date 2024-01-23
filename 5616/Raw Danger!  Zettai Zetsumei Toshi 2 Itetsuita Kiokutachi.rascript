@@ -8,44 +8,45 @@ function is_EU() => byte(0x100120) == 0x87
 function is_JP() => byte(0x100120) == 0x86
 
 // EU memory
-function EU_Player() => dword(0x6003A4)
+EU_Player = dword(0x6003A4)
 function EU_PlayerFromIndex(id) => dword(0x5eae00 + (id * 4))
-function EU_CompassID() => byte(0x48FAE8)
-function EU_BodyHeat() => float(EU_Player() + 0x000370)
-function EU_WetLevel() => word(0x64781C)
-function EU_Flags() => 0x609470
-function EU_MapObjs() => 0x492460
-function EU_MapTimeFrames() => dword(0x48F49C)
-function EU_LoadedMapPack() => dword(0x48F4F0)
-function EU_CutsceneFlag() => byte(0x48F900)
+EU_CompassID = byte(0x48FAE8)
+EU_BodyHeat = float(EU_Player + 0x000370)
+EU_WetLevel = word(0x64781C)
+EU_Flags = 0x609470
+EU_MapObjs = 0x492460
+EU_MapTimeFrames = dword(0x48F49C)
+EU_LoadedMapPack = dword(0x48F4F0)
+EU_CutsceneFlag = byte(0x48F900)
 
 // Map IDs
-function EU_AreaID() => dword(0x492450)
-function EU_LevelID() => dword(0x492454)
-function EU_SublevelID() => dword(0x492458)
-function EU_GateID() => dword(0x49245C)
-function EU_MapID() => EU_AreaID() * 10000 + EU_LevelID() * 100 + EU_SublevelID()
-function EU_MapWithGateID() => EU_MapID() * 100 + EU_GateID()
+EU_AreaID = dword(0x492450)
+EU_LevelID = dword(0x492454)
+EU_SublevelID = dword(0x492458)
+EU_GateID = dword(0x49245C)
+function EU_MapID() => EU_AreaID * 10000 + EU_LevelID * 100 + EU_SublevelID
+function EU_MapWithGateID() => EU_MapID() * 100 + EU_GateID
 
 // JP memory (TODO; doublecheck all of these)
-function JP_Player() => dword(0x5FEDA4)
+JP_Player = dword(0x5FEDA4)
 function JP_PlayerFromIndex(id) => dword(0x5E9800 + (id * 4))
-function JP_CompassID() => byte(0x48E4E8)
-function JP_BodyHeat() => float(JP_Player() + 0x000370)
-function JP_WetLevel() => word(0x644FDC)
-function JP_Flags() => 0x607E70
-function JP_MapObjs() => 0x490E60
-function JP_MapTimeFrames() => dword(0x48DE9C)
-function JP_LoadedMapPack() => dword(0x48DEF0)
-function JP_CutsceneFlag() => byte(0x48E300)
+JP_CompassID = byte(0x48E4E8)
+JP_BodyHeat = float(JP_Player + 0x000370)
+JP_WetLevel = word(0x644FDC)
+JP_Flags = 0x607E70
+JP_MapObjs = 0x490E60
+JP_MapTimeFrames = dword(0x48DE9C)
+JP_LoadedMapPack = dword(0x48DEF0)
+JP_CutsceneFlag = byte(0x48E300)
 
 // Map IDs
-function JP_AreaID() => dword(0x490E50)
-function JP_LevelID() => dword(0x490E54)
-function JP_SublevelID() => dword(0x490E58)
-function JP_GateID() => dword(0x490E5C)
-function JP_MapID() => JP_AreaID() * 10000 + JP_LevelID() * 100 + JP_SublevelID()
-function JP_MapWithGateID() => JP_MapID() * 100 + JP_GateID()
+JP_AreaID = dword(0x490E50)
+JP_LevelID = dword(0x490E54)
+JP_SublevelID = dword(0x490E58)
+JP_GateID = dword(0x490E5C)
+function JP_MapID() => JP_AreaID * 10000 + JP_LevelID * 100 + JP_SublevelID
+function JP_MapWithGateID() => JP_MapID() * 100 + JP_GateID
+
 
 // General functions
 
@@ -56,7 +57,7 @@ function IsInTutorial()
 
 function IsInCutscene()
 {
-    return (is_EU() && EU_CutsceneFlag() == 1) || (is_JP() && JP_CutsceneFlag() == 1)
+    return (is_EU() && EU_CutsceneFlag == 1) || (is_JP() && JP_CutsceneFlag == 1)
 }
 
 function LoadProtection()
@@ -65,8 +66,8 @@ function LoadProtection()
     // (MapTimeFrames is 0 in title screen, load screens, etc.)
     MIN_FRAMES = 3
     
-    return (is_EU() && EU_MapTimeFrames() >= MIN_FRAMES) ||
-           (is_JP() && JP_MapTimeFrames() >= MIN_FRAMES)
+    return (is_EU() && EU_MapTimeFrames >= MIN_FRAMES) ||
+           (is_JP() && JP_MapTimeFrames >= MIN_FRAMES)
 }
 
 // Map Objects
@@ -82,6 +83,35 @@ function MapObjIsActive(mapobj)
     return byte(mapobj + ACTIVE_OFFSET)
 }
 
+// Players
+function PlayerGetX(player)
+{
+    // Using the compass, +X is East and -X is West
+    return float(player + 0xA0)
+}
+function PlayerGetY(player)
+{
+    // Up and down; negative values higher (yeah I dunno why either)
+    return float(player + 0xA4)
+}
+function PlayerGetZ(player)
+{
+    // Using the compass, +Z is North and -Z is South
+    return float(player + 0xA8)
+}
+function PlayerGetH(player)
+{
+    return float(player + 0xB0)
+}
+function PlayerGetP(player)
+{
+    return float(player + 0xB4)
+}
+function PlayerGetR(player)
+{
+    return float(player + 0xB8)
+}
+
 // Flags
 function FlagGet(flags, flag)
 {
@@ -91,15 +121,17 @@ function FlagGet(flags, flag)
 function FlagGetBool(flag)
 {
     // More abstracted version of FlagGet; returns a boolean value representing the flag's state and not a memory accessor
-    return (is_EU() && FlagGet(EU_Flags(), flag) == 1) ||
-           (is_JP() && FlagGet(JP_Flags(), flag) == 1)
+    return (is_EU() && FlagGet(EU_Flags, flag) == 1) ||
+           (is_JP() && FlagGet(JP_Flags, flag) == 1)
 }
 
 function FlagChangedToSetHelper(flags, flag) => prev(FlagGet(flags, flag)) == 0 && FlagGet(flags, flag) == 1
-function FlagChangedToSet(flag) => (is_EU() && FlagChangedToSetHelper(EU_Flags(), flag)) ||
-                                   (is_JP() && FlagChangedToSetHelper(JP_Flags(), flag))
+function FlagChangedToSet(flag) => (is_EU() && FlagChangedToSetHelper(EU_Flags, flag)) ||
+                                   (is_JP() && FlagChangedToSetHelper(JP_Flags, flag))
 
 // ACHIEVEMENTS START
+
+// TUTORIAL
 
 // Tutorial grading flags are set after the last room is completed, and reset when starting the tutorial
 // Using either the points flag or rank flag is effective
@@ -130,26 +162,101 @@ achievement(
     trigger=TRIGGER_DisasterPrepared()
 )
 
-// Not sure exactly what this map object is, but it's set to inactive at the start of the cutscene,
-// and active afterwards. Doesn't appear to be touched otherwise in this map.
-MAPOBJ_GEO = 1485
+// M1_01_00 (Underground banquet hall (pre-disaster))
+
+// This is a bit cheeky but other solutions unfortunately did not pan out
+// Since Geo never leaves the banquet hall (besides being repositioned for this cutscene), we can check his position for this.
+// This'll trigger the achievement at the beginning of the cutscene instead of the end but it's the best I got for now.
+PLAYER_SantaGeo = 60
 function EU_TRIGGER_HiImGeo()
 {
-    active_accessor = MapObjIsActive(MapObjGet(EU_MapObjs(), MAPOBJ_GEO))
-    return IsInCutscene() && EU_MapID() == 010100 && prev(active_accessor) == 0 && active_accessor == 1
+    geo_x = PlayerGetX(EU_PlayerFromIndex(PLAYER_SantaGeo))
+    return EU_MapID() == 010100 && prev(geo_x) < 27.0 && geo_x >= 27.0
 }
 function JP_TRIGGER_HiImGeo()
 {
-    active_accessor = MapObjIsActive(MapObjGet(JP_MapObjs(), MAPOBJ_GEO))
-    return IsInCutscene() && JP_MapID() == 010100 && prev(active_accessor) == 0 && active_accessor == 1
+    geo_x = PlayerGetX(JP_PlayerFromIndex(PLAYER_SantaGeo))
+    return JP_MapID() == 010100 && prev(geo_x) < 27.0 && geo_x >= 27.0
 }
 function TRIGGER_HiImGeo() => (is_JP() && JP_TRIGGER_HiImGeo()) || (is_EU() && EU_TRIGGER_HiImGeo())
 
 achievement(
     title="Hi, I'm Geo!",
-    description="In the underground convention center, find a costume of Geo as Joshua.",
+    description="In the underground convention center, find a costume of Geo and try it on as Joshua.",
     points=1,
     trigger=TRIGGER_HiImGeo()
+)
+
+FLAG_ReturnedContactLens = 21172
+achievement(
+    title="I Have Special Eyes",
+    description="In the underground convention center, find and return a woman's lost contact lenses as Joshua.",
+    points=1,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_ReturnedContactLens)
+)
+
+FLAG_ReturnedItalianRecipe = 996
+achievement(
+    title="Occupational Hazard",
+    description="In the underground convention center, return the Italian Recipe to the chef as Joshua.",
+    points=1,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_ReturnedItalianRecipe)
+)
+
+FLAG_TookStephaniePhoto = 1001
+achievement(
+    title="Candid Caper",
+    description="In the underground convention center, find and pick up a picture of Stephanie as Joshua.",
+    points=2,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_TookStephaniePhoto)
+)
+
+// Is set after finding hole in wall regardless of if we look through it or not (and you wouldn't look through it, of course)
+FLAG_FoundPeepHole = 990
+achievement(
+    title="Peeping Josh",
+    description="In the underground convention center, find a (small) hole in the wall as Joshua.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FoundPeepHole)
+)
+
+// We have three options when talking to the drinker (to agree, to say we're busy, or to refuse).
+// The last two will set flag 1063, but also one of 1064 and 1065. We'll want to make sure 1063 is set but neither of the others.
+FLAG_DrinkerEventDone = 1063
+FLAG_DrinkerIgnoredByJoshua = 1064
+FLAG_DrinkerWasRefusedDrinks = 1065
+achievement(
+    title="Maybe They'll Have Free Drinks There",
+    description="In the underground convention center, serve a drunk guest a few more bottles of wine as Joshua.",
+    points=1,
+    trigger=LoadProtection() && 
+            FlagChangedToSet(FLAG_DrinkerEventDone) && 
+            !FlagGetBool(FLAG_DrinkerIgnoredByJoshua) && 
+            !FlagGetBool(FLAG_DrinkerWasRefusedDrinks)
+)
+
+FLAG_FoundLostChildMother = 6003
+achievement(
+    title="Good Guy Josh",
+    description="In the underground convention center, help Stephanie find the mother of the lost child as Joshua.",
+    points=1,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FoundLostChildMother)
+)
+
+FLAG_GaveSophiaOutfit = 915
+achievement(
+    title="Behind the Scenes",
+    description="In the underground convention center, find and give an investigative reporter a Waitress Uniform as Joshua.",
+    points=2,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_GaveSophiaOutfit)
+)
+
+FLAG_RoomTempWaterNoSpill = 21179
+achievement(
+    title="I Only Drink Cascade Mineral Water",
+    description="In the underground convention center, refill the water pitcher with water from the leaking water pipe and deliver it to the mayor without spilling too much as Joshua.",
+    points=2,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_RoomTempWaterNoSpill)
 )
 
 // ACHIEVEMENTS END
@@ -298,18 +405,18 @@ WetLookup = {
 
 rp_fallback_string = "In a loading screen or the title screen"
 
-rich_presence_conditional_display(is_EU() && EU_Player() != NULL, "ᵉᵘ {0} | {1} | BT: {2} / 30000.0 | {3}",
+rich_presence_conditional_display(is_EU() && EU_Player != NULL, "ᵉᵘ {0} | {1} | BT: {2} / 30000.0 | {3}",
     rich_presence_lookup("MapName", EU_MapWithGateID(), MapNameLookup),
-    rich_presence_lookup("Compass", EU_CompassID(), CompassLookup),
-    rich_presence_value("Float1", EU_BodyHeat(), format="FLOAT1"),
-    rich_presence_lookup("Wet", EU_WetLevel(), WetLookup)
+    rich_presence_lookup("Compass", EU_CompassID, CompassLookup),
+    rich_presence_value("Float1", EU_BodyHeat, format="FLOAT1"),
+    rich_presence_lookup("Wet", EU_WetLevel, WetLookup)
 )
 
-rich_presence_conditional_display(is_JP() && JP_Player() != NULL, "ʲᵖ {0} | {1} | BT: {2} / 30000.0 | {3}",
+rich_presence_conditional_display(is_JP() && JP_Player != NULL, "ʲᵖ {0} | {1} | BT: {2} / 30000.0 | {3}",
     rich_presence_lookup("MapName", JP_MapWithGateID(), MapNameLookup),
-    rich_presence_lookup("Compass", JP_CompassID(), CompassLookup),
-    rich_presence_value("Float1", JP_BodyHeat(), format="FLOAT1"),
-    rich_presence_lookup("Wet", JP_WetLevel(), WetLookup)
+    rich_presence_lookup("Compass", JP_CompassID, CompassLookup),
+    rich_presence_value("Float1", JP_BodyHeat, format="FLOAT1"),
+    rich_presence_lookup("Wet", JP_WetLevel, WetLookup)
 )
 
 rich_presence_conditional_display(is_EU(), "ᵉᵘ {0}", rp_fallback_string)
