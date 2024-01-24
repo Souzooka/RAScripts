@@ -18,8 +18,20 @@ EU_MapObjs = 0x492460
 EU_MapTimeFrames = dword(0x48F49C)
 EU_LoadedMapPack = dword(0x48F4F0)
 EU_CutsceneFlag = byte(0x48F900)
+EU_EndingBitset = 0x67DDB6 // Might be saved w/ save file so not sure how useful this is
+EU_GameMode = byte(0x67DDBA)
+EU_Difficulty = byte(0x67DDBB)
+EU_InGameTime = dword(0x67DDC0) // number of frames, divide by 30 for seconds
+EU_CurrentMenu = dword(0x48F604)
 
 // Map IDs
+EU_AreaIDBackup = dword(0x492440)
+EU_LevelIDBackup = dword(0x492444)
+EU_SublevelIDBackup = dword(0x492448)
+EU_GateIDBackup = dword(0x49244C)
+// Some game modes change the current map ID (such as the results screen, which change it to 990000, for whatever reason)
+// So we'll use this backup value in some circumstances
+function EU_MapIDBackup() => EU_AreaIDBackup * 10000 + EU_LevelIDBackup * 100 + EU_SublevelIDBackup
 EU_AreaID = dword(0x492450)
 EU_LevelID = dword(0x492454)
 EU_SublevelID = dword(0x492458)
@@ -39,8 +51,18 @@ JP_MapObjs = 0x490E60
 JP_MapTimeFrames = dword(0x48DE9C)
 JP_LoadedMapPack = dword(0x48DEF0)
 JP_CutsceneFlag = byte(0x48E300)
+JP_EndingBitset = 0x67B576
+JP_GameMode = byte(0x67B57A)
+JP_Difficulty = byte(0x67B57B)
+JP_InGameTime = dword(0x67B580)
+JP_CurrentMenu = dword(0x48E008)
 
 // Map IDs
+JP_AreaIDBackup = dword(0x490E40)
+JP_LevelIDBackup = dword(0x490E44)
+JP_SublevelIDBackup = dword(0x490E48)
+JP_GateIDBackup = dword(0x490E4C)
+function JP_MapIDBackup() => JP_AreaIDBackup * 10000 + JP_LevelIDBackup * 100 + JP_SublevelIDBackup
 JP_AreaID = dword(0x490E50)
 JP_LevelID = dword(0x490E54)
 JP_SublevelID = dword(0x490E58)
@@ -49,6 +71,10 @@ function JP_MapIDPrev() => prev(JP_AreaID) * 10000 + prev(JP_LevelID) * 100 + pr
 function JP_MapID() => JP_AreaID * 10000 + JP_LevelID * 100 + JP_SublevelID
 function JP_MapWithGateID() => JP_MapID() * 100 + JP_GateID
 
+
+// General enums
+MENU_Game = 21
+MENU_Result = 32
 
 // General functions
 
@@ -61,18 +87,35 @@ function IsInCutscene()
 {
     return (is_EU() && EU_CutsceneFlag == 1) || (is_JP() && JP_CutsceneFlag == 1)
 }
+function IsInMenuTransition(to_menu)
+{
+    return (is_EU() && prev(EU_CurrentMenu) != to_menu && EU_CurrentMenu == to_menu) ||
+           (is_JP() && prev(JP_CurrentMenu) != to_menu && JP_CurrentMenu == to_menu)
+}
+function IsTransitioningToResult(map_id=-1)
+{
+    is_on_map = true
+    if (map_id != -1)
+    {
+        // We have to use the backup map value as the results transition overwrites the current map value
+        // and saves the last map value to the backup
+        is_on_map = (is_EU() && EU_MapIDBackup() == map_id) || (is_JP() && JP_MapIDBackup() == map_id)
+    }
+    return IsInMenuTransition(MENU_Result) && is_on_map
+}
 
 function LoadProtection()
 {
     // NOTE: This still doesn't work to both guard loads and ensure map transitions work
     // (we can likely check the "gate" ID for map transitions, as the entry checkpoint ID will almost always be 0 and something different for save points)
-    return PlayerExists()
+    //return PlayerExists()
+    
     // Returns true if we aren't loading a map
     // (MapTimeFrames is 0 in title screen, load screens, etc.)
-    //MIN_FRAMES = 3
+    MIN_FRAMES = 3
     
-    //return (is_EU() && EU_MapTimeFrames >= MIN_FRAMES) ||
-    //       (is_JP() && JP_MapTimeFrames >= MIN_FRAMES)
+    return (is_EU() && EU_MapTimeFrames >= MIN_FRAMES) ||
+           (is_JP() && JP_MapTimeFrames >= MIN_FRAMES)
 }
 
 // Map Objects
@@ -280,7 +323,7 @@ achievement(
     trigger=LoadProtection() && FlagChangedToSet(FLAG_RoomTempWaterNoSpill)
 )
 
-// M1_01_01
+// M1_01_01 (Destroyed banquet hall)
 // Pretty straightforward here, probably want just one progression achievement for escaping the entire setpiece of the underground banquet hall
 
 // Don't have solid map transition logic yet, but this should work fine.
@@ -289,7 +332,7 @@ function EU_TRIGGER_OutOfTheFryingPan()
 {
     // The player gets up to about y = -29.0 in the final cutscene before it is exited (reminder that y is inverted)
     // It appears that this cutscene can't be skipped but even if it could, this logic should still work as cutscene logic should be
-    // fast-forwa
+    // fast-forwarded when skipped.
     player_y = PlayerGetY(EU_Player)
     return IsInCutscene() && EU_MapID() == 010101 && prev(player_y) > -28.0 && player_y <= -28.0
 }
@@ -302,12 +345,94 @@ function TRIGGER_OutOfTheFryingPan() => (is_JP() && JP_TRIGGER_OutOfTheFryingPan
 achievement(
     title="Out of the Frying Pan",
     description="Escape the underground convention center as Joshua.",
-    points=10,
+    points=5,
     trigger=LoadProtection() && TRIGGER_OutOfTheFryingPan()
 )
 
+// M1_01_05 (Downtown Geo Area)
+// Just getting the jewelry here, I think
+// Also perhaps walking on the electrified water without getting shocked? Not sure how to make that a concise achievement.
+// That'd require beating the game (to unlock the Collection feature and be able to take out equipment from recycle bins, and then to use the Rubber Boots)
+// Pretty neat detail that didn't require coding in at all lmao
 
-// ACHIEVEMENTS END
+FLAG_ObtainedCheapPearl = 9015
+achievement(
+    title="Cold as Ice",
+    description="In the Downtown Geo Area, obtain the Cheap Pearl as Joshua.",
+    points=4,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_ObtainedCheapPearl)
+)
+
+// M1_02_00 (Downtown Station Area)
+// Maybe lighting the wreathes on fire? It does create a little segment later on so it'd be good to spotlight
+
+FLAG_JoshuaSetOffFireAlarm = 7002
+achievement(
+    title="Hot Like Fire",
+    description="In the Downtown Station Area, light a band of wreathes on fire as Joshua.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_JoshuaSetOffFireAlarm)
+)
+
+// It'd be nice to maybe have an achievement for finding and equipping every Santa outfit piece, but considering that all existing items
+// are in a giant buffer and have some properties that indicate how they're being used (e.g. equipped on Joshua) I don't think it's particularly
+// practical for RAScript to access them. Equipment isn't directly accessible by the game -- instead there is a static ItemController which manages every existing
+// item instance currently in the game, including those equipped by the player/NPCs, and there's a ton of complicated logic involved in iterating over that.
+// For those brave enough, the function 0x1B5720 (PAL) accepts two arguments -- the index of the player and the equipment type, and returns the item ID of the equipped item (or -1 if nothing in that slot)
+// ADDENDUM: Actually, maybe this could be done a slightly sneaky way? Perhaps making 4 bounding boxes and checking if the player enters the item pickup state,
+// though of course they can decline picking up the item... something to think about maybe.
+
+// M1_03_00 (West Junction)
+// Free progression achievement for getting off the bus here, I think, along with making a meal.
+// There's a funny option for taking the hanging chef's hat, but all options in that dialogue actually just play the same animation so that's probably near impossible to detect
+// Was thinking about an achievement for Stephanie referring to you as her boyfriend here but recreating the logic for determining Stephanie's affection for you
+// (which is known by me - the logic is at 0x3409B0) is too complicated (including || and && in subclause due to the multiregion support --
+// that could possibly be alleviated by calculating the flags address as (0x607E70 + ((byte(0x100120) - 0x86) * 0x1600)) but I don't really want to subject anyone to that logic)
+
+FLAG_WestJunctionIntroDone = 1300
+achievement(
+    title="We Just Gotta Wait",
+    description="Arrive at the evacuation point in West Junction as Joshua.",
+    points=5,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_WestJunctionIntroDone)
+)
+
+FLAG_WestJunctionCookedMeal = 1323
+achievement(
+    title="Popup Chef",
+    description="At the West Junction evacuation point, cook a meal with the chef as Joshua.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_WestJunctionCookedMeal)
+)
+
+// M1_04_00 (Historic Rest Area)
+// Anything of note here? You just kind of pass through here...
+// There's a cool jetski though - and sunglasses!! those are pretty cool
+
+// M1_05_00 (East Junction)
+
+// Rescuing Stephanie triggers the heli to approach
+FLAG_EastJunctionHelicopterApproaching = 1501
+achievement(
+    title="I Need a Hero",
+    description="At the East Junction, rescue a trapped woman and girl as Joshua.",
+    points=5,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_EastJunctionHelicopterApproaching)
+)
+
+// Achieve ending 1-B or 1-C
+
+FLAG_EastJunctionEscapeAlone = 41081 // 1-C
+FLAG_EastJunctionEscapeWithStephanie = 41082 // 1-B
+achievement(
+    title="Future Regret",
+    description="Obtain either Ending 1-B or 1-C.",
+    points=10,
+    trigger=IsTransitioningToResult(map_id=010500) &&
+            any_of([FLAG_EastJunctionEscapeAlone, FLAG_EastJunctionEscapeWithStephanie], FlagGetBool)
+)
+
+// ACHIEVEMENTS END 
 
 // RICH PRESENCE START
 
@@ -458,7 +583,7 @@ RegionLookup = {
 
 rp_fallback_string = "{0} In a loading screen or the title screen"
 
-rich_presence_conditional_display(is_EU() && EU_Player != NULL, "{0} {1} | {2} | BT: {3} / 30000.0 | {4}",
+rich_presence_conditional_display(PlayerExists(), "{0} {1} | {2} | BT: {3} / 30000.0 | {4}",
     rich_presence_lookup("Region", byte(0x100120), RegionLookup),
     rich_presence_lookup("MapName", EU_MapWithGateID(), MapNameLookup),
     rich_presence_lookup("Compass", EU_CompassID, CompassLookup),
