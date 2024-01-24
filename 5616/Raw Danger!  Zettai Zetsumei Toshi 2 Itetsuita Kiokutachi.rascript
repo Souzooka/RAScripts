@@ -24,6 +24,7 @@ EU_AreaID = dword(0x492450)
 EU_LevelID = dword(0x492454)
 EU_SublevelID = dword(0x492458)
 EU_GateID = dword(0x49245C)
+function EU_MapIDPrev() => prev(EU_AreaID) * 10000 + prev(EU_LevelID) * 100 + prev(EU_SublevelID)
 function EU_MapID() => EU_AreaID * 10000 + EU_LevelID * 100 + EU_SublevelID
 function EU_MapWithGateID() => EU_MapID() * 100 + EU_GateID
 
@@ -44,6 +45,7 @@ JP_AreaID = dword(0x490E50)
 JP_LevelID = dword(0x490E54)
 JP_SublevelID = dword(0x490E58)
 JP_GateID = dword(0x490E5C)
+function JP_MapIDPrev() => prev(JP_AreaID) * 10000 + prev(JP_LevelID) * 100 + prev(JP_SublevelID)
 function JP_MapID() => JP_AreaID * 10000 + JP_LevelID * 100 + JP_SublevelID
 function JP_MapWithGateID() => JP_MapID() * 100 + JP_GateID
 
@@ -62,12 +64,15 @@ function IsInCutscene()
 
 function LoadProtection()
 {
+    // NOTE: This still doesn't work to both guard loads and ensure map transitions work
+    // (we can likely check the "gate" ID for map transitions, as the entry checkpoint ID will almost always be 0 and something different for save points)
+    return PlayerExists()
     // Returns true if we aren't loading a map
     // (MapTimeFrames is 0 in title screen, load screens, etc.)
-    MIN_FRAMES = 3
+    //MIN_FRAMES = 3
     
-    return (is_EU() && EU_MapTimeFrames >= MIN_FRAMES) ||
-           (is_JP() && JP_MapTimeFrames >= MIN_FRAMES)
+    //return (is_EU() && EU_MapTimeFrames >= MIN_FRAMES) ||
+    //       (is_JP() && JP_MapTimeFrames >= MIN_FRAMES)
 }
 
 // Map Objects
@@ -84,6 +89,16 @@ function MapObjIsActive(mapobj)
 }
 
 // Players
+function PlayerExists()
+{
+    return (is_EU() && EU_Player != NULL) ||
+           (is_JP() && JP_Player != NULL)
+}
+function PlayerExistsId(player_id)
+{
+    return (is_EU() && EU_PlayerFromIndex(id) != NULL) ||
+           (is_JP() && JP_PlayerFromIndex(id) != NULL)
+}
 function PlayerGetX(player)
 {
     // Using the compass, +X is East and -X is West
@@ -131,6 +146,8 @@ function FlagChangedToSet(flag) => (is_EU() && FlagChangedToSetHelper(EU_Flags, 
 
 // ACHIEVEMENTS START
 
+// PROGRESSION/CAMPAIGN
+
 // TUTORIAL
 
 // Tutorial grading flags are set after the last room is completed, and reset when starting the tutorial
@@ -167,9 +184,13 @@ achievement(
 // This is a bit cheeky but other solutions unfortunately did not pan out
 // Since Geo never leaves the banquet hall (besides being repositioned for this cutscene), we can check his position for this.
 // This'll trigger the achievement at the beginning of the cutscene instead of the end but it's the best I got for now.
+// (I don't think checking if he leaves this area would work, as I think he just gets set inactive and stashed away in the ether
+// instead of actually being moved back -- that'll happen when Joshua approaches the banquet hall again)
 PLAYER_SantaGeo = 60
 function EU_TRIGGER_HiImGeo()
 {
+    // x = 27.0 is about where the hall outside the banquet hall (where the player sets down plates)
+    // and the hallway outside the kitchen connect
     geo_x = PlayerGetX(EU_PlayerFromIndex(PLAYER_SantaGeo))
     return EU_MapID() == 010100 && prev(geo_x) < 27.0 && geo_x >= 27.0
 }
@@ -258,6 +279,33 @@ achievement(
     points=2,
     trigger=LoadProtection() && FlagChangedToSet(FLAG_RoomTempWaterNoSpill)
 )
+
+// M1_01_01
+// Pretty straightforward here, probably want just one progression achievement for escaping the entire setpiece of the underground banquet hall
+
+// Don't have solid map transition logic yet, but this should work fine.
+// Taking advantage of the fact that the player shouldn't be able to float up here (especially during a cutscene)
+function EU_TRIGGER_OutOfTheFryingPan()
+{
+    // The player gets up to about y = -29.0 in the final cutscene before it is exited (reminder that y is inverted)
+    // It appears that this cutscene can't be skipped but even if it could, this logic should still work as cutscene logic should be
+    // fast-forwa
+    player_y = PlayerGetY(EU_Player)
+    return IsInCutscene() && EU_MapID() == 010101 && prev(player_y) > -28.0 && player_y <= -28.0
+}
+function JP_TRIGGER_OutOfTheFryingPan()
+{
+    player_y = PlayerGetY(JP_Player)
+    return IsInCutscene() && JP_MapID() == 010101 && prev(player_y) > -28.0 && player_y <= -28.0
+}
+function TRIGGER_OutOfTheFryingPan() => (is_JP() && JP_TRIGGER_OutOfTheFryingPan()) || (is_EU() && EU_TRIGGER_OutOfTheFryingPan())
+achievement(
+    title="Out of the Frying Pan",
+    description="Escape the underground convention center as Joshua.",
+    points=10,
+    trigger=LoadProtection() && TRIGGER_OutOfTheFryingPan()
+)
+
 
 // ACHIEVEMENTS END
 
@@ -403,25 +451,21 @@ WetLookup = {
     3: "💧💧💧",
 }
 
-rp_fallback_string = "In a loading screen or the title screen"
+RegionLookup = {
+    0x86: "ʲᵖ",
+    0x87: "ᵉᵘ",
+}
 
-rich_presence_conditional_display(is_EU() && EU_Player != NULL, "ᵉᵘ {0} | {1} | BT: {2} / 30000.0 | {3}",
+rp_fallback_string = "{0} In a loading screen or the title screen"
+
+rich_presence_conditional_display(is_EU() && EU_Player != NULL, "{0} {1} | {2} | BT: {3} / 30000.0 | {4}",
+    rich_presence_lookup("Region", byte(0x100120), RegionLookup),
     rich_presence_lookup("MapName", EU_MapWithGateID(), MapNameLookup),
     rich_presence_lookup("Compass", EU_CompassID, CompassLookup),
     rich_presence_value("Float1", EU_BodyHeat, format="FLOAT1"),
     rich_presence_lookup("Wet", EU_WetLevel, WetLookup)
 )
-
-rich_presence_conditional_display(is_JP() && JP_Player != NULL, "ʲᵖ {0} | {1} | BT: {2} / 30000.0 | {3}",
-    rich_presence_lookup("MapName", JP_MapWithGateID(), MapNameLookup),
-    rich_presence_lookup("Compass", JP_CompassID, CompassLookup),
-    rich_presence_value("Float1", JP_BodyHeat, format="FLOAT1"),
-    rich_presence_lookup("Wet", JP_WetLevel, WetLookup)
-)
-
-rich_presence_conditional_display(is_EU(), "ᵉᵘ {0}", rp_fallback_string)
-rich_presence_conditional_display(is_JP(), "ʲᵖ {0}", rp_fallback_string)
-rich_presence_display(rp_fallback_string)
+rich_presence_display(rp_fallback_string, rich_presence_lookup("Region", byte(0x100120), RegionLookup))
 
 
 // RICH PRESENCE END
