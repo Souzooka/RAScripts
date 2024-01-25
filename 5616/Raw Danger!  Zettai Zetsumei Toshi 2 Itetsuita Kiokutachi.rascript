@@ -284,6 +284,7 @@ achievement(
     trigger=TRIGGER_DisasterPrepared()
 )
 
+// JOSHUA
 // M1_01_00 (Underground banquet hall (pre-disaster))
 
 // This is a bit cheeky but other solutions unfortunately did not pan out
@@ -475,6 +476,89 @@ achievement(
     trigger=LoadProtection() && any_of([ENDING_1B, ENDING_1C], EndingChangedToSet)
 )
 
+// M1_05_01 (Angelina Area)
+
+// While this one may seem completely free (and it is *pretty* free) this requires Stephanie to like you enough to
+// ask you to call her "Steph" (in English) or by her first name (in Japanese) so you can lock yourself out of
+// this choice by not being nice enough to Stephanie.
+FLAG_StephanieNickName = 6029
+achievement(
+    title="Social Link Rank Up",
+    description="Adopt a new name for Stephanie as Joshua.",
+    points=1,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_StephanieNickName)
+)
+
+// Also missable (even if you go along this route) since you can talk to Stephanie twice to skip the whole cooking thing
+FLAG_StephanieOnePlate = 6035
+FLAG_StephanieBothPlates = 6036
+FLAG_StephanieNoPlates = 6037
+achievement(
+    title="Kitchen Nightmare",
+    description="Using the large pot, cook a meal for yourself and/or Stephanie inside the Angelina restaurant as Joshua.",
+    points=3,
+    trigger=LoadProtection() && 
+            any_of([FLAG_StephanieOnePlate, FLAG_StephanieBothPlates, FLAG_StephanieNoPlates], FlagChangedToSet)
+)
+
+// M1_05_02 (Mission Care Center Area)
+
+FLAG_ArriveMissionCareCenter = 1580
+achievement(
+    title="We May Be Too Late...",
+    description="Arrive at the Mission Care Center with Stephanie as Joshua.",
+    points=5,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_ArriveMissionCareCenter)
+)
+
+// M1_06_00 (Del Ray Inner Park)
+
+// NOTE: If you refuse to help the person near the collapsed help, you won't have the opportunity to bring them soup
+// So you'll have to make sure to carry them too.
+FLAG_SpilledTooMuchSoup = 1611
+FLAG_DeliveredSoup = 1621
+achievement(
+    title="Waiting is the Hardest Part",
+    description="Assist in rescuing a collapsed person in Del Ray Inner Park as Joshua, then bring them food without spilling too much.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_DeliveredSoup) && !FlagGetBool(FLAG_SpilledTooMuchSoup)
+)
+
+// This achievement requires telling the park owner "Don't give up!"
+// Though if you want to change it to just talking to the ringmaster,
+// Using just flag 1648 should work fine.
+// You get a Pirate Hat out of this conversation, which I think is the only way to acquire it (actually, Ivan might find one on a highway overpass...).
+FLAG_RingmasterDontGiveUp = 1645
+FLAG_RingmasterConversationOver = 1648 // Just for achievement pop timing purposes (this should place the redeem after the last subtitle)
+achievement(
+    title="Flotsam's Circus Troupe",
+    description="Convince the ringmaster in Del Ray Inner Park to keep pursuing his passion as Joshua.",
+    points=2,
+    trigger=LoadProtection() && FlagGetBool(FLAG_RingmasterDontGiveUp) && FlagChangedToSet(FLAG_RingmasterConversationOver)
+)
+
+// See the cutscene where Stephanie reunites with her mother
+FLAG_SawMotherCutscene = 21635
+achievement(
+    title="Conflict Resolution",
+    description="Reunite Stephanie with her mother as Joshua.",
+    points=5,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_SawMotherCutscene)
+)
+
+// M1_07_00 (Central Geo Distict)
+// Anything of interest here? Maybe knocking down the hanging trains and surviving...
+
+// M1_09_00 (Media Tower Area)
+// Just the ending here... but we'll revisit this map, in the epilogue!
+
+achievement(
+    title="Let's Go Home, Princess",
+    description="Obtain Ending 1-A.",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_1A)
+)
+
 // ACHIEVEMENTS END 
 
 // RICH PRESENCE START
@@ -595,7 +679,7 @@ CompassLookup = {
     47: "Rubber",
     48: "Cat",
     49: "Hardhat",
-    50: "Rudolphs",
+    50: "Rudolph's",
     51: "R9D",
     52: "Snowman",
     53: "Samurai",
