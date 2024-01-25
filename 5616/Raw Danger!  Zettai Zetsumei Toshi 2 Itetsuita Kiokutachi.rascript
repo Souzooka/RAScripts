@@ -3,80 +3,56 @@
 
 NULL = 0
 
-// Region check
-function is_EU() => byte(0x100120) == 0x87
-function is_JP() => byte(0x100120) == 0x86
+REGION_JP = 0
+REGION_EU = 1
 
-// EU memory
-EU_Player = dword(0x6003A4)
-function EU_PlayerFromIndex(id) => dword(0x5eae00 + (id * 4))
-EU_CompassID = byte(0x48FAE8)
-EU_BodyHeat = float(EU_Player + 0x000370)
-EU_WetLevel = word(0x64781C)
-EU_Flags = 0x609470
-EU_MapObjs = 0x492460
-EU_MapTimeFrames = dword(0x48F49C)
-EU_LoadedMapPack = dword(0x48F4F0)
-EU_CutsceneFlag = byte(0x48F900)
+function GetRegion() {
+  // This is just some arbitrary byte in code that happens to be 0 in JP and 1 in EU
+  return byte(0x348C28)
+}
+
+function GetRealAddress(pal_address, jp_address) {
+  // Does some funky arithmetic to calculate the address we should access for achievement logic
+  region_offset = pal_address - jp_address
+  return jp_address + (region_offset * (GetRegion() - REGION_JP))
+}
+
+// Memory values
+Player = dword(GetRealAddress(0x6003A4, 0x5FEDA4))
+function PlayerFromIndex(id) => dword(GetRealAddress(0x5eae00, 0x5E9800) + (id * 4))
+CompassID = byte(GetRealAddress(0x48FAE8, 0x48E4E8))
+BodyHeat = float(Player + 0x370)
+WetLevel = word(GetRealAddress(0x64781C, 0x644FDC))
+Flags = GetRealAddress(0x609470, 0x607E70)
+MapObjs = GetRealAddress(0x492460, 0x490E60)
+MapTimeFrames = dword(GetRealAddress(0x48F49C, 0x48DE9C))
+LoadedMapPack = dword(GetRealAddress(0x48F4F0, 0x48DEF0))
+CutsceneFlag = byte(GetRealAddress(0x48F900, 0x48E300))
 // 24-bit bitset which records all endings seen during one playthrough
 // (I did check and this does properly zero-out during new game)
-EU_EndingBitset = 0x67DDB6
-EU_GameMode = byte(0x67DDBA)
-EU_Difficulty = byte(0x67DDBB)
-EU_InGameTime = dword(0x67DDC0) // number of frames, divide by 30 for seconds
-EU_CurrentMenu = dword(0x48F604)
-EU_JewelryInfo = 0x7173A0
+EndingBitset = GetRealAddress(0x67DDB6, 0x67B576)
+GameMode = byte(GetRealAddress(0x67DDBA, 0x67B57A))
+Difficulty = byte(GetRealAddress(0x67DDBB, 0x67B57B))
+InGameTime = dword(GetRealAddress(0x67DDC0, 0x67B580)) // number of frames, divide by 30 for seconds
+CurrentMenu = dword(GetRealAddress(0x48F604, 0x48E008))
+JewelryInfo = GetRealAddress(0x7173A0, 0x714AE0)
 
 // Map IDs
-EU_AreaIDBackup = dword(0x492440)
-EU_LevelIDBackup = dword(0x492444)
-EU_SublevelIDBackup = dword(0x492448)
-EU_GateIDBackup = dword(0x49244C)
-// Some game modes change the current map ID (such as the results screen, which change it to 990000, for whatever reason)
-// So we'll use this backup value in some circumstances
-function EU_MapIDBackupPrev() => prev(EU_AreaIDBackup) * 10000 + prev(EU_LevelIDBackup) * 100 + prev(EU_SublevelIDBackup)
-function EU_MapIDBackup() => EU_AreaIDBackup * 10000 + EU_LevelIDBackup * 100 + EU_SublevelIDBackup
-EU_AreaID = dword(0x492450)
-EU_LevelID = dword(0x492454)
-EU_SublevelID = dword(0x492458)
-EU_GateID = dword(0x49245C)
-function EU_MapIDPrev() => prev(EU_AreaID) * 10000 + prev(EU_LevelID) * 100 + prev(EU_SublevelID)
-function EU_MapID() => EU_AreaID * 10000 + EU_LevelID * 100 + EU_SublevelID
-function EU_MapWithGateID() => EU_MapID() * 100 + EU_GateID
-
-// JP memory (TODO; doublecheck all of these)
-JP_Player = dword(0x5FEDA4)
-function JP_PlayerFromIndex(id) => dword(0x5E9800 + (id * 4))
-JP_CompassID = byte(0x48E4E8)
-JP_BodyHeat = float(JP_Player + 0x000370)
-JP_WetLevel = word(0x644FDC)
-JP_Flags = 0x607E70
-JP_MapObjs = 0x490E60
-JP_MapTimeFrames = dword(0x48DE9C)
-JP_LoadedMapPack = dword(0x48DEF0)
-JP_CutsceneFlag = byte(0x48E300)
-JP_EndingBitset = 0x67B576
-JP_GameMode = byte(0x67B57A)
-JP_Difficulty = byte(0x67B57B)
-JP_InGameTime = dword(0x67B580)
-JP_CurrentMenu = dword(0x48E008)
-JP_JewelryInfo = 0x714AE0
-
-// Map IDs
-JP_AreaIDBackup = dword(0x490E40)
-JP_LevelIDBackup = dword(0x490E44)
-JP_SublevelIDBackup = dword(0x490E48)
-JP_GateIDBackup = dword(0x490E4C)
-function JP_MapIDBackupPrev() => prev(JP_AreaIDBackup) * 10000 + (JP_LevelIDBackup) * 100 + (JP_SublevelIDBackup)
-function JP_MapIDBackup() => JP_AreaIDBackup * 10000 + JP_LevelIDBackup * 100 + JP_SublevelIDBackup
-JP_AreaID = dword(0x490E50)
-JP_LevelID = dword(0x490E54)
-JP_SublevelID = dword(0x490E58)
-JP_GateID = dword(0x490E5C)
-function JP_MapIDPrev() => prev(JP_AreaID) * 10000 + prev(JP_LevelID) * 100 + prev(JP_SublevelID)
-function JP_MapID() => JP_AreaID * 10000 + JP_LevelID * 100 + JP_SublevelID
-function JP_MapWithGateID() => JP_MapID() * 100 + JP_GateID
-
+AreaID = dword(GetRealAddress(0x492450, 0x490E50))
+LevelID = dword(GetRealAddress(0x492454, 0x490E54))
+SublevelID = dword(GetRealAddress(0x492458, 0x490E58))
+GateID = dword(GetRealAddress(0x49245C, 0x490E5C))
+function MapIDPrev() => prev(AreaID) * 10000 + prev(LevelID) * 100 + prev(SublevelID)
+function MapID() => AreaID * 10000 + LevelID * 100 + SublevelID
+function MapWithGateID() => MapID() * 100 + GateID
+// Alternate set of addresses for map IDs, usually these are used for menus and such
+AreaIDBackup = dword(GetRealAddress(0x492440, 0x490E40))
+LevelIDBackup = dword(GetRealAddress(0x492444, 0x490E44))
+SublevelIDBackup = dword(GetRealAddress(0x492448, 0x490E48))
+GateIDBackup = dword(GetRealAddress(0x49244C, 0x490E4C))
+function MapIDBackupPrev() => prev(AreaIDBackup) * 10000 + prev(LevelIDBackup) * 100 + prev(SublevelIDBackup)
+function MapIDBackup() => AreaIDBackup * 10000 + LevelIDBackup * 100 + SublevelIDBackup
+function MapIDBackupWithGateID() => AreaIDBackup * 10000 + LevelIDBackup * 100 + SublevelIDBackup
 
 // General enums
 PLAYER_Joshua = 0
@@ -131,24 +107,22 @@ function MapTransitioned(to_map, from_map)
     // Here's another case where we have to use the back up map ID, as that is actually set here first before we start loading
     // So we can check to make sure we aren't on the MC Menu (the normal map ID is set in MENU_GameLoad in both loading a save file and
     // normal transitions, so it's difficult to check that)
-    return (is_EU() && EU_CurrentMenu != MENU_MemoryCardMenu && EU_MapIDBackup() == to_map && EU_MapIDBackupPrev() == from_map) ||
-           (is_JP() && JP_CurrentMenu != MENU_MemoryCardMenu && JP_MapIDBackup() == to_map && JP_MapIDBackupPrev() == from_map)
+    return CurrentMenu != MENU_MemoryCardMenu && MapIDBackup() == to_map && MapIDBackupPrev() == from_map
 }
 
 function IsInTutorial()
 {
-    return (is_EU() && EU_MapID() == 019900) || (is_JP() && JP_MapID() == 019900)
+    return MapID() == 019900
 }
 
 function IsInCutscene()
 {
-    return (is_EU() && EU_CutsceneFlag == 1) || (is_JP() && JP_CutsceneFlag == 1)
+    return CutsceneFlag == 1
 }
 
 function IsInMenuTransition(to_menu)
 {
-    return (is_EU() && prev(EU_CurrentMenu) != to_menu && EU_CurrentMenu == to_menu) ||
-           (is_JP() && prev(JP_CurrentMenu) != to_menu && JP_CurrentMenu == to_menu)
+    return prev(CurrentMenu) != to_menu && CurrentMenu == to_menu
 }
 
 //function IsTransitioningToResult(map_id=-1)
@@ -165,10 +139,11 @@ function IsInMenuTransition(to_menu)
 
 function LoadProtection()
 {    
+    return CurrentMenu == MENU_Game
     // Checking that we're not in a menu (or rather, just in the normal game mode) should work fine for most achievements,
-    // though some other triggers (like for the map transition logic) may have 
-    return (is_EU() && EU_CurrentMenu == MENU_Game) ||
-           (is_JP() && JP_CurrentMenu == MENU_Game)
+    // though some other triggers (like for the map transition logic) may have its own special logic.
+    //return (is_EU() && EU_CurrentMenu == MENU_Game) ||
+    //       (is_JP() && JP_CurrentMenu == MENU_Game)
     // NOTE: This still doesn't work to both guard loads and ensure map transitions work
     // (we can likely check the "gate" ID for map transitions, as the entry checkpoint ID will almost always be 0 and something different for save points)
     //return PlayerExists()
@@ -182,10 +157,10 @@ function LoadProtection()
 }
 
 // Map Objects
-function MapObjGet(mapobjs, index)
+function MapObjGet(index)
 {
     MAPOBJ_SIZE = 0x2A0
-    return mapobjs + (index * MAPOBJ_SIZE)
+    return MapObjs + (index * MAPOBJ_SIZE)
 }
 
 function MapObjIsActive(mapobj)
@@ -197,13 +172,11 @@ function MapObjIsActive(mapobj)
 // Players
 function PlayerExists()
 {
-    return (is_EU() && EU_Player != NULL) ||
-           (is_JP() && JP_Player != NULL)
+    return Player != NULL
 }
 function PlayerExistsId(player_id)
 {
-    return (is_EU() && EU_PlayerFromIndex(id) != NULL) ||
-           (is_JP() && JP_PlayerFromIndex(id) != NULL)
+    return PlayerFromIndex(player_id) != NULL
 }
 function PlayerGetX(player)
 {
@@ -234,49 +207,40 @@ function PlayerGetR(player)
 }
 
 // Flags
-function FlagGet(flags, flag)
+function FlagGet(flag)
 {
     // Returns a memory accessor for a particular game flag
-    return bit(flag % 8, flags + flag / 8)
+    return bit(flag % 8, Flags + flag / 8)
 }
 function FlagGetBool(flag)
 {
     // More abstracted version of FlagGet; returns a boolean value representing the flag's state and not a memory accessor
-    return (is_EU() && FlagGet(EU_Flags, flag) == 1) ||
-           (is_JP() && FlagGet(JP_Flags, flag) == 1)
+    return FlagGet(flag) == 1
 }
-function FlagChangedToSetHelper(flags, flag) => prev(FlagGet(flags, flag)) == 0 && FlagGet(flags, flag) == 1
-function FlagChangedToSet(flag) => (is_EU() && FlagChangedToSetHelper(EU_Flags, flag)) ||
-                                   (is_JP() && FlagChangedToSetHelper(JP_Flags, flag))
+function FlagChangedToSet(flag) => prev(FlagGet(flag)) == 0 && FlagGet(flag) == 1
                                    
                                    
 // Endings
-function EndingGet(endings, flag)
+function EndingGet(flag)
 {
-    return bit(flag % 8, endings + flag / 8)
+    return bit(flag % 8, EndingBitset + flag / 8)
 }
 function EndingGetBool(flag)
 {
-    return (is_EU() && EndingGet(EU_EndingBitset, flag) == 1) ||
-           (is_JP() && EndingGet(JP_EndingBitset, flag) == 1)
+    return EndingGet(flag) == 1
 }
-function EndingChangedToSetHelper(endings, flag) => prev(EndingGet(endings, flag)) == 0 && EndingGet(endings, flag) == 1
-function EndingChangedToSet(flag) => (is_EU() && EndingChangedToSetHelper(EU_EndingBitset, flag)) ||
-                                     (is_JP() && EndingChangedToSetHelper(JP_EndingBitset, flag))
+function EndingChangedToSet(flag) => prev(EndingGet(flag)) == 0 && EndingGet(flag) == 1
 
 // Jewelries
-function JewelryGet(jewelry_info, player_id)
+function JewelryGet(player_id)
 {
-    return byte(jewelry_info + (player_id * 0x18) + 0x16)
+    return byte(JewelryInfo + (player_id * 0x18) + 0x16)
 }
 function JewelryGetBool(player_id)
 {
-    return (is_EU() && JewelryGet(EU_JewelryInfo, player_id) != 0) ||
-           (is_JP() && JewelryGet(JP_JewelryInfo, player_id) != 0)
+    return JewelryGet(player_id) != 0
 }
-function JewelryChangedToSetHelper(jewelry_info, player_id) => prev(JewelryGet(jewelry_info, player_id)) == 0 && JewelryGet(jewelry_info, player_id) != 0
-function JewelryChangedToSet(flag) => (is_EU() && JewelryChangedToSetHelper(EU_JewelryInfo, flag)) ||
-                                      (is_JP() && JewelryChangedToSetHelper(JP_JewelryInfo, flag))
+function JewelryChangedToSet(player_id) => prev(JewelryGet(player_id)) == 0 && JewelryGet(player_id) != 0
 
 
 // ACHIEVEMENTS START
@@ -322,19 +286,13 @@ achievement(
 // This'll trigger the achievement at the beginning of the cutscene instead of the end but it's the best I got for now.
 // (I don't think checking if he leaves this area would work, as I think he just gets set inactive and stashed away in the ether
 // instead of actually being moved back -- that'll happen when Joshua approaches the banquet hall again)
-function EU_TRIGGER_HiImGeo()
+function TRIGGER_HiImGeo()
 {
     // x = 27.0 is about where the hall outside the banquet hall (where the player sets down plates)
     // and the hallway outside the kitchen connect
-    geo_x = PlayerGetX(EU_PlayerFromIndex(PLAYER_SantaGeo))
-    return EU_MapID() == 010100 && prev(geo_x) < 27.0 && geo_x >= 27.0
+    geo_x = PlayerGetX(PlayerFromIndex(PLAYER_SantaGeo))
+    return MapID() == 010100 && prev(geo_x) < 27.0 && geo_x >= 27.0
 }
-function JP_TRIGGER_HiImGeo()
-{
-    geo_x = PlayerGetX(JP_PlayerFromIndex(PLAYER_SantaGeo))
-    return JP_MapID() == 010100 && prev(geo_x) < 27.0 && geo_x >= 27.0
-}
-function TRIGGER_HiImGeo() => (is_JP() && JP_TRIGGER_HiImGeo()) || (is_EU() && EU_TRIGGER_HiImGeo())
 
 achievement(
     title="Hi, I'm Geo!",
@@ -587,6 +545,8 @@ achievement(
     trigger=LoadProtection() && EndingChangedToSet(ENDING_1A)
 )
 
+// AMBER
+
 // ACHIEVEMENTS END 
 
 // RICH PRESENCE START
@@ -737,34 +697,9 @@ WetLookup = {
     3: "💧💧💧",
 }
 
-REGION_JP = 0x86
-REGION_EU = 0x87
-
-function GetRegion()
-{
-    return byte(0x100120)
-}
-
 RegionLookup = {
     REGION_JP: "ʲᵖ",
     REGION_EU: "ᵉᵘ",
-}
-
-rp_variable_lookup = {
-    REGION_EU: {
-        "MapName": EU_MapWithGateID(),
-        "Compass": EU_CompassID,
-        "Difficulty": EU_Difficulty,
-        "BodyHeat": EU_BodyHeat,
-        "WetLevel": EU_WetLevel,
-    },
-    REGION_JP: {
-        "MapName": JP_MapWithGateID(),
-        "Compass": JP_CompassID,
-        "Difficulty": JP_Difficulty,
-        "BodyHeat": JP_BodyHeat,
-        "WetLevel": JP_WetLevel,
-    },
 }
 
 rp_fallback_string = "{0} In a loading screen or the title screen"
@@ -772,15 +707,15 @@ rp_fallback_string = "{0} In a loading screen or the title screen"
 for region in [REGION_EU, REGION_JP] {
     rich_presence_conditional_display(region == GetRegion() && PlayerExists(), "{0} {1} | {2} 🧭 | {3} Difficulty | BT: {4} / 30000.0 | {5}",
         rich_presence_lookup("Region", GetRegion(), RegionLookup),
-        rich_presence_lookup("MapName", rp_variable_lookup[REGION_EU]["MapName"], MapNameLookup),
-        rich_presence_lookup("Compass", rp_variable_lookup[REGION_EU]["Compass"], CompassLookup),
-        rich_presence_lookup("Difficulty", rp_variable_lookup[REGION_EU]["Difficulty"], DifficultyLookup),
-        rich_presence_value("Float1", rp_variable_lookup[REGION_EU]["BodyHeat"], format="FLOAT1"),
-        rich_presence_lookup("WetLevel", rp_variable_lookup[REGION_EU]["WetLevel"], WetLookup)
+        rich_presence_lookup("MapName", MapWithGateID(), MapNameLookup),
+        rich_presence_lookup("Compass", CompassID, CompassLookup),
+        rich_presence_lookup("Difficulty", Difficulty, DifficultyLookup),
+        rich_presence_value("Float1", BodyHeat, format="FLOAT1"),
+        rich_presence_lookup("WetLevel", WetLevel, WetLookup)
     )
 }
 
-rich_presence_display(rp_fallback_string, rich_presence_lookup("Region", byte(0x100120), RegionLookup))
+rich_presence_display(rp_fallback_string, rich_presence_lookup("Region", GetRegion(), RegionLookup))
 
 
 // RICH PRESENCE END
