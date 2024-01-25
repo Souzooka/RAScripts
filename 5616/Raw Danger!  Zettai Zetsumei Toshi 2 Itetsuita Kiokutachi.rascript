@@ -25,6 +25,7 @@ EU_GameMode = byte(0x67DDBA)
 EU_Difficulty = byte(0x67DDBB)
 EU_InGameTime = dword(0x67DDC0) // number of frames, divide by 30 for seconds
 EU_CurrentMenu = dword(0x48F604)
+EU_JewelryInfo = 0x7173A0
 
 // Map IDs
 EU_AreaIDBackup = dword(0x492440)
@@ -59,6 +60,7 @@ JP_GameMode = byte(0x67B57A)
 JP_Difficulty = byte(0x67B57B)
 JP_InGameTime = dword(0x67B580)
 JP_CurrentMenu = dword(0x48E008)
+JP_JewelryInfo = 0x714AE0
 
 // Map IDs
 JP_AreaIDBackup = dword(0x490E40)
@@ -77,6 +79,19 @@ function JP_MapWithGateID() => JP_MapID() * 100 + JP_GateID
 
 
 // General enums
+PLAYER_Joshua = 0
+PLAYER_Amber = 1
+PLAYER_Isaac = 2
+PLAYER_Paige = 3
+PLAYER_Ivan = 4
+PLAYER_Keith = 5
+PLAYER_Stephanie = 6
+PLAYER_Aiden = 8
+PLAYER_Sophia = 10
+PLAYER_Sierra = 11
+PLAYER_Emily = 19
+PLAYER_SantaGeo = 60
+
 MENU_LdGameOv = 13 // Dunno
 MENU_LoadGame = 14 // Dunno
 MENU_MemoryCardMenu = 18
@@ -150,6 +165,8 @@ function IsInMenuTransition(to_menu)
 
 function LoadProtection()
 {    
+    // Checking that we're not in a menu (or rather, just in the normal game mode) should work fine for most achievements,
+    // though some other triggers (like for the map transition logic) may have 
     return (is_EU() && EU_CurrentMenu == MENU_Game) ||
            (is_JP() && JP_CurrentMenu == MENU_Game)
     // NOTE: This still doesn't work to both guard loads and ensure map transitions work
@@ -228,7 +245,6 @@ function FlagGetBool(flag)
     return (is_EU() && FlagGet(EU_Flags, flag) == 1) ||
            (is_JP() && FlagGet(JP_Flags, flag) == 1)
 }
-
 function FlagChangedToSetHelper(flags, flag) => prev(FlagGet(flags, flag)) == 0 && FlagGet(flags, flag) == 1
 function FlagChangedToSet(flag) => (is_EU() && FlagChangedToSetHelper(EU_Flags, flag)) ||
                                    (is_JP() && FlagChangedToSetHelper(JP_Flags, flag))
@@ -244,10 +260,24 @@ function EndingGetBool(flag)
     return (is_EU() && EndingGet(EU_EndingBitset, flag) == 1) ||
            (is_JP() && EndingGet(JP_EndingBitset, flag) == 1)
 }
-
 function EndingChangedToSetHelper(endings, flag) => prev(EndingGet(endings, flag)) == 0 && EndingGet(endings, flag) == 1
 function EndingChangedToSet(flag) => (is_EU() && EndingChangedToSetHelper(EU_EndingBitset, flag)) ||
                                      (is_JP() && EndingChangedToSetHelper(JP_EndingBitset, flag))
+
+// Jewelries
+function JewelryGet(jewelry_info, player_id)
+{
+    return byte(jewelry_info + (player_id * 0x18) + 0x16)
+}
+function JewelryGetBool(player_id)
+{
+    return (is_EU() && JewelryGet(EU_JewelryInfo, player_id) != 0) ||
+           (is_JP() && JewelryGet(JP_JewelryInfo, player_id) != 0)
+}
+function JewelryChangedToSetHelper(jewelry_info, player_id) => prev(JewelryGet(jewelry_info, player_id)) == 0 && JewelryGet(jewelry_info, player_id) != 0
+function JewelryChangedToSet(flag) => (is_EU() && JewelryChangedToSetHelper(EU_JewelryInfo, flag)) ||
+                                      (is_JP() && JewelryChangedToSetHelper(JP_JewelryInfo, flag))
+
 
 // ACHIEVEMENTS START
 
@@ -292,7 +322,6 @@ achievement(
 // This'll trigger the achievement at the beginning of the cutscene instead of the end but it's the best I got for now.
 // (I don't think checking if he leaves this area would work, as I think he just gets set inactive and stashed away in the ether
 // instead of actually being moved back -- that'll happen when Joshua approaches the banquet hall again)
-PLAYER_SantaGeo = 60
 function EU_TRIGGER_HiImGeo()
 {
     // x = 27.0 is about where the hall outside the banquet hall (where the player sets down plates)
@@ -402,12 +431,11 @@ achievement(
 // That'd require beating the game (to unlock the Collection feature and be able to take out equipment from recycle bins, and then to use the Rubber Boots)
 // Pretty neat detail that didn't require coding in at all lmao
 
-FLAG_ObtainedCheapPearl = 9015
 achievement(
     title="Cold as Ice",
     description="In the Downtown Geo Area, obtain the Cheap Pearl as Joshua.",
     points=4,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_ObtainedCheapPearl)
+    trigger=LoadProtection() && JewelryChangedToSet(PLAYER_Joshua)
 )
 
 // M1_02_00 (Downtown Station Area)
