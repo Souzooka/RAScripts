@@ -18,7 +18,9 @@ EU_MapObjs = 0x492460
 EU_MapTimeFrames = dword(0x48F49C)
 EU_LoadedMapPack = dword(0x48F4F0)
 EU_CutsceneFlag = byte(0x48F900)
-EU_EndingBitset = 0x67DDB6 // Might be saved w/ save file so not sure how useful this is
+// 24-bit bitset which records all endings seen during one playthrough
+// (I did check and this does properly zero-out during new game)
+EU_EndingBitset = 0x67DDB6
 EU_GameMode = byte(0x67DDBA)
 EU_Difficulty = byte(0x67DDBB)
 EU_InGameTime = dword(0x67DDC0) // number of frames, divide by 30 for seconds
@@ -31,6 +33,7 @@ EU_SublevelIDBackup = dword(0x492448)
 EU_GateIDBackup = dword(0x49244C)
 // Some game modes change the current map ID (such as the results screen, which change it to 990000, for whatever reason)
 // So we'll use this backup value in some circumstances
+function EU_MapIDBackupPrev() => prev(EU_AreaIDBackup) * 10000 + prev(EU_LevelIDBackup) * 100 + prev(EU_SublevelIDBackup)
 function EU_MapIDBackup() => EU_AreaIDBackup * 10000 + EU_LevelIDBackup * 100 + EU_SublevelIDBackup
 EU_AreaID = dword(0x492450)
 EU_LevelID = dword(0x492454)
@@ -62,6 +65,7 @@ JP_AreaIDBackup = dword(0x490E40)
 JP_LevelIDBackup = dword(0x490E44)
 JP_SublevelIDBackup = dword(0x490E48)
 JP_GateIDBackup = dword(0x490E4C)
+function JP_MapIDBackupPrev() => prev(JP_AreaIDBackup) * 10000 + (JP_LevelIDBackup) * 100 + (JP_SublevelIDBackup)
 function JP_MapIDBackup() => JP_AreaIDBackup * 10000 + JP_LevelIDBackup * 100 + JP_SublevelIDBackup
 JP_AreaID = dword(0x490E50)
 JP_LevelID = dword(0x490E54)
@@ -73,10 +77,48 @@ function JP_MapWithGateID() => JP_MapID() * 100 + JP_GateID
 
 
 // General enums
+MENU_LdGameOv = 13 // Dunno
+MENU_LoadGame = 14 // Dunno
+MENU_MemoryCardMenu = 18
+MENU_GameLoad = 19 // This is actually the one from loading from the MC menu lmao
 MENU_Game = 21
 MENU_Result = 32
 
+ENDING_1A = 0 // Reaching McMurrough's heli
+ENDING_1B = 1 // Leaving with Stephanie on overpass
+ENDING_1C = 2 // Leaving without Stephanie on overpass
+ENDING_1D = 3 // Unused
+ENDING_2A = 4
+ENDING_2B = 5
+ENDING_2C = 6
+ENDING_2D = 7
+ENDING_3A = 8
+ENDING_3B = 9
+ENDING_3C = 10
+ENDING_3D = 11
+ENDING_4A = 12
+ENDING_4B = 13
+ENDING_4C = 14
+ENDING_4D = 15
+ENDING_5A = 16
+ENDING_5B = 17
+ENDING_5C = 18
+ENDING_5D = 19
+ENDING_6A = 20
+ENDING_6B = 21
+ENDING_6C = 22
+ENDING_6D = 23
+
 // General functions
+
+function MapTransitioned(to_map, from_map)
+{
+    // Here's another case where we have to use the back up map ID, as that is actually set here first before we start loading
+    // So we can check to make sure we aren't on the MC Menu (the normal map ID is set in MENU_GameLoad in both loading a save file and
+    // normal transitions, so it's difficult to check that)
+    return (is_EU() && EU_CurrentMenu != MENU_MemoryCardMenu && EU_MapIDBackup() == to_map && EU_MapIDBackupPrev() == from_map) ||
+           (is_JP() && JP_CurrentMenu != MENU_MemoryCardMenu && JP_MapIDBackup() == to_map && JP_MapIDBackupPrev() == from_map)
+}
 
 function IsInTutorial()
 {
@@ -87,35 +129,39 @@ function IsInCutscene()
 {
     return (is_EU() && EU_CutsceneFlag == 1) || (is_JP() && JP_CutsceneFlag == 1)
 }
+
 function IsInMenuTransition(to_menu)
 {
     return (is_EU() && prev(EU_CurrentMenu) != to_menu && EU_CurrentMenu == to_menu) ||
            (is_JP() && prev(JP_CurrentMenu) != to_menu && JP_CurrentMenu == to_menu)
 }
-function IsTransitioningToResult(map_id=-1)
-{
-    is_on_map = true
-    if (map_id != -1)
-    {
-        // We have to use the backup map value as the results transition overwrites the current map value
-        // and saves the last map value to the backup
-        is_on_map = (is_EU() && EU_MapIDBackup() == map_id) || (is_JP() && JP_MapIDBackup() == map_id)
-    }
-    return IsInMenuTransition(MENU_Result) && is_on_map
-}
+
+//function IsTransitioningToResult(map_id=-1)
+//{
+//    is_on_map = true
+//    if (map_id != -1)
+//    {
+//        // We have to use the backup map value as the results transition overwrites the current map value
+//        // and saves the last map value to the backup
+//        is_on_map = (is_EU() && EU_MapIDBackup() == map_id) || (is_JP() && JP_MapIDBackup() == map_id)
+//    }
+//    return IsInMenuTransition(MENU_Result) && is_on_map
+//}
 
 function LoadProtection()
-{
+{    
+    return (is_EU() && EU_CurrentMenu == MENU_Game) ||
+           (is_JP() && JP_CurrentMenu == MENU_Game)
     // NOTE: This still doesn't work to both guard loads and ensure map transitions work
     // (we can likely check the "gate" ID for map transitions, as the entry checkpoint ID will almost always be 0 and something different for save points)
     //return PlayerExists()
     
     // Returns true if we aren't loading a map
     // (MapTimeFrames is 0 in title screen, load screens, etc.)
-    MIN_FRAMES = 3
+    //MIN_FRAMES = 3
     
-    return (is_EU() && EU_MapTimeFrames >= MIN_FRAMES) ||
-           (is_JP() && JP_MapTimeFrames >= MIN_FRAMES)
+    //return (is_EU() && EU_MapTimeFrames >= MIN_FRAMES) ||
+    //       (is_JP() && JP_MapTimeFrames >= MIN_FRAMES)
 }
 
 // Map Objects
@@ -186,6 +232,22 @@ function FlagGetBool(flag)
 function FlagChangedToSetHelper(flags, flag) => prev(FlagGet(flags, flag)) == 0 && FlagGet(flags, flag) == 1
 function FlagChangedToSet(flag) => (is_EU() && FlagChangedToSetHelper(EU_Flags, flag)) ||
                                    (is_JP() && FlagChangedToSetHelper(JP_Flags, flag))
+                                   
+                                   
+// Endings
+function EndingGet(endings, flag)
+{
+    return bit(flag % 8, endings + flag / 8)
+}
+function EndingGetBool(flag)
+{
+    return (is_EU() && EndingGet(EU_EndingBitset, flag) == 1) ||
+           (is_JP() && EndingGet(JP_EndingBitset, flag) == 1)
+}
+
+function EndingChangedToSetHelper(endings, flag) => prev(EndingGet(endings, flag)) == 0 && EndingGet(endings, flag) == 1
+function EndingChangedToSet(flag) => (is_EU() && EndingChangedToSetHelper(EU_EndingBitset, flag)) ||
+                                     (is_JP() && EndingChangedToSetHelper(JP_EndingBitset, flag))
 
 // ACHIEVEMENTS START
 
@@ -326,27 +388,11 @@ achievement(
 // M1_01_01 (Destroyed banquet hall)
 // Pretty straightforward here, probably want just one progression achievement for escaping the entire setpiece of the underground banquet hall
 
-// Don't have solid map transition logic yet, but this should work fine.
-// Taking advantage of the fact that the player shouldn't be able to float up here (especially during a cutscene)
-function EU_TRIGGER_OutOfTheFryingPan()
-{
-    // The player gets up to about y = -29.0 in the final cutscene before it is exited (reminder that y is inverted)
-    // It appears that this cutscene can't be skipped but even if it could, this logic should still work as cutscene logic should be
-    // fast-forwarded when skipped.
-    player_y = PlayerGetY(EU_Player)
-    return IsInCutscene() && EU_MapID() == 010101 && prev(player_y) > -28.0 && player_y <= -28.0
-}
-function JP_TRIGGER_OutOfTheFryingPan()
-{
-    player_y = PlayerGetY(JP_Player)
-    return IsInCutscene() && JP_MapID() == 010101 && prev(player_y) > -28.0 && player_y <= -28.0
-}
-function TRIGGER_OutOfTheFryingPan() => (is_JP() && JP_TRIGGER_OutOfTheFryingPan()) || (is_EU() && EU_TRIGGER_OutOfTheFryingPan())
 achievement(
     title="Out of the Frying Pan",
     description="Escape the underground convention center as Joshua.",
     points=5,
-    trigger=LoadProtection() && TRIGGER_OutOfTheFryingPan()
+    trigger=MapTransitioned(010105, 010101)
 )
 
 // M1_01_05 (Downtown Geo Area)
@@ -422,14 +468,11 @@ achievement(
 
 // Achieve ending 1-B or 1-C
 
-FLAG_EastJunctionEscapeAlone = 41081 // 1-C
-FLAG_EastJunctionEscapeWithStephanie = 41082 // 1-B
 achievement(
     title="Future Regret",
     description="Obtain either Ending 1-B or 1-C.",
     points=10,
-    trigger=IsTransitioningToResult(map_id=010500) &&
-            any_of([FLAG_EastJunctionEscapeAlone, FLAG_EastJunctionEscapeWithStephanie], FlagGetBool)
+    trigger=LoadProtection() && any_of([ENDING_1B, ENDING_1C], EndingChangedToSet)
 )
 
 // ACHIEVEMENTS END 
@@ -595,24 +638,36 @@ RegionLookup = {
     REGION_EU: "ᵉᵘ",
 }
 
+rp_variable_lookup = {
+    REGION_EU: {
+        "MapName": EU_MapWithGateID(),
+        "Compass": EU_CompassID,
+        "Difficulty": EU_Difficulty,
+        "BodyHeat": EU_BodyHeat,
+        "WetLevel": EU_WetLevel,
+    },
+    REGION_JP: {
+        "MapName": JP_MapWithGateID(),
+        "Compass": JP_CompassID,
+        "Difficulty": JP_Difficulty,
+        "BodyHeat": JP_BodyHeat,
+        "WetLevel": JP_WetLevel,
+    },
+}
+
 rp_fallback_string = "{0} In a loading screen or the title screen"
 
-rich_presence_conditional_display(is_EU() && PlayerExists(), "{0} {1} | {2} 🧭 | {3} Difficulty | BT: {4} / 30000.0 | {5}",
-    rich_presence_lookup("Region", GetRegion(), RegionLookup),
-    rich_presence_lookup("MapName", EU_MapWithGateID(), MapNameLookup),
-    rich_presence_lookup("Compass", EU_CompassID, CompassLookup),
-    rich_presence_lookup("Difficulty", EU_Difficulty, DifficultyLookup),
-    rich_presence_value("Float1", EU_BodyHeat, format="FLOAT1"),
-    rich_presence_lookup("WetLevel", EU_WetLevel, WetLookup)
-)
-rich_presence_conditional_display(is_JP() && PlayerExists(), "{0} {1} | {2} 🧭 | {3} Difficulty | BT: {4} / 30000.0 | {5}",
-    rich_presence_lookup("Region", GetRegion(), RegionLookup),
-    rich_presence_lookup("MapName", JP_MapWithGateID(), MapNameLookup),
-    rich_presence_lookup("Compass", JP_CompassID, CompassLookup),
-    rich_presence_lookup("Difficulty", JP_Difficulty, DifficultyLookup),
-    rich_presence_value("Float1", JP_BodyHeat, format="FLOAT1"),
-    rich_presence_lookup("Wet", JP_WetLevel, WetLookup)
-)
+for region in [REGION_EU, REGION_JP] {
+    rich_presence_conditional_display(region == GetRegion() && PlayerExists(), "{0} {1} | {2} 🧭 | {3} Difficulty | BT: {4} / 30000.0 | {5}",
+        rich_presence_lookup("Region", GetRegion(), RegionLookup),
+        rich_presence_lookup("MapName", rp_variable_lookup[REGION_EU]["MapName"], MapNameLookup),
+        rich_presence_lookup("Compass", rp_variable_lookup[REGION_EU]["Compass"], CompassLookup),
+        rich_presence_lookup("Difficulty", rp_variable_lookup[REGION_EU]["Difficulty"], DifficultyLookup),
+        rich_presence_value("Float1", rp_variable_lookup[REGION_EU]["BodyHeat"], format="FLOAT1"),
+        rich_presence_lookup("WetLevel", rp_variable_lookup[REGION_EU]["WetLevel"], WetLookup)
+    )
+}
+
 rich_presence_display(rp_fallback_string, rich_presence_lookup("Region", byte(0x100120), RegionLookup))
 
 
