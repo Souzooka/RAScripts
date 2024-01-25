@@ -569,6 +569,12 @@ CompassLookup = {
     64: "Survivor",
 }
 
+DifficultyLookup = {
+    0: "Easy",
+    1: "Normal",
+    2: "Hard",
+}
+
 WetLookup = {
     0: "Dry",
     1: "💧",
@@ -576,29 +582,31 @@ WetLookup = {
     3: "💧💧💧",
 }
 
-RegionLookup = {
-    0x86: "ʲᵖ",
-    0x87: "ᵉᵘ",
+REGION_JP = 0x86
+REGION_EU = 0x87
+
+function GetRegion()
+{
+    return byte(0x100120)
 }
 
-DifficultyLookup = {
-    0: "Easy",
-    1: "Normal",
-    2: "Hard",
+RegionLookup = {
+    REGION_JP: "ʲᵖ",
+    REGION_EU: "ᵉᵘ",
 }
 
 rp_fallback_string = "{0} In a loading screen or the title screen"
 
 rich_presence_conditional_display(is_EU() && PlayerExists(), "{0} {1} | {2} 🧭 | {3} Difficulty | BT: {4} / 30000.0 | {5}",
-    rich_presence_lookup("Region", byte(0x100120), RegionLookup),
+    rich_presence_lookup("Region", GetRegion(), RegionLookup),
     rich_presence_lookup("MapName", EU_MapWithGateID(), MapNameLookup),
     rich_presence_lookup("Compass", EU_CompassID, CompassLookup),
     rich_presence_lookup("Difficulty", EU_Difficulty, DifficultyLookup),
     rich_presence_value("Float1", EU_BodyHeat, format="FLOAT1"),
-    rich_presence_lookup("Wet", EU_WetLevel, WetLookup)
+    rich_presence_lookup("WetLevel", EU_WetLevel, WetLookup)
 )
 rich_presence_conditional_display(is_JP() && PlayerExists(), "{0} {1} | {2} 🧭 | {3} Difficulty | BT: {4} / 30000.0 | {5}",
-    rich_presence_lookup("Region", byte(0x100120), RegionLookup),
+    rich_presence_lookup("Region", GetRegion(), RegionLookup),
     rich_presence_lookup("MapName", JP_MapWithGateID(), MapNameLookup),
     rich_presence_lookup("Compass", JP_CompassID, CompassLookup),
     rich_presence_lookup("Difficulty", JP_Difficulty, DifficultyLookup),
