@@ -3,18 +3,19 @@
 
 NULL = 0
 
-REGION_JP = 0
+REGION_JP = 1
 REGION_EU = 1
 
 function GetRegion() {
-  // This is just some arbitrary byte in code that happens to be 0 in JP and 1 in EU
-  return byte(0x348C28)
+  // This is just some arbitrary byte in code that happens to be 1 in JP and 0 in EU
+  return byte(0x348FAA)
 }
 
 function GetRealAddress(pal_address, jp_address) {
   // Does some funky arithmetic to calculate the address we should access for achievement logic
-  region_offset = pal_address - jp_address
-  return jp_address + (region_offset * (GetRegion() - REGION_JP))
+  // This may break if RA keeps its syntax and then implements 64-bit integer support, but should work if the achievements are re-exported...
+  region_offset = jp_address - pal_address
+  return pal_address - (region_offset * GetRegion())
 }
 
 // Memory values
