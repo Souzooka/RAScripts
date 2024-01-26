@@ -4,7 +4,7 @@
 NULL = 0
 
 REGION_JP = 1
-REGION_EU = 1
+REGION_EU = 0
 
 function GetRegion() {
   // This is just some arbitrary byte in code that happens to be 1 in JP and 0 in EU
@@ -44,6 +44,7 @@ LevelID = dword(GetRealAddress(0x492454, 0x490E54))
 SublevelID = dword(GetRealAddress(0x492458, 0x490E58))
 GateID = dword(GetRealAddress(0x49245C, 0x490E5C))
 function MapIDPrev() => prev(AreaID) * 10000 + prev(LevelID) * 100 + prev(SublevelID)
+function MapWithGateIDPrev() => MapIDPrev() * 100 + prev(GateID)
 function MapID() => AreaID * 10000 + LevelID * 100 + SublevelID
 function MapWithGateID() => MapID() * 100 + GateID
 // Alternate set of addresses for map IDs, usually these are used for menus and such
@@ -69,6 +70,9 @@ PLAYER_Sierra = 11
 PLAYER_Emily = 19
 PLAYER_SantaGeo = 60
 
+GAMEMODE_Normal = 0
+GAMEMODE_FreeMode = 1
+
 MENU_LdGameOv = 13 // Dunno
 MENU_LoadGame = 14 // Dunno
 MENU_MemoryCardMenu = 18
@@ -76,12 +80,17 @@ MENU_GameLoad = 19 // This is actually the one from loading from the MC menu lma
 MENU_Game = 21
 MENU_Result = 32
 
-ENDING_1A = 0 // Reaching McMurrough's heli
-ENDING_1B = 1 // Leaving with Stephanie on overpass
-ENDING_1C = 2 // Leaving without Stephanie on overpass
-ENDING_1D = 3 // Unused
-ENDING_2A = 4
-ENDING_2B = 5
+// NOTE: In general, the Free Mode (chapter select) sets flags which allow players
+// to be able to achieve shorter endings (which would require set up from a previous chapter).
+// For example, Amber's ending where she escapes with the rescue crew requires Joshua to have removed
+// the iron bar while he passed through the Downtown Station. I want players to have set these events in motion,
+// so I'll be excluding endings which specifically require setup in previous chapters from being achievable in Free Mode.
+ENDING_1A = 0 // Joshua - Reaching McMurrough's heli
+ENDING_1B = 1 // Joshua - Leaving with Stephanie on overpass
+ENDING_1C = 2 // Joshua - Leaving without Stephanie on overpass
+ENDING_2A = 3 
+ENDING_2B = 4 // Amber - Escape with rescue team in downtown station (requires Joshua to remove iron bar)
+//ENDING_2B = 5
 ENDING_2C = 6
 ENDING_2D = 7
 ENDING_3A = 8
@@ -109,6 +118,11 @@ function MapTransitioned(to_map, from_map)
     // So we can check to make sure we aren't on the MC Menu (the normal map ID is set in MENU_GameLoad in both loading a save file and
     // normal transitions, so it's difficult to check that)
     return CurrentMenu != MENU_MemoryCardMenu && MapIDBackup() == to_map && MapIDBackupPrev() == from_map
+}
+
+function IsFreeMode()
+{
+    return GameMode == GAMEMODE_FreeMode
 }
 
 function IsInTutorial()
@@ -208,6 +222,13 @@ function PlayerGetR(player)
 }
 
 // Flags
+// Some general notes about flags
+// 0-5999 - Level specific flags (may be referenced in later levels) (0-1999 are for tutorial/Chapter 1, 2000-2999 for 2, etc. in general)
+// 6000-6999 - Stephanie-related flags
+// 7000-7999 - Significant flags which have implications across chapters
+// 20000-29999 - Chapter epilogue flags? (though not many are actually used later... but hey, easier to detect certain cutscenes so a boon for me)
+// 30000-39999 - Cutscene skip flags (these belong to the SYSTEM save - don't use these)
+// 40000-42099 - Also SYSTEM save flags? Unsure
 function FlagGet(flag)
 {
     // Returns a memory accessor for a particular game flag
@@ -268,10 +289,31 @@ function JewelryChangedToSet(player_id) => prev(JewelryGet(player_id)) == 0 && J
 // Average rank (50+ points) = 74
 // Elite rank (75+ points) = 73
 // Master rank (100 points) = 72
+// GRADE REQUIREMENTS:
+// (all requirements award 10 points; timing requirements are for when you have player control)
+//
+// ROOM 01:
+// * Beat room in under 141 frames (4.6667 seconds or better) (おやおや、どうしたのかな？)
+// * Beat room in under 2701 frames (90 seconds or better) (向いてないんじゃない？　アクションゲーム)
+//
+// ROOM 02:
+// * Beat room in under 176 frames (5.8333 seconds or better) (おやおや、どうしたのかな？)
+// * Don't die from TP loss
+//
+// ROOM 03:
+// * Beat room in under 451 frames (15 seconds or better) (おやおや、どうしたのかな？)
+// * Beat room in under 2701 frames (90 seconds or better)
+//
+// ROOM 04:
+// * Beat room in under 1201 frames (40 seconds or better) (おやおや、どうしたのかな？)
+// * Don't fall down holes 3 or more times (you can handle this one, come on)
+//
+// ROOM 05:
+// * Beat room in under 621 frames (20.6667 seconds or better) (おやおや、どうしたのかな？)
+// * Don't get knocked back by rushing water (i.e. in either cling section)
 FLAG_MasterGrade = 72
 FLAG_GradingOver = 79
 function TRIGGER_DisasterPrepared() => FlagGetBool(FLAG_MasterGrade) && FlagChangedToSet(FLAG_GradingOver)
-
 achievement(
     title="Disaster-Prepared",
     description="Obtain the rank of 'Master' in the tutorial.",
@@ -295,6 +337,7 @@ function TRIGGER_HiImGeo()
     return MapID() == 010100 && prev(geo_x) < 27.0 && geo_x >= 27.0
 }
 
+// The box for the Geo costume is behind a shelf in the kitchen (you have to crawl into that area to reach it)
 achievement(
     title="Hi, I'm Geo!",
     description="In the underground convention center, find a costume of Geo and try it on as Joshua.",
@@ -302,6 +345,8 @@ achievement(
     trigger=TRIGGER_HiImGeo()
 )
 
+// Talk to a woman on the ground in the banquet hall looking for her contact lens, then find the lens a bit in front of her
+// and GIVE the lens to the woman
 FLAG_ReturnedContactLens = 21172
 achievement(
     title="I Have Special Eyes",
@@ -310,6 +355,7 @@ achievement(
     trigger=LoadProtection() && FlagChangedToSet(FLAG_ReturnedContactLens)
 )
 
+// Talk to the moving chef in the kitchen (not the head chef) and then retrieve his recipe
 FLAG_ReturnedItalianRecipe = 996
 achievement(
     title="Occupational Hazard",
@@ -318,6 +364,8 @@ achievement(
     trigger=LoadProtection() && FlagChangedToSet(FLAG_ReturnedItalianRecipe)
 )
 
+// Talk to one of the waiters near the banquet hall door to the kitchen BEFORE bringing food to Stephanie
+// and he'll mention his locker is B-1 -- just go examine the locker afterwards.
 FLAG_TookStephaniePhoto = 1001
 achievement(
     title="Candid Caper",
@@ -327,6 +375,8 @@ achievement(
 )
 
 // Is set after finding hole in wall regardless of if we look through it or not (and you wouldn't look through it, of course)
+// Talk to the chef tucked away in the corner of the kitchen (run all the way through and around the center bit)
+// then examine the peeled poster in the male locker room
 FLAG_FoundPeepHole = 990
 achievement(
     title="Peeping Josh",
@@ -337,6 +387,8 @@ achievement(
 
 // We have three options when talking to the drinker (to agree, to say we're busy, or to refuse).
 // The last two will set flag 1063, but also one of 1064 and 1065. We'll want to make sure 1063 is set but neither of the others.
+// Simply talk to the drinking man at a table to the right of the center table AFTER bringing food, then agree to bring them wine and do so
+// (you can bring wine after talking, or deliver the wine immediately if the cart is close enough to him)
 FLAG_DrinkerEventDone = 1063
 FLAG_DrinkerIgnoredByJoshua = 1064
 FLAG_DrinkerWasRefusedDrinks = 1065
@@ -350,6 +402,7 @@ achievement(
             !FlagGetBool(FLAG_DrinkerWasRefusedDrinks)
 )
 
+// After delivering food, go to the outer area and talk to Stephanie to kick this one off
 FLAG_FoundLostChildMother = 6003
 achievement(
     title="Good Guy Josh",
@@ -358,6 +411,8 @@ achievement(
     trigger=LoadProtection() && FlagChangedToSet(FLAG_FoundLostChildMother)
 )
 
+// Pretty simple -- after talking to Sophia after picking up the water, the outfit is in a box with red tape near a vending machine in the locker room hallway.
+// Give that outfit to her and you're done.
 FLAG_GaveSophiaOutfit = 915
 achievement(
     title="Behind the Scenes",
@@ -366,6 +421,7 @@ achievement(
     trigger=LoadProtection() && FlagChangedToSet(FLAG_GaveSophiaOutfit)
 )
 
+// Go left out of the kitchen after picking up the water, watch the cutscene, then examine the water pipe to refill the pitcher
 FLAG_RoomTempWaterNoSpill = 21179
 achievement(
     title="I Only Drink Cascade Mineral Water",
@@ -390,9 +446,10 @@ achievement(
 // That'd require beating the game (to unlock the Collection feature and be able to take out equipment from recycle bins, and then to use the Rubber Boots)
 // Pretty neat detail that didn't require coding in at all lmao
 
+// Inside the PAPCO building, talk to the jewelry thief then GIVE her a Heating Pad, then talk to her once more
 achievement(
     title="Cold as Ice",
-    description="In the Downtown Geo Area, obtain the Cheap Pearl as Joshua.",
+    description="Obtain the Cheap Pearl as Joshua.",
     points=4,
     trigger=LoadProtection() && JewelryChangedToSet(PLAYER_Joshua)
 )
@@ -400,6 +457,7 @@ achievement(
 // M1_02_00 (Downtown Station Area)
 // Maybe lighting the wreathes on fire? It does create a little segment later on so it'd be good to spotlight
 
+// Have the lighter equipped and move through the area after the underground shutter you have to open with the Speed Handle
 FLAG_JoshuaSetOffFireAlarm = 7002
 achievement(
     title="Hot Like Fire",
@@ -420,8 +478,7 @@ achievement(
 // Free progression achievement for getting off the bus here, I think, along with making a meal.
 // There's a funny option for taking the hanging chef's hat, but all options in that dialogue actually just play the same animation so that's probably near impossible to detect
 // Was thinking about an achievement for Stephanie referring to you as her boyfriend here but recreating the logic for determining Stephanie's affection for you
-// (which is known by me - the logic is at 0x3409B0) is too complicated (including || and && in subclause due to the multiregion support --
-// that could possibly be alleviated by calculating the flags address as (0x607E70 + ((byte(0x100120) - 0x86) * 0x1600)) but I don't really want to subject anyone to that logic)
+// (which is known by me - the logic is at 0x3409B0) -- now that there's region abstraction via arithmetic implementing this function might actually work
 
 FLAG_WestJunctionIntroDone = 1300
 achievement(
@@ -431,6 +488,7 @@ achievement(
     trigger=LoadProtection() && FlagChangedToSet(FLAG_WestJunctionIntroDone)
 )
 
+// Pick up some food and then talk to the chef on the other side of the road from where you start, ez
 FLAG_WestJunctionCookedMeal = 1323
 achievement(
     title="Popup Chef",
@@ -455,7 +513,7 @@ achievement(
 )
 
 // Achieve ending 1-B or 1-C
-
+// (Leave on helicopter with or without Stephanie)
 achievement(
     title="Future Regret",
     description="Obtain either Ending 1-B or 1-C.",
@@ -477,6 +535,7 @@ achievement(
 )
 
 // Also missable (even if you go along this route) since you can talk to Stephanie twice to skip the whole cooking thing
+// Ingredients and the large pot are in the back of the restaurant
 FLAG_StephanieOnePlate = 6035
 FLAG_StephanieBothPlates = 6036
 FLAG_StephanieNoPlates = 6037
@@ -547,6 +606,118 @@ achievement(
 )
 
 // AMBER
+
+// M2_01_00 (Landmark Apartments (flashback))
+// Not much to do here
+
+// M2_02_00 (Police Station Area)
+// Actually pretty straightforward here despite the complexity of this area
+// Just one achievement for now for the smart route (though the alternate route of escape
+// involves blowing up a fuel tanker, which sets up an ending/achievements later)
+
+// There's a room in the garage with some items, including an Officer's Skirt and Officer's Suit.
+// Have these equipped and patrolling guards will ignore you (but arrest you if you try to talk to them)
+// You can then talk to the gate guard for him to let you out.
+FLAG_AmberGateEscape = 2251
+achievement(
+    title="Master of Disguise",
+    description="Escape out of the gate of the Police Station parking lot as Amber.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_AmberGateEscape)
+)
+
+// M2_03_00 (Downtown Geo Area)
+// Nothing too exciting here, either you snitched on Amber (and she pretty much skips to the end of the area)
+// or you go around the outskirts of the area. Either way you meet the detective at the end then escape,
+// and an achievement is probably fitting for that but we'll move it to the next area
+
+// M2_04_00 (Downtown Station Area)
+
+// Triggers after the conversation at the top of the escalator (hey, free progression points)
+FLAG_AidanIntroCutsceneDone = 22404
+achievement(
+    title="An Unlikely Pair",
+    description="Escape the police detective then meet a new companion in the Downtown Station Area as Amber.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_AidanIntroCutsceneDone)
+)
+
+// Cross the ladder to the rescue crew after the station starts collasping (requires Josh to remove iron bar)
+// Translator's note: Saiban is "court trial" in Japanese
+achievement(
+    title="Aidan Today, Saiban Tomorrow",
+    description="Obtain Ending 2-B [No Free Mode].",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_2B) && !IsFreeMode()
+)
+
+// M2_05_00 (Hudson Tunnel Area)
+// Fun fact: The woman trying to get across the bridge in the cutscene has an internal name of Maya Randall, and 刈谷 美津子
+// in Japanese (Kariya Mitsuko (?)). Guess her role was relegated to cut content like a lot of stuff in this game.
+
+// No flags to check here, but it does change the checkpoint. We should expect the checkpoint to always be 0 and become 1 here.
+// If not, hey, you must be good at breaking this game. Good job. We'll check NOT 1 -> 1 just to be sure.
+achievement(
+    title="Hot Pursuit",
+    description="Escape the police detective again in the Hudson Tunnel Area as Amber.",
+    points=3,
+    trigger=LoadProtection() && MapID() == 020500 && GateID == 1 && prev(GateID) != 1
+)
+
+// Give an umbrella to the jewelry thief (she's near an entrance to the underground tunnel on the bridge itself)
+
+// Interact with Ivan in the Hudson Tunnel and have Aidan carry him
+// Nothing particularly available to check to time this achievement well,
+// but we can just check Ivan's Y value (since when he's being carried away by rescue crew,
+// that's when he'll be at the highest point he can be)
+FLAG_RescuedIvan = 7026
+function TRIGGER_TooMuchEggnog() {
+    // Not sure exactly what Y level he's at when carried, but Y=0 is probably just ground level. This should be fine.
+    ivan_y = PlayerGetY(PlayerFromIndex(PLAYER_Ivan))
+    return LoadProtection() && MapID() == 020500 && FlagGetBool(FLAG_RescuedIvan) && prev(ivan_y) > -1.0 && ivan_y <= -1.0
+}
+achievement(
+    title="Too Much Eggnog",
+    description="Rescue the unconscious man in the Hudson Tunnel Area as Amber.",
+    points=2,
+    trigger=TRIGGER_TooMuchEggnog()
+)
+
+// M2_06_00 (Landmark Apartments Area)
+// Another fun fact, Amber arrives here chronologically after Isaac but since it's earlier in the game,
+// she can take any items that spawn here and they won't be here for Isaac. Maybe there's someone in the
+// background trying to prevent a time paradox.
+
+// Not even a cutscene after this one...
+function TRIGGER_ImAFriendOfAmberBrazil() {
+    // Thankfully due to the devs designing all the maps so all the important stuff aligns with cardinal directions,
+    // we can just do a cardinal plane check here since you can't reach this point without confronting the detective.
+    // And you can't save outside nor return outside the apartment after entering so we don't even need any save protection!!!
+    // It's that shrimple, folks
+    amber_z = PlayerGetZ(Player)
+    return LoadProtection() && MapID() == 020600 && prev(amber_z) < -30.0 && amber_z >= -30.0
+}
+achievement(
+    title="I'm a Friend of Amber Brazil",
+    description="Escape the police detective (again) in the Landmark Apartments Area as Amber.",
+    points=3,
+    trigger=TRIGGER_ImAFriendOfAmberBrazil()
+)
+
+// M2_07_00 (Angelina Area)
+// Nothing too significant here; Amber and the gang steal a car which, you know, is a felony, so...
+
+// M2_08_00 (Cascade Dam)
+// Perhaps maybe a silly 1 pointer for looking through a Geo standee at the top of the dam
+
+// I'm in a dream, Snake Eater...
+achievement(
+    title="FYI I am a Spy",
+    description="Obtain Ending 2-A.",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_2A)
+)
+
 
 // ACHIEVEMENTS END 
 
