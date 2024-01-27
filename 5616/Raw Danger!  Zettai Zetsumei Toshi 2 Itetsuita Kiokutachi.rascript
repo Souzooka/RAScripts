@@ -36,7 +36,7 @@ GameMode = byte(GetRealAddress(0x67DDBA, 0x67B57A))
 Difficulty = byte(GetRealAddress(0x67DDBB, 0x67B57B))
 InGameTime = dword(GetRealAddress(0x67DDC0, 0x67B580)) // number of frames, divide by 30 for seconds
 CurrentMenu = dword(GetRealAddress(0x48F604, 0x48E008))
-JewelryInfo = GetRealAddress(0x7173A0, 0x714AE0)
+JewelryInfo = GetRealAddress(0x7173A0, 0x714AE0) // this is probably actually meta information
 
 // Map IDs
 AreaID = dword(GetRealAddress(0x492450, 0x490E50))
@@ -75,6 +75,7 @@ GAMEMODE_FreeMode = 1
 
 MENU_LdGameOv = 13 // Dunno
 MENU_LoadGame = 14 // Dunno
+MENU_Tutorial = 17
 MENU_MemoryCardMenu = 18
 MENU_GameLoad = 19 // This is actually the one from loading from the MC menu lmao
 MENU_Game = 21
@@ -89,7 +90,7 @@ MENU_Result = 32
 ENDING_1A = 0 // Joshua - Reaching McMurrough's heli
 ENDING_1B = 1 // Joshua - Leaving with Stephanie on overpass
 ENDING_1C = 2 // Joshua - Leaving without Stephanie on overpass
-ENDING_2A = 3 
+ENDING_2A = 3 // Amber - Normal ending at Cascade Dam
 ENDING_2B = 4 // Amber - Escape with rescue team in downtown station (requires Joshua to remove iron bar)
 //ENDING_2B = 5
 ENDING_2C = 6
@@ -227,7 +228,7 @@ function PlayerGetR(player)
 // 0-5999 - Level specific flags (may be referenced in later levels) (0-1999 are for tutorial/Chapter 1, 2000-2999 for 2, etc. in general)
 // 6000-6999 - Stephanie-related flags
 // 7000-7999 - Significant flags which have implications across chapters
-// 20000-29999 - Chapter epilogue flags? (though not many are actually used later... but hey, easier to detect certain cutscenes so a boon for me)
+// 20000-29999 - Epilogue/Map note flags
 // 30000-39999 - Cutscene skip flags (these belong to the SYSTEM save - don't use these)
 // 40000-42099 - Also SYSTEM save flags? Unsure
 function FlagGet(flag)
@@ -291,7 +292,7 @@ function JewelryChangedToSet(player_id) => prev(JewelryGet(player_id)) == 0 && J
 // Elite rank (75+ points) = 73
 // Master rank (100 points) = 72
 // GRADE REQUIREMENTS:
-// (all requirements award 10 points; timing requirements are for when you have player control)
+// (failing the first req. will give you 10 points, failing the second will always give you 0 points)
 //
 // ROOM 01:
 // * Beat room in under 141 frames (4.6667 seconds or better) (おやおや、どうしたのかな？)
@@ -314,11 +315,25 @@ function JewelryChangedToSet(player_id) => prev(JewelryGet(player_id)) == 0 && J
 // * Don't get knocked back by rushing water (i.e. in either cling section)
 FLAG_MasterGrade = 72
 FLAG_GradingOver = 79
+// Flags which mark grading failures in each tutorial room
+FLAG_BadGrades = [17, 18, 28, 29, 38, 39, 49, 140, 57, 58]
+// 10 point and 0 point stamp flags for each room
+FLAG_BadStamps = [20028, 20029, 20031, 20032, 20034, 20035, 20037, 20038, 20040, 20041]
+// 20 point stamp flags for each room
+FLAG_GoodStamps = [20027, 20030, 20033, 20036, 20039]
+function TRIGGER_DisasterPrepared() {
+    start = once(LoadProtection() && IsInTutorial())
+    cancel = never(CurrentMenu == MENU_Tutorial || any_of(FLAG_BadStamps, FlagGetBool))
+    submit = trigger_when(FlagGetBool(FLAG_MasterGrade) && FlagChangedToSet(FLAG_GradingOver))
+    
+    return start && cancel && submit
+}
 achievement(
+    id=392855,
     title="Disaster-Prepared",
     description="Obtain the rank of 'Master' in the tutorial.",
     points=5,
-    trigger=LoadProtection() && FlagGetBool(FLAG_MasterGrade) && FlagChangedToSet(FLAG_GradingOver)
+    trigger=TRIGGER_DisasterPrepared()
 )
 
 // JOSHUA
@@ -339,6 +354,7 @@ function TRIGGER_HiImGeo()
 
 // The box for the Geo costume is behind a shelf in the kitchen (you have to crawl into that area to reach it)
 achievement(
+    id=392823,
     title="Hi, I'm Geo!",
     description="In the underground convention center, find a costume of Geo and try it on as Joshua.",
     points=1,
@@ -349,6 +365,7 @@ achievement(
 // and GIVE the lens to the woman
 FLAG_ReturnedContactLens = 21172
 achievement(
+    id=392824,
     title="I Have Special Eyes",
     description="In the underground convention center, find and return a woman's lost contact lenses as Joshua.",
     points=1,
@@ -358,6 +375,7 @@ achievement(
 // Talk to the moving chef in the kitchen (not the head chef) and then retrieve his recipe
 FLAG_ReturnedItalianRecipe = 996
 achievement(
+    id=392825,
     title="Occupational Hazard",
     description="In the underground convention center, return the Italian Recipe to the chef as Joshua.",
     points=1,
@@ -368,6 +386,7 @@ achievement(
 // and he'll mention his locker is B-1 -- just go examine the locker afterwards.
 FLAG_TookStephaniePhoto = 1001
 achievement(
+    id=392831,
     title="Candid Caper",
     description="In the underground convention center, find and pick up a picture of Stephanie as Joshua.",
     points=2,
@@ -379,6 +398,7 @@ achievement(
 // then examine the peeled poster in the male locker room
 FLAG_FoundPeepHole = 990
 achievement(
+    id=392828,
     title="Peeping Josh",
     description="In the underground convention center, find a (small) hole in the wall as Joshua.",
     points=3,
@@ -393,6 +413,7 @@ FLAG_DrinkerEventDone = 1063
 FLAG_DrinkerIgnoredByJoshua = 1064
 FLAG_DrinkerWasRefusedDrinks = 1065
 achievement(
+    id=392826,
     title="Maybe They'll Have Free Drinks There",
     description="In the underground convention center, serve a drunk guest a few more bottles of wine as Joshua.",
     points=1,
@@ -405,6 +426,7 @@ achievement(
 // After delivering food, go to the outer area and talk to Stephanie to kick this one off
 FLAG_FoundLostChildMother = 6003
 achievement(
+    id=392827,
     title="Good Guy Josh",
     description="In the underground convention center, help Stephanie find the mother of the lost child as Joshua.",
     points=1,
@@ -415,6 +437,7 @@ achievement(
 // Give that outfit to her and you're done.
 FLAG_GaveSophiaOutfit = 915
 achievement(
+    id=392829,
     title="Behind the Scenes",
     description="In the underground convention center, find and give an investigative reporter a Waitress Uniform as Joshua.",
     points=2,
@@ -424,6 +447,7 @@ achievement(
 // Go left out of the kitchen after picking up the water, watch the cutscene, then examine the water pipe to refill the pitcher
 FLAG_RoomTempWaterNoSpill = 21179
 achievement(
+    id=392830,
     title="I Only Drink Cascade Mineral Water",
     description="In the underground convention center, refill the water pitcher with water from the leaking water pipe and deliver it to the mayor without spilling too much as Joshua.",
     points=2,
@@ -434,6 +458,7 @@ achievement(
 // Pretty straightforward here, probably want just one progression achievement for escaping the entire setpiece of the underground banquet hall
 
 achievement(
+    id=392832,
     title="Out of the Frying Pan",
     description="Escape the underground convention center as Joshua.",
     points=5,
@@ -448,6 +473,7 @@ achievement(
 
 // Inside the PAPCO building, talk to the jewelry thief then GIVE her a Heating Pad, then talk to her once more
 achievement(
+    id=392833,
     title="Cold as Ice",
     description="Obtain the Cheap Pearl.",
     points=4,
@@ -460,6 +486,7 @@ achievement(
 // Have the lighter equipped and move through the area after the underground shutter you have to open with the Speed Handle
 FLAG_JoshuaSetOffFireAlarm = 7002
 achievement(
+    id=392834,
     title="Hot Like Fire",
     description="In the Downtown Station Area, light a band of wreathes on fire as Joshua.",
     points=3,
@@ -482,6 +509,7 @@ achievement(
 
 FLAG_WestJunctionIntroDone = 1300
 achievement(
+    id=392835,
     title="We Just Gotta Wait",
     description="Arrive at the evacuation point in West Junction as Joshua.",
     points=5,
@@ -491,6 +519,7 @@ achievement(
 // Pick up some food and then talk to the chef on the other side of the road from where you start, ez
 FLAG_WestJunctionCookedMeal = 1323
 achievement(
+    id=392836,
     title="Popup Chef",
     description="At the West Junction evacuation point, cook a meal with the chef as Joshua.",
     points=3,
@@ -506,6 +535,7 @@ achievement(
 // Rescuing Stephanie triggers the heli to approach
 FLAG_EastJunctionHelicopterApproaching = 1501
 achievement(
+    id=392837,
     title="I Need a Hero",
     description="At the East Junction, rescue a trapped woman and girl as Joshua.",
     points=5,
@@ -515,6 +545,7 @@ achievement(
 // Achieve ending 1-B or 1-C
 // (Leave on helicopter with or without Stephanie)
 achievement(
+    id=392838,
     title="Future Regret",
     description="Obtain either Ending 1-B or 1-C.",
     points=10,
@@ -528,6 +559,7 @@ achievement(
 // this choice by not being nice enough to Stephanie.
 FLAG_StephanieNickName = 6029
 achievement(
+    id=392839,
     title="Social Link Rank Up",
     description="Adopt a new name for Stephanie as Joshua.",
     points=1,
@@ -540,6 +572,7 @@ FLAG_StephanieOnePlate = 6035
 FLAG_StephanieBothPlates = 6036
 FLAG_StephanieNoPlates = 6037
 achievement(
+    id=392840,
     title="Kitchen Nightmare",
     description="Using the large pot, cook a meal for yourself and/or Stephanie inside the Angelina restaurant as Joshua.",
     points=3,
@@ -551,6 +584,7 @@ achievement(
 
 FLAG_ArriveMissionCareCenter = 1580
 achievement(
+    id=392841,
     title="We May Be Too Late...",
     description="Arrive at the Mission Care Center with Stephanie as Joshua.",
     points=5,
@@ -564,6 +598,7 @@ achievement(
 FLAG_SpilledTooMuchSoup = 1611
 FLAG_DeliveredSoup = 1621
 achievement(
+    id=392842,
     title="Waiting is the Hardest Part",
     description="Assist in rescuing a collapsed person in Del Ray Inner Park as Joshua, then bring them food without spilling too much.",
     points=3,
@@ -577,6 +612,7 @@ achievement(
 FLAG_RingmasterDontGiveUp = 1645
 FLAG_RingmasterConversationOver = 1648 // Just for achievement pop timing purposes (this should place the redeem after the last subtitle)
 achievement(
+    id=392843,
     title="Flotsam's Circus Troupe",
     description="Convince the ringmaster in Del Ray Inner Park to keep pursuing his passion as Joshua.",
     points=2,
@@ -586,6 +622,7 @@ achievement(
 // See the cutscene where Stephanie reunites with her mother
 FLAG_SawMotherCutscene = 21635
 achievement(
+    id=392844,
     title="Conflict Resolution",
     description="Reunite Stephanie with her mother as Joshua.",
     points=5,
@@ -599,6 +636,7 @@ achievement(
 // Just the ending here... but we'll revisit this map, in the epilogue!
 
 achievement(
+    id=392845,
     title="Let's Go Home, Princess",
     description="Obtain Ending 1-A.",
     points=10,
@@ -620,6 +658,7 @@ achievement(
 // You can then talk to the gate guard for him to let you out.
 FLAG_AmberGateEscape = 2251
 achievement(
+    id=392846,
     title="Master of Disguise",
     description="Escape out of the gate of the Police Station parking lot as Amber.",
     points=3,
@@ -636,6 +675,7 @@ achievement(
 // Triggers after the conversation at the top of the escalator (hey, free progression points)
 FLAG_AidanIntroCutsceneDone = 22404
 achievement(
+    id=392847,
     title="An Unlikely Pair",
     description="Escape the police detective then meet a new companion in the Downtown Station Area as Amber.",
     points=3,
@@ -645,6 +685,7 @@ achievement(
 // Cross the ladder to the rescue crew after the station starts collasping (requires Josh to remove iron bar)
 // Translator's note: Saiban is "court trial" in Japanese
 achievement(
+    id=392848,
     title="Aidan Today, Saiban Tomorrow",
     description="Obtain Ending 2-B [No Free Mode].",
     points=10,
@@ -658,6 +699,7 @@ achievement(
 // No flags to check here, but it does change the checkpoint. We should expect the checkpoint to always be 0 and become 1 here.
 // If not, hey, you must be good at breaking this game. Good job. We'll check NOT 1 -> 1 just to be sure.
 achievement(
+    id=392849,
     title="Hot Pursuit",
     description="Escape the police detective again in the Hudson Tunnel Area as Amber.",
     points=3,
@@ -666,6 +708,7 @@ achievement(
 
 // Give an umbrella (you can get one from the police station parking area) to the jewelry thief (she's near an entrance to the underground tunnel on the bridge itself)
 achievement(
+    id=392854,
     title="When's This Rain Gonna Stop?",
     description="Obtain the Small Opal.",
     points=4,
@@ -683,6 +726,7 @@ function TRIGGER_TooMuchEggnog() {
     return LoadProtection() && MapID() == 020500 && FlagGetBool(FLAG_RescuedIvan) && prev(ivan_y) > -1.0 && ivan_y <= -1.0
 }
 achievement(
+    id=392851,
     title="Too Much Eggnog",
     description="Rescue the unconscious man in the Hudson Tunnel Area as Amber.",
     points=2,
@@ -704,6 +748,7 @@ function TRIGGER_ImAFriendOfAmberBrazil() {
     return LoadProtection() && MapID() == 020600 && prev(amber_z) < -30.0 && amber_z >= -30.0
 }
 achievement(
+    id=392852,
     title="I'm a Friend of Amber Brazil",
     description="Escape the police detective (again) in the Landmark Apartments Area as Amber.",
     points=3,
@@ -718,12 +763,22 @@ achievement(
 
 // I'm in a dream, Snake Eater...
 achievement(
+    id=392853,
     title="FYI I am a Spy",
     description="Obtain Ending 2-A.",
     points=10,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_2A)
 )
 
+// Isaac
+
+achievement(
+    id=392850,
+    title="Jewel - Isaac",
+    description="Obtain the <whatever the third jewel is I accidentally created this duplicate achievement>.",
+    points=4,
+    trigger=LoadProtection() && JewelryChangedToSet(PLAYER_Isaac)
+)
 
 // ACHIEVEMENTS END 
 
