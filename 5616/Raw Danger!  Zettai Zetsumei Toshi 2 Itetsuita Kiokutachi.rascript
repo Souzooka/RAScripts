@@ -78,6 +78,7 @@ MENU_LoadGame = 14 // Dunno
 MENU_MemoryCardMenu = 18
 MENU_GameLoad = 19 // This is actually the one from loading from the MC menu lmao
 MENU_Game = 21
+MENU_ItemMenu = 23 // Also applies for picking up items (which we definitely need for the Small Opal)
 MENU_Result = 32
 
 // NOTE: In general, the Free Mode (chapter select) sets flags which allow players
@@ -154,7 +155,7 @@ function IsInMenuTransition(to_menu)
 
 function LoadProtection()
 {    
-    return CurrentMenu == MENU_Game
+    return CurrentMenu == MENU_Game || CurrentMenu == MENU_ItemMenu
     // Checking that we're not in a menu (or rather, just in the normal game mode) should work fine for most achievements,
     // though some other triggers (like for the map transition logic) may have its own special logic.
     //return (is_EU() && EU_CurrentMenu == MENU_Game) ||
@@ -313,12 +314,11 @@ function JewelryChangedToSet(player_id) => prev(JewelryGet(player_id)) == 0 && J
 // * Don't get knocked back by rushing water (i.e. in either cling section)
 FLAG_MasterGrade = 72
 FLAG_GradingOver = 79
-function TRIGGER_DisasterPrepared() => FlagGetBool(FLAG_MasterGrade) && FlagChangedToSet(FLAG_GradingOver)
 achievement(
     title="Disaster-Prepared",
     description="Obtain the rank of 'Master' in the tutorial.",
     points=5,
-    trigger=TRIGGER_DisasterPrepared()
+    trigger=LoadProtection() && FlagGetBool(FLAG_MasterGrade) && FlagChangedToSet(FLAG_GradingOver)
 )
 
 // JOSHUA
@@ -449,7 +449,7 @@ achievement(
 // Inside the PAPCO building, talk to the jewelry thief then GIVE her a Heating Pad, then talk to her once more
 achievement(
     title="Cold as Ice",
-    description="Obtain the Cheap Pearl as Joshua.",
+    description="Obtain the Cheap Pearl.",
     points=4,
     trigger=LoadProtection() && JewelryChangedToSet(PLAYER_Joshua)
 )
@@ -664,7 +664,13 @@ achievement(
     trigger=LoadProtection() && MapID() == 020500 && GateID == 1 && prev(GateID) != 1
 )
 
-// Give an umbrella to the jewelry thief (she's near an entrance to the underground tunnel on the bridge itself)
+// Give an umbrella (you can get one from the police station parking area) to the jewelry thief (she's near an entrance to the underground tunnel on the bridge itself)
+achievement(
+    title="When's This Rain Gonna Stop?",
+    description="Obtain the Small Opal.",
+    points=4,
+    trigger=LoadProtection() && JewelryChangedToSet(PLAYER_Amber)
+)
 
 // Interact with Ivan in the Hudson Tunnel and have Aidan carry him
 // Nothing particularly available to check to time this achievement well,
@@ -746,10 +752,10 @@ MapNameLookup = {
     //02010000-02010099=Amber is visiting her brother, David, at his Landmark Apartments apartment // Amber's campaign
     //02020000-02020099=Amber is in the Police Station Jail for a crime she did not commit
     //02030000-02030099=Amber is on the run from the police in the Geo City Downtown Area
-    //02040000-02040099=Amber and Aiden are sneaking through the Downtown Station Area
-    //02050000-02050099=Amber and Aiden are fleeing the police via the Hudson Tunnel
-    //02060000-02060099=Amber and Aiden are searching for clues in the Landmark Apartments Area
-    //02070000-02070099=Amber and Aiden are attempting the very real crime of grand theft auto in the Angelina Area
+    //02040000-02040099=Amber and Aidan are sneaking through the Downtown Station Area
+    //02050000-02050099=Amber and Aidan are fleeing the police via the Hudson Tunnel
+    //02060000-02060099=Amber and Aidan are searching for clues in the Landmark Apartments Area
+    //02070000-02070099=Amber and Aidan are attempting the very real crime of grand theft auto in the Angelina Area
     //02080000-02080029=Amber is scaling the Cascade Dam
     //02080030-02080099=Amber is climbing a really long ladder while in handcuffs at the Cascade Dam
     //03010000-03010099=Isaac is reading a magazine in the Convenience Store Area // Isaac's campaign
