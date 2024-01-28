@@ -15,7 +15,7 @@ function GetRealAddress(pal_address, jp_address) {
   // Does some funky arithmetic to calculate the address we should access for achievement logic
   // This may break if RA keeps its syntax and then implements 64-bit integer support, but should work if the achievements are re-exported...
   region_offset = jp_address - pal_address
-  return pal_address - (region_offset * GetRegion())
+  return pal_address + (region_offset * GetRegion())
 }
 
 // Memory values
@@ -36,7 +36,8 @@ GameMode = byte(GetRealAddress(0x67DDBA, 0x67B57A))
 Difficulty = byte(GetRealAddress(0x67DDBB, 0x67B57B))
 InGameTime = dword(GetRealAddress(0x67DDC0, 0x67B580)) // number of frames, divide by 30 for seconds
 CurrentMenu = dword(GetRealAddress(0x48F604, 0x48E008))
-JewelryInfo = GetRealAddress(0x7173A0, 0x714AE0) // this is probably actually meta information
+JewelryInfo = GetRealAddress(0x7173A0, 0x714AE0) // this is probably actually meta information for the game results screen but I would have to investigate
+IsaacIntroDrivingGrade = dword(GetRealAddress(0x48EDC0, 0x48D818))
 
 // Map IDs
 AreaID = dword(GetRealAddress(0x492450, 0x490E50))
@@ -73,6 +74,7 @@ PLAYER_SantaGeo = 60
 GAMEMODE_Normal = 0
 GAMEMODE_FreeMode = 1
 
+MENU_Title = 11
 MENU_LdGameOv = 13 // Dunno
 MENU_LoadGame = 14 // Dunno
 MENU_Tutorial = 17
@@ -221,6 +223,10 @@ function PlayerGetP(player)
 function PlayerGetR(player)
 {
     return float(player + 0xB8)
+}
+function PlayerGetVehicle(player)
+{
+    return dword(player + 0x1854)
 }
 
 // Flags
@@ -771,6 +777,56 @@ achievement(
 )
 
 // Isaac
+
+// M3_01_00
+// We definitely need an achievement for buying the Throat Spray /j
+
+// Deliver the passenger and meet all his arbitrary grading requirements
+// Gotta check this is the same requirements in JP (which I doubt it's different) as that would complicate this
+// Points start at 100 and all violations reduce the score by 5.
+// 1. Don't travel through red lights
+// ("What are you blind or something?" "You just ran a red light.")
+// 2. Don't hit objects.
+// ("What the hell!" "Watch out!" / ""Slow down!" "You're going to get us killed.")
+// 3. Don't go the wrong way
+// ("Hey! It's the other way!")
+// 4. Don't go too fast
+// ("Hey! You're going to [sic] fast, pal!")
+// The four possible assessments are from getting at least 91 (yep, not 90), 60, 40, or less than 40 points
+// These also flags 3100, 3101, 3102, 3103 (worst to best) set when finishing the previous stage though checking these probably isn't necessary
+// (moreso a way to pass this info between stages for dev)
+// 3100: "You're a good driver. Thank you for the ride."
+// 3101: "Hey, go ahead and drop me off here. Sorry for rushing you."
+// 3102: "Man, you're a horrible driver!"
+// 3103: "Um, I'm just going to get off here."
+// Flags set after dropping the passenger off (worst to best) are 23220, 23221, 23223, 23222
+FLAG_IsaacPassengerBestGrade = 23222
+function TRIGGER_UpNRunning() {
+    // Prime the icon if Isaac is in the taxi in the first area
+    start = once(MapID() == 030100 && Player != NULL && PlayerGetVehicle(Player) != NULL)
+    // Reset the icon if Isaac leaves the taxi
+    // 030200 is just a cutscene so the vehicle pointer for Isaac might be NULL, just gonna check MapID for the vehicle NULL check just in case.
+    // Additionally, the vehicle pointer might get set to NULL during the map transition, so we'll put in a menu state check just in case.
+    cancel = never(CurrentMenu == MENU_Title || IsaacIntroDrivingGrade < 91 || (CurrentMenu == MENU_Game && MapID() == 030100 && PlayerGetVehicle(Player) == NULL))
+    submit = trigger_when(FlagChangedToSet(FLAG_IsaacPassengerBestGrade))
+    
+    return start && cancel && submit
+}
+achievement(
+    title="Up & Running", // Smashing Drive reference :)
+    description="Deliver the maintenance worker to Downtown Geo and receive the best assessment as Isaac [See comment].",
+    points=5,
+    trigger=TRIGGER_UpNRunning()
+)
+
+// M2_01_00
+// I should go look for her.
+// I could use some coffee.
+// I should go look for her.
+// I could use some coffee.
+// I should go look for her.
+// I should go look for her.
+// Just an ending here... (Actually, I think you might be able to finish this chapter in under a minute IGT before of it lmao)
 
 achievement(
     id=392850,
