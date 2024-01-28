@@ -81,7 +81,10 @@ MENU_Tutorial = 17
 MENU_MemoryCardMenu = 18
 MENU_GameLoad = 19 // This is actually the one from loading from the MC menu lmao
 MENU_Game = 21
+MENU_GameOver = 22
 MENU_ItemMenu = 23 // Also applies for picking up items (which we definitely need for the Small Opal)
+// I dunno what IRESENT (that's the internal string) means; it's used for the item pickup prompt for Isaac's Flawed Sapphire, for whatever reason...
+MENU_IRESENT = 24
 MENU_Result = 32
 
 // NOTE: In general, the Free Mode (chapter select) sets flags which allow players
@@ -94,28 +97,43 @@ ENDING_1B = 1 // Joshua - Leaving with Stephanie on overpass
 ENDING_1C = 2 // Joshua - Leaving without Stephanie on overpass
 ENDING_2A = 3 // Amber - Normal ending at Cascade Dam
 ENDING_2B = 4 // Amber - Escape with rescue team in downtown station (requires Joshua to remove iron bar)
-//ENDING_2B = 5
-ENDING_2C = 6
-ENDING_2D = 7
-ENDING_3A = 8
-ENDING_3B = 9
-ENDING_3C = 10
-ENDING_3D = 11
-ENDING_4A = 12
-ENDING_4B = 13
-ENDING_4C = 14
-ENDING_4D = 15
-ENDING_5A = 16
-ENDING_5B = 17
-ENDING_5C = 18
-ENDING_5D = 19
-ENDING_6A = 20
-ENDING_6B = 21
-ENDING_6C = 22
-ENDING_6D = 23
+ENDING_3A = 5
+ENDING_3B = 6 // Isaac - Have Amber remove the oil tanker pipe, then have Isaac interact with the taxi after the explosion in the police station area
+//ENDING_2D = 7
+//ENDING_3A = 8
+//ENDING_3B = 9
+//ENDING_3C = 10
+//ENDING_3D = 11
+//ENDING_4A = 12
+//ENDING_4B = 13
+//ENDING_4C = 14
+//ENDING_4D = 15
+//ENDING_5A = 16
+//ENDING_5B = 17
+//ENDING_5C = 18
+//ENDING_5D = 19
+//ENDING_6A = 20
+//ENDING_6B = 21
+//ENDING_6C = 22
+//ENDING_6D = 23
 
 // General functions
 
+function PlayerEnteredBoundingBox(player, x1, y1, z1, x2, y2, z2)
+{
+    // Checks if a player enters a (unrotated only, sorry :() 3D bounding box
+    player_x = PlayerGetX(player)
+    player_y = PlayerGetY(player)
+    player_z = PlayerGetZ(player)
+    in_box = player_x >= x1 && player_x <= x2 &&
+             player_y >= y1 && player_y <= y2 &&
+             player_z >= z1 && player_z <= z2
+    // If we want to check specifically entering (though it's probably not necessary here (and RA syntax hates this!! - generates tons of alt groups))
+    //was_outside_box = prev(player_x) < x1 || prev(player_x) > x2 ||
+    //                  prev(player_y) < y1 || prev(player_y) > y2 ||
+    //                  prev(player_z) < z1 || prev(player_z) > z2
+    return in_box
+}
 function MapTransitioned(to_map, from_map)
 {
     // Here's another case where we have to use the back up map ID, as that is actually set here first before we start loading
@@ -158,7 +176,7 @@ function IsInMenuTransition(to_menu)
 
 function LoadProtection()
 {    
-    return CurrentMenu == MENU_Game || CurrentMenu == MENU_ItemMenu
+    return CurrentMenu == MENU_Game || CurrentMenu == MENU_ItemMenu || CurrentMenu == MENU_IRESENT
     // Checking that we're not in a menu (or rather, just in the normal game mode) should work fine for most achievements,
     // though some other triggers (like for the map transition logic) may have its own special logic.
     //return (is_EU() && EU_CurrentMenu == MENU_Game) ||
@@ -327,7 +345,8 @@ FLAG_BadGrades = [17, 18, 28, 29, 38, 39, 49, 140, 57, 58]
 FLAG_BadStamps = [20028, 20029, 20031, 20032, 20034, 20035, 20037, 20038, 20040, 20041]
 // 20 point stamp flags for each room
 FLAG_GoodStamps = [20027, 20030, 20033, 20036, 20039]
-function TRIGGER_DisasterPrepared() {
+function TRIGGER_DisasterPrepared() 
+{
     start = once(LoadProtection() && IsInTutorial())
     cancel = never(CurrentMenu == MENU_Tutorial || any_of(FLAG_BadStamps, FlagGetBool))
     submit = trigger_when(FlagGetBool(FLAG_MasterGrade) && FlagChangedToSet(FLAG_GradingOver))
@@ -682,10 +701,10 @@ achievement(
 FLAG_AidanIntroCutsceneDone = 22404
 achievement(
     id=392847,
-    title="An Unlikely Pair",
-    description="Escape the police detective then meet a new companion in the Downtown Station Area as Amber.",
+    title="Just Another Day in Paradise",
+    description="Escape the police detective in the Downtown Geo Area as Amber.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_AidanIntroCutsceneDone)
+    trigger=LoadProtection() && MapTransitioned(020400, 020300)
 )
 
 // Cross the ladder to the rescue crew after the station starts collasping (requires Josh to remove iron bar)
@@ -726,7 +745,8 @@ achievement(
 // but we can just check Ivan's Y value (since when he's being carried away by rescue crew,
 // that's when he'll be at the highest point he can be)
 FLAG_RescuedIvan = 7026
-function TRIGGER_TooMuchEggnog() {
+function TRIGGER_TooMuchEggnog() 
+{
     // Not sure exactly what Y level he's at when carried, but Y=0 is probably just ground level. This should be fine.
     ivan_y = PlayerGetY(PlayerFromIndex(PLAYER_Ivan))
     return LoadProtection() && MapID() == 020500 && FlagGetBool(FLAG_RescuedIvan) && prev(ivan_y) > -1.0 && ivan_y <= -1.0
@@ -745,7 +765,8 @@ achievement(
 // background trying to prevent a time paradox.
 
 // Not even a cutscene after this one...
-function TRIGGER_ImAFriendOfAmberBrazil() {
+function TRIGGER_ImAFriendOfAmberBrazil() 
+{
     // Thankfully due to the devs designing all the maps so all the important stuff aligns with cardinal directions,
     // we can just do a cardinal plane check here since you can't reach this point without confronting the detective.
     // And you can't save outside nor return outside the apartment after entering so we don't even need any save protection!!!
@@ -801,7 +822,8 @@ achievement(
 // 3103: "Um, I'm just going to get off here."
 // Flags set after dropping the passenger off (worst to best) are 23220, 23221, 23223, 23222
 FLAG_IsaacPassengerBestGrade = 23222
-function TRIGGER_UpNRunning() {
+function TRIGGER_UpNRunning() 
+{
     // Prime the icon if Isaac is in the taxi in the first area
     start = once(MapID() == 030100 && Player != NULL && PlayerGetVehicle(Player) != NULL)
     // Reset the icon if Isaac leaves the taxi
@@ -813,27 +835,121 @@ function TRIGGER_UpNRunning() {
     return start && cancel && submit
 }
 achievement(
+    id=393434,
     title="Up & Running", // Smashing Drive reference :)
     description="Deliver the maintenance worker to Downtown Geo and receive the best assessment as Isaac [See comment].",
     points=5,
     trigger=TRIGGER_UpNRunning()
 )
 
-// M2_01_00
+// M3_02_01 (Police Station Area)
 // I should go look for her.
 // I could use some coffee.
 // I should go look for her.
 // I could use some coffee.
 // I should go look for her.
 // I should go look for her.
-// Just an ending here... (Actually, I think you might be able to finish this chapter in under a minute IGT before of it lmao)
+// Just an ending here... 
+
+achievement(
+    id=393429,
+    title="She Didn't Have Any Money",
+    description="Obtain ending 3-B [No Free Mode].",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_3B) && !IsFreeMode()
+)
+
+// M3_05_00 (Landmark Apartments Area)
+// Nothing here but to further the story; have a psuedo-progression achievement buddy
+
+// The only thing this game does is set this flag then immediately check it and, if it's not set (never) then it skips the fade into the cutscene.
+// Brilliant. The game's weird code is our gain.
+FLAG_IsaacReplacedTire = 3535
+achievement(
+    id=393430,
+    title="Wheelman",
+    description="Replace a tire on your taxi as Isaac.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_IsaacReplacedTire)
+)
+
+// M3_06_00 (NorCal Area (first visit))
+// ... there's a repair shop in the sewer under the greenhouse. The only repair shop you could find normally.
+// (There's also one in Downtown Station, if you didn't sink it, but it requires glitching into on the non-JP versions)
+// This level also has a function called PYLON_MASTER, which is neat I suppose, and also a variable for counting how many cones you hit.
+
+// No flags or easy ways to check this; let's do something *spicy*
+// thanks again to IREM for designing these to face cardinal directions because I certainly can't do math for rotated boxes
+repair_prompt_boundaries = {
+    030300: [203, 3, 228, 207, 8, 235],
+    030600: [247, 5, 13, 251, 8, 22]
+}
+
+function TRIGGER_GreatParkingAndEaseOfAccess()
+{
+    box1 = repair_prompt_boundaries[030300]
+    box2 = repair_prompt_boundaries[030600]
+    return LoadProtection() && Player != NULL &&
+           ((MapID() == 030300 && PlayerEnteredBoundingBox(Player, box1[0], box1[1], box1[2], box1[3], box1[4], box1[5])) ||
+           (MapID() == 030600 && PlayerEnteredBoundingBox(Player, box2[0], box2[1], box2[2], box2[3], box2[4], box2[5])))
+}
+
+achievement(
+    id=393431,
+    title="Great Parking and Ease of Access",
+    description="Find a taxi repair shop as Isaac.",
+    points=5,
+    trigger=TRIGGER_GreatParkingAndEaseOfAccess()
+)
+
+// M3_03_00 (Downtown Station Area (non-linear))
+// Nothing to do here
+
+// M3_09_00 (Angelina Area (non-linear))
+// Can transport the jewelry thief from here for the jewelry
 
 achievement(
     id=392850,
-    title="Jewel - Isaac",
-    description="Obtain the <whatever the third jewel is I accidentally created this duplicate achievement>.",
+    title="Leave a 5-Star Review",
+    description="Obtain the Flawed Sapphire.",
     points=4,
     trigger=LoadProtection() && JewelryChangedToSet(PLAYER_Isaac)
+)
+
+// M3_07_00 (Discovery Heights)
+// If you travel down from the start point towards the end of the road, there's a family on the left, and you can honk next to the curb
+// to interact with them. It would be nice to have an achievement for delivering them, but there's nothing to check from the actual cutscene code for this one.
+// No flags, nothing. The family aren't actually real "players" either so we can't position check them. We *could* check if the player got the Kiddo Compass,
+// the reward for this interaction, but you can just refuse that outright for whatever reason. You'll see this if you get all compasses at least...
+// We could check if Isaac is out of the car at the cutscene area, though that's a bit spicy
+
+// M3_10_00
+// Meh
+
+// M3_11_00
+// Meh
+
+// M3_06_01
+// One for removing Sophia from the flooded room I suppose
+
+// No good flags to use here but the checkpoint does change so we can detect that
+achievement(
+    id=393432,
+    title="25 Hour Lifeguard", // Poor Sophia, trapped in there from 5 PM Dec 24 to 6 PM Dec 25
+    description="Rescue Sophia from a flooded room in the NorCal R&D Department as Isaac.",
+    points=3,
+    trigger=LoadProtection() && MapID() == 030601 && prev(GateID) != 30 && GateID == 30
+)
+
+// M3_15_00
+// Just the ending
+
+achievement(
+    id=393433,
+    title="I Picked Up an Attractive Female in Downtown Geo",
+    description="Obtain Ending 3-A.",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_3A)
 )
 
 // ACHIEVEMENTS END 
