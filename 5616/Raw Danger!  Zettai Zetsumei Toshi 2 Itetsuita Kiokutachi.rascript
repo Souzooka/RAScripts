@@ -78,6 +78,10 @@ PLAYER_SantaGeo = 60
 GAMEMODE_Normal = 0
 GAMEMODE_FreeMode = 1
 
+DIFFICULTY_Easy = 0
+DIFFICULTY_Normal = 1
+DIFFICULTY_Hard = 2
+
 MENU_Title = 11
 MENU_LdGameOv = 13 // Dunno
 MENU_LoadGame = 14 // Dunno
@@ -108,6 +112,9 @@ ENDING_4B = 8 // Paige - During the collapsed stairs cutscene, yell at Emily abo
 ENDING_5A = 9 // Ivan - Destroy Echidna
 ENDING_5B = 10 // Ivan - Return Echidna to Apolon
 ENDING_5C = 11 // Ivan - Have Joshua dislodge the stuck train in Central Geo, then have Ivan fail to catch the drifting container
+ENDING_6A_J = 12 // Joshua (Final Chapter) - Normal Ending
+ENDING_6A_K = 13 // Keith (Final Chapter; leave early as Joshua for his chapter) - Sophia survives police station (i.e. no ending 3-B)
+ENDING_6B_K = 14 // Keith (Final Chapter) - Sophia dies at police station (ending 3-B)
 
 // General functions
 function TimeToFrames(hours=0, minutes=0, seconds=0, round_up=true)
@@ -127,6 +134,14 @@ function SecondsToFrames(seconds, round_up=true)
         frames = frames + (frames_per_second - 1)
     }
     return frames
+}
+function CreditsStarted()
+{
+    // I know this gets set to NULL every time the map changes, and
+    // it should also get set to NULL when exiting to the title or going to the game result screen I think
+    // so this should be fine to check even if you immediately get the easy achievement, and then exit and load up a hard difficulty
+    // save (which you shouldn't have anyways) at the last checkpoint
+    return CreditsScript != NULL && prev(CreditsScript) == NULL
 }
 function ItemNowExists(item_id)
 {
@@ -1222,9 +1237,51 @@ achievement(
 )
 
 // FINAL CHAPTER
+
+// Beat the game
+// This one exists mostly just to mark as a Win Condition (so the actual endings can be marked Missable)
+achievement(
+    title="I'm Just Warming Up",
+    description="Beat the game and witness the credits on the Easy difficulty or higher.",
+    points=5,
+    trigger=CreditsStarted()
+)
+
+// And hard difficulty for good measure
+achievement(
+    title="I'm on Fire!",
+    description="Beat the game and witness the credits on the Hard difficulty.",
+    points=25,
+    trigger=CreditsStarted() && Difficulty == DIFFICULTY_Hard
+)
+
 // Joshua
 
+// Normal ending
+achievement(
+    title="I Saw the Sun Shining Through the Clouds",
+    description="Obtain Ending 6-A (Joshua).",
+    points=25,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_6A_J)
+)
 
+// Keith (Get Ending 1-B or 1-C)
+
+// Ending 3-B not obtained
+achievement(
+    title="This'll Make a Good Story",
+    description="Obtain Ending 6-A (Keith).",
+    points=25,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_6A_K)
+)
+
+// Ending 3-B not obtained
+achievement(
+    title="This Would Have Made a Good Story",
+    description="Obtain Ending 6-B (Keith).",
+    points=25,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_6B_K)
+)
 
 // ACHIEVEMENTS END 
 
