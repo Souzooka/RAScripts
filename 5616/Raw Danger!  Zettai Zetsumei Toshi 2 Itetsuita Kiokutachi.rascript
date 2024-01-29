@@ -6,6 +6,8 @@ NULL = 0
 REGION_JP = 1
 REGION_EU = 0
 
+FRAMES_PER_SECOND = 30
+
 function GetRegion() {
   // This is just some arbitrary byte in code that happens to be 1 in JP and 0 in EU
   return byte(0x348FAA)
@@ -36,7 +38,7 @@ GameMode = byte(GetRealAddress(0x67DDBA, 0x67B57A))
 Difficulty = byte(GetRealAddress(0x67DDBB, 0x67B57B))
 InGameTime = dword(GetRealAddress(0x67DDC0, 0x67B580)) // number of frames, divide by 30 for seconds
 CurrentMenu = dword(GetRealAddress(0x48F604, 0x48E008))
-JewelryInfo = GetRealAddress(0x7173A0, 0x714AE0) // this is probably actually meta information for the game results screen but I would have to investigate
+GameResultInfo = GetRealAddress(0x7173A0, 0x714AE0) // this is probably actually meta information for the game results screen but I would have to investigate
 IsaacIntroDrivingGrade = dword(GetRealAddress(0x48EDC0, 0x48D818))
 // The ItemController holds multiple buffers of item instances and meta information for how those items are being handled
 // (e.g. who "owns" those items and has them in their inventory or equipped, etc.)
@@ -117,23 +119,45 @@ ENDING_6A_K = 13 // Keith (Final Chapter; leave early as Joshua for his chapter)
 ENDING_6B_K = 14 // Keith (Final Chapter) - Sophia dies at police station (ending 3-B)
 
 // General functions
-function TimeToFrames(hours=0, minutes=0, seconds=0, round_up=true)
+function TimeToFrames(hours=0, minutes=0, seconds=0)
 {
     return SecondsToFrames(hours * 3600 + minutes * 60 + seconds)
 }
-function SecondsToFrames(seconds, round_up=true)
+function SecondsToFrames(seconds)
 {
     // NOTE: seconds should be an int here, not a float
-    frames_per_second = 30
-    frames = seconds * frames_per_second
-    
-    // If we want to round up, then we'll return the maximum possible frame that the game
-    // considers to be that IGT
-    if (round_up)
+    return seconds * FRAMES_PER_SECOND
+}
+function GetInGameTime(player_id=-1)
+{
+    if (player_id == -1)
     {
-        frames = frames + (frames_per_second - 1)
+        return InGameTime
     }
-    return frames
+    
+    SIZE_GameResultInfo = 0x18
+    OFFSET_InGameTime = 0x0
+    return dword(GameResultInfo + (player_id * SIZE_GameResultInfo) + OFFSET_InGameTime)
+}
+function StartCampaign(player_id)
+{
+    start_map_ids = {
+        PLAYER_Joshua: 01000000,
+        PLAYER_Amber: 02020000,
+        PLAYER_Isaac: 03010000,
+        PLAYER_Paige: 04020000,
+        PLAYER_Ivan: 05010000,
+    }
+
+    return MapWithGateID() == start_map_ids[player_id]
+}
+function CancelCampaign()
+{
+    return CurrentMenu == MENU_Title || CurrentMenu == MENU_GameOver
+}
+function StartAndNeverLeaveCampaignOrDie(player_id)
+{
+    return once(StartCampaign(player_id)) && never(CancelCampaign())
 }
 function CreditsStarted()
 {
@@ -332,7 +356,9 @@ function EndingChangedToSet(flag) => prev(EndingGet(flag)) == 0 && EndingGet(fla
 // Jewelries
 function JewelryGet(player_id)
 {
-    return byte(JewelryInfo + (player_id * 0x18) + 0x16)
+    SIZE_GameResultInfo = 0x18
+    OFFSET_JewelryObtained = 0x16
+    return byte(GameResultInfo + (player_id * SIZE_GameResultInfo) + OFFSET_JewelryObtained)
 }
 function JewelryGetBool(player_id)
 {
@@ -1285,6 +1311,46 @@ achievement(
     points=25,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_6B_K) && !IsFreeMode()
 )
+
+// FREE MODE
+
+// Simple one to start to test logic
+achievement(
+    title="Rush Hour",
+    description="Complete Isaac's chapter in 4 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Any Ending].",
+    points=10,
+    trigger=StartAndNeverLeaveCampaignOrDie(PLAYER_Isaac) &&
+            IsFreeMode() &&
+            Difficulty == DIFFICULTY_Hard &&
+            GetInGameTime(PLAYER_Isaac) <= TimeToFrames(minutes=4, seconds=0) &&
+            trigger_when(CurrentMenu == MENU_Result)
+)
+
+FLAG_RescuedSophia = 3261 // Can no longer get 3-B after this is set
+leaderboard(
+    title="Isaac's Chapter - Fastest Completion [Ending 3-B]",
+    description="Complete Isaac's chapter in Free Mode and obtain Ending 3-B as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    start=StartCampaign(PLAYER_Isaac) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
+    cancel=CancelCampaign() || FlagChangedToSet(FLAG_RescuedSophia),
+    submit=EndingGetBool(ENDING_3B) && CurrentMenu == MENU_Result,
+    value=GetInGameTime(PLAYER_Isaac) * (60/FRAMES_PER_SECOND),
+    format="FRAMES",
+    lower_is_better=true
+)
+leaderboard(
+    title="Isaac's Chapter - Fastest Completion [Ending 3-A]",
+    description="Complete Isaac's chapter in Free Mode and obtain Ending 3-A as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    start=once(StartCampaign(PLAYER_Isaac) && never(CancelCampaign())) && 
+          IsFreeMode() && 
+          Difficulty == DIFFICULTY_Hard &&
+          FlagChangedToSet(FLAG_RescuedSophia), // Start this leaderboard once we can no longer get 3-B
+    cancel=CancelCampaign(),
+    submit=EndingGetBool(ENDING_3A) && CurrentMenu == MENU_Result,
+    value=GetInGameTime(PLAYER_Isaac) * (60/FRAMES_PER_SECOND),
+    format="FRAMES",
+    lower_is_better=true
+)
+
 
 // ACHIEVEMENTS END 
 
