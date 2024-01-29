@@ -222,7 +222,10 @@ function IsInMenuTransition(to_menu)
 
 function LoadProtection()
 {    
-    return CurrentMenu == MENU_Game || CurrentMenu == MENU_ItemMenu || CurrentMenu == MENU_IRESENT
+    return CurrentMenu == MENU_Game ||     // Normal game state
+           CurrentMenu == MENU_ItemMenu || // Needed for some other Jewelry
+           CurrentMenu == MENU_IRESENT ||  // Needed for Isaac's Jewelry
+           CurrentMenu == MENU_Result      // Needed for properly recording Jeweled Suit
     // Checking that we're not in a menu (or rather, just in the normal game mode) should work fine for most achievements,
     // though some other triggers (like for the map transition logic) may have its own special logic.
     //return (is_EU() && EU_CurrentMenu == MENU_Game) ||
@@ -1212,9 +1215,9 @@ achievement(
 // Have Joshua dislodge the stuck train here and then fail to catch the container
 achievement(
     title="A Worldwide Pandemic (& Knuckles)",
-    description="Obtain Ending 5-C.",
+    description="Obtain Ending 5-C [No Free Mode].",
     points=10,
-    trigger=LoadProtection() && EndingChangedToSet(ENDING_5C)
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_5C) && !IsFreeMode()
 )
 
 // M5_07_00 (Substation)
@@ -1278,9 +1281,9 @@ achievement(
 // Ending 3-B not obtained
 achievement(
     title="This Would Have Made a Good Story",
-    description="Obtain Ending 6-B (Keith).",
+    description="Obtain Ending 6-B (Keith) [No Free Mode].",
     points=25,
-    trigger=LoadProtection() && EndingChangedToSet(ENDING_6B_K)
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_6B_K) && !IsFreeMode()
 )
 
 // ACHIEVEMENTS END 
@@ -1328,15 +1331,15 @@ MapNameLookup = {
     //03080000-03080099=Isaac and Jaden are passing through Del Ray High School on the way to the NorCal Factory Area
     //03090000-03090099=Isaac is looking for a Jaden Bradford in the Angelina Area
     //03100000-03100099=Isaac and Jaden are heading to the Cascade Dam through Cascade Pass
-    //03110000-03110099=Isaac is wasting time at the Cascade Dam while Jaden investigates. I want to get out of here right no
+    //03110000-03110099=Isaac is wasting time at the Cascade Dam while Jaden investigates
     //03150000-03150099=Isaac is seeking out his taxi fare from an attractive female he picked up in Downtown Geo
     //04020000-04020099=Paige just woke up in a flooded Del Ray High School. Can she reach the gym? // Paige's campaign
-    //04030000-04030016=Paige has arrived at the Del Ray High School gymnasium.
-    //04030017-04030099=Paige and Emily are heading towards the roof of a Del Ray High School building.
+    //04030000-04030016=Paige has arrived at the Del Ray High School gymnasium
+    //04030017-04030099=Paige and Emily are heading towards the roof of a Del Ray High School building
     //05010000=??? is... ugh... what's going on? I can't remember a thing... // Ivan's campaign
     //05010001=??? is cold, wet, and was approached by some strange woman who suddenly fainted
     //05010002-05010099=??? is... a doctor? ??? is trying to help out the collapsed woman
-    //05020000-05020039,05020041=05020099=Ivan and Sierra are rowing an air mattress through the flooded Discovery Heights Area
+    //05020000-05020039,05020041-05020099=Ivan and Sierra are rowing an air mattress through the flooded Discovery Heights Area
     //05020040=Ivan and Sierra are investigating David Brazil's apartment in Landmark Apartments
     //05030000,05030030-05030034,05030036-05030099=Ivan and Sierra are walking through the Angelina Area towards Ivan's apartment
     //05030015=Ivan is thinking about cooking up a delicious meal in the Angelina restaurant... there's a time and place for everything, but not now // Just checking the checkpoint is a bit limiting in determining map state lmao
