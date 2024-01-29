@@ -97,9 +97,10 @@ ENDING_1B = 1 // Joshua - Leaving with Stephanie on overpass
 ENDING_1C = 2 // Joshua - Leaving without Stephanie on overpass
 ENDING_2A = 3 // Amber - Normal ending at Cascade Dam
 ENDING_2B = 4 // Amber - Escape with rescue team in downtown station (requires Joshua to remove iron bar)
-ENDING_3A = 5
+ENDING_3A = 5 // Isaac - Normal ending
 ENDING_3B = 6 // Isaac - Have Amber remove the oil tanker pipe, then have Isaac interact with the taxi after the explosion in the police station area
-//ENDING_2D = 7
+ENDING_4A = 7 // Paige - Make it to the roof (whether or not Emily is saved does not matter)
+ENDING_4B = 8 // Paige - During the collapsed stairs cutscene, yell at Emily about a dozen or so times.
 //ENDING_3A = 8
 //ENDING_3B = 9
 //ENDING_3C = 10
@@ -950,6 +951,70 @@ achievement(
     description="Obtain Ending 3-A.",
     points=10,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_3A)
+)
+
+// Paige
+// M4_02_00 (Del Ray High School 1)
+
+// This one I'm just putting in as a fresh system save file check mostly -- there's a cutscene tied to picking up a compass.
+// Since compasses are saved on the system save file, this can only be seen once and never again, even across new playthroughs,
+// unless the system save file is deleted (this is just normal save data which can be deleted on the bios memory card screen).
+FLAG_HotDogCompassObtained = 24227
+achievement(
+    title="Frozen Memories",
+    description="Obtain the Hot Dog Compass and relive a bad memory as Paige.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_HotDogCompassObtained)
+)
+
+// This is just for using Vegetable Oil on the trapped teacher (the player doesn't have to continue this interaction past that)
+// Not really programmed well, 24229 puts the text note "I put vegetable oil on her legs, but it didn't help" on the map
+// regardless of whether or not you actually use it inside the interaction or not but at least you discover this interaction.
+FLAG_UsedVegetableOil = 24229
+achievement(
+    title="Tight Squeeze",
+    description="Consider using Vegetable Oil to free the trapped teacher as Paige.",
+    points=2,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_UsedVegetableOil)
+)
+
+// And a progression achievement (both because we're missing out on *forced* progression achievements and because Paige's
+// chapter is so short she doesn't get many achievements so we'll take what we can get.)
+achievement(
+    title="Evacuate to the Gym",
+    description="Reach the gymnasium as Paige.",
+    points=3,
+    trigger=MapTransitioned(040300, 040200)
+)
+
+// M4_03_00 (Del Ray High School 2)
+// Endings! You want it? It's yours my friend, if you have enough yen.
+
+// But first, jewelry -- just talk to the thief outside the gymnasium entrance
+achievement(
+    title="You're a Lot Like Me",
+    description="Obtain the Crimson Ruby.",
+    points=4,
+    trigger=LoadProtection() && JewelryChangedToSet(PLAYER_Paige)
+)
+
+// Either save or let Emily fall and continue to the roof, both give 4-A
+// Why does this only get one ending when Joshua gets two separate short endings?
+achievement(
+    title="Forgive or Forget",
+    description="Obtain Ending 4-A.",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_4A)
+)
+
+// Fun fact, the machine code for the one function which handles the cutscene on the stairs is a whopping ~28KB long
+// For reference, the size of Super Mario Bros (NES) is about 32KB
+// At the collapsing stairs, yell at Emily a dozen or so times to get this one.
+achievement(
+    title="My Life as a Teenage Onryou", // https://en.wikipedia.org/wiki/Onry%C5%8D
+    description="Obtain Ending 4-B.",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_4B)
 )
 
 // ACHIEVEMENTS END 
