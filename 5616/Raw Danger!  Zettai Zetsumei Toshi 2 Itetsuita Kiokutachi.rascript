@@ -38,6 +38,10 @@ InGameTime = dword(GetRealAddress(0x67DDC0, 0x67B580)) // number of frames, divi
 CurrentMenu = dword(GetRealAddress(0x48F604, 0x48E008))
 JewelryInfo = GetRealAddress(0x7173A0, 0x714AE0) // this is probably actually meta information for the game results screen but I would have to investigate
 IsaacIntroDrivingGrade = dword(GetRealAddress(0x48EDC0, 0x48D818))
+// The ItemController holds multiple buffers of item instances and meta information for how those items are being handled
+// (e.g. who "owns" those items and has them in their inventory or equipped, etc.)
+ItemController = GetRealAddress(0x622000, 0x61F900)
+CreditsScript = dword(GetRealAddress(0x48FD74, 0x48E76C))
 
 // Map IDs
 AreaID = dword(GetRealAddress(0x492450, 0x490E50))
@@ -101,25 +105,52 @@ ENDING_3A = 5 // Isaac - Normal ending
 ENDING_3B = 6 // Isaac - Have Amber remove the oil tanker pipe, then have Isaac interact with the taxi after the explosion in the police station area
 ENDING_4A = 7 // Paige - Make it to the roof (whether or not Emily is saved does not matter)
 ENDING_4B = 8 // Paige - During the collapsed stairs cutscene, yell at Emily about a dozen or so times.
-//ENDING_3A = 8
-//ENDING_3B = 9
-//ENDING_3C = 10
-//ENDING_3D = 11
-//ENDING_4A = 12
-//ENDING_4B = 13
-//ENDING_4C = 14
-//ENDING_4D = 15
-//ENDING_5A = 16
-//ENDING_5B = 17
-//ENDING_5C = 18
-//ENDING_5D = 19
-//ENDING_6A = 20
-//ENDING_6B = 21
-//ENDING_6C = 22
-//ENDING_6D = 23
+ENDING_5A = 9 // Ivan - Destroy Echidna
+ENDING_5B = 10 // Ivan - Return Echidna to Apolon
+ENDING_5C = 11 // Ivan - Have Joshua dislodge the stuck train in Central Geo, then have Ivan fail to catch the drifting container
 
 // General functions
-
+function TimeToFrames(hours=0, minutes=0, seconds=0, round_up=true)
+{
+    return SecondsToFrames(hours * 3600 + minutes * 60 + seconds)
+}
+function SecondsToFrames(seconds, round_up=true)
+{
+    // NOTE: seconds should be an int here, not a float
+    frames_per_second = 30
+    frames = seconds * frames_per_second
+    
+    // If we want to round up, then we'll return the maximum possible frame that the game
+    // considers to be that IGT
+    if (round_up)
+    {
+        frames = frames + (frames_per_second - 1)
+    }
+    return frames
+}
+function ItemNowExists(item_id)
+{
+    // This checks if an item came into existence in the world. This does NOT check if a specific player has an item in their inventory
+    // or equipped (we just don't have the power to do that in this script), just that now there is an existing item instance with the specific item ID.
+    // very very very very performant code here don't worry, better than Lua probably -- just checking for a length change and then the 
+    // top element of the buffer isn't something our CPUs our optimized for, we'll put these 128 delta checks in an AVX512 instruction
+    buffer_capacity = 0x80
+    SIZE_ItemWork = 0x44
+    OFFSET_ItemID = 0x14
+    OFFSET_ItemBuf0 = 0x0
+    
+    // This code iterates over every item instance in the ItemController's main buffer to generate a condition to see if any items became the item indicated by item_id.
+    curr = ItemController + OFFSET_ItemBuf0
+    requirement = always_false()
+    for i in range(0, buffer_capacity - 1)
+    {
+        curr_item_id = word(curr + OFFSET_ItemID)
+        requirement = requirement || (curr_item_id == item_id && prev(curr_item_id) != item_id)
+        curr = curr + SIZE_ItemWork
+    }
+    
+    return requirement
+}
 function PlayerEnteredBoundingBox(player, x1, y1, z1, x2, y2, z2)
 {
     // Checks if a player enters a (unrotated only, sorry :() 3D bounding box
@@ -142,7 +173,6 @@ function MapTransitioned(to_map, from_map)
     // normal transitions, so it's difficult to check that)
     return CurrentMenu != MENU_MemoryCardMenu && MapIDBackup() == to_map && MapIDBackupPrev() == from_map
 }
-
 function IsFreeMode()
 {
     return GameMode == GAMEMODE_FreeMode
@@ -255,6 +285,7 @@ function PlayerGetVehicle(player)
 // 7000-7999 - Significant flags which have implications across chapters
 // 20000-29999 - Epilogue/Map note flags
 // 30000-39999 - Cutscene skip flags (these belong to the SYSTEM save - don't use these)
+// (39000+ seem to be also used for Ivan personality markers -- I'll have to make sure these are initialized properly)
 // 40000-42099 - Also SYSTEM save flags? Unsure
 function FlagGet(flag)
 {
@@ -1016,6 +1047,184 @@ achievement(
     points=10,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_4B)
 )
+
+// Ivan
+
+// Optional memory fragments
+// There's a few memory fragments (mostly for the Personality category) obtainable through side conversations/choices
+// which may be fun to collect.
+// Fun fact: These are called "memory fragment" or "fragment of memory" depending on the map -- very primo translation job
+
+// In Ivan's apartment, choose "That dreadful container..." when prompted
+FLAG_FragmentBrave = 39057
+achievement(
+    title="Memory Fragment - Brave",
+    description="Obtain the Brave memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentBrave)
+)
+
+// In Ivan's apartment, choose "I remember Echidna!" when prompted
+FLAG_FragmentCurious = 39053
+achievement(
+    title="Memory Fragment - Curious",
+    description="Obtain the Curious memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentCurious)
+)
+
+// In M5_01_00 (the first area), give the man in the underhang next to the medical tent a cardboard box, then talk to him twice.
+FLAG_FragmentDevoted = 39051
+achievement(
+    title="Memory Fragment - Devoted",
+    description="Obtain the Devoted memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentDevoted)
+)
+
+// In Ivan's apartment, choose "That dreadful container..." when prompted OR say "Excellent!" after Spritz dies at the high school
+FLAG_FragmentEvil = 39061
+achievement(
+    title="Memory Fragment - Evil",
+    description="Obtain the Evil memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentEvil)
+)
+
+// Deny Sierra from coming with Ivan at the end of Del Ray High School, and say David wanted to protect her
+FLAG_FragmentFriendship = 39050
+achievement(
+    title="Memory Fragment - Friendship",
+    description="Obtain the Friendship memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentFriendship)
+)
+
+// In Ivan's apartment, choose "That dreadful container..." when prompted
+FLAG_FragmentHonorable = 39052
+achievement(
+    title="Memory Fragment - Honorable",
+    description="Obtain the Honorable memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentHonorable)
+)
+
+// Deny Sierra from coming with Ivan at the end of Del Ray High School, and say you love her
+FLAG_FragmentInLove = 39055
+achievement(
+    title="Memory Fragment - In Love",
+    description="Obtain the In Love memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentInLove)
+)
+
+// Deny Sierra from coming with Ivan at the end of Del Ray High School
+FLAG_FragmentLoyal = 39056
+achievement(
+    title="Memory Fragment - Loyal",
+    description="Obtain the Loyal memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentLoyal)
+)
+
+// Have Paige call Ivan handsome when she sees him
+FLAG_FragmentNarcissist = 39058
+achievement(
+    title="Memory Fragment - Narcissist",
+    description="Obtain the Narcissist memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentNarcissist)
+)
+
+// In Ivan's apartment, choose "That lovely container..." when prompted OR have Paige call Ivan a pervert in the high school
+FLAG_FragmentPervert = 39060
+achievement(
+    title="Memory Fragment - Pervert",
+    description="Obtain the Pervert memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentPervert)
+)
+
+// Deny Sierra from coming with Ivan at the end of Del Ray High School, and say she'll get in your way
+FLAG_FragmentSelfish = 39054
+achievement(
+    title="Memory Fragment - Selfish",
+    description="Obtain the Selfish memory fragment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentSelfish)
+)
+
+// M5_01_00 (Convenience Store Area)
+
+// Technically you could craft this item anywhere as Ivan if you pick up the Oars and carry all the pieces around like a weirdo.
+// There's Oars in an alley behind the laundromat that you could just pick up, but you could also do all this
+// hard work to assemble some Assembled Oars instead. What a deal!
+ITEM_AssembledOars = 190
+achievement(
+    title="Your Name is MacGyver",
+    description="Assemble Assembled Oars.",
+    points=5,
+    trigger=CurrentMenu == MENU_ItemMenu && ItemNowExists(ITEM_AssembledOars) // PAIN
+)
+
+// M5_02_00 (Landmark Apartments Area)
+
+// Just jewelry here
+achievement(
+    title="Do You Think Love Can Bloom, Even in a Disaster?",
+    description="Obtain the Large Diamond.",
+    points=4,
+    trigger=LoadProtection() && JewelryChangedToSet(PLAYER_Ivan)
+)
+
+// M5_03_00 (Angelina Area)
+// Yadayada progression achievement go, we gotta get something in this chapter
+
+FLAG_IvanEnterApartment = 5334
+achievement(
+    title="No Central Heating",
+    description="Reach Ivan's apartment as Ivan.",
+    points=3,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_IvanEnterApartment)
+)
+
+// M5_04_00 (Del Ray High School)
+// Not too much here I think
+
+// M5_06_00 (Central Geo District)
+// Got an ending here
+
+// Have Joshua dislodge the stuck train here and then fail to catch the container
+achievement(
+    title="A Worldwide Pandemic (& Knuckles)",
+    description="Obtain Ending 5-C.",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_5C)
+)
+
+// M5_07_00 (Substation)
+// More endings
+
+// Destroy Echidna
+achievement(
+    title="Prosperity Built From Sacrifice", // https://www.youtube.com/watch?v=A_MA2GCNbG8
+    description="Obtain Ending 5-A.",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_5A)
+)
+
+// Give Echidna to Apolon
+achievement(
+    title="Grab an Umbrella",
+    description="Obtain Ending 5-B.",
+    points=10,
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_5B)
+)
+
+// FINAL CHAPTER
+// Joshua
+
+
 
 // ACHIEVEMENTS END 
 
