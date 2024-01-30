@@ -119,54 +119,6 @@ ENDING_6A_K = 13 // Keith (Final Chapter; leave early as Joshua for his chapter)
 ENDING_6B_K = 14 // Keith (Final Chapter) - Sophia dies at police station (ending 3-B)
 
 // General functions
-function TimeToFrames(hours=0, minutes=0, seconds=0)
-{
-    return SecondsToFrames(hours * 3600 + minutes * 60 + seconds)
-}
-function SecondsToFrames(seconds)
-{
-    // NOTE: seconds should be an int here, not a float
-    return seconds * FRAMES_PER_SECOND
-}
-function GetInGameTime(player_id=-1)
-{
-    if (player_id == -1)
-    {
-        return InGameTime
-    }
-    
-    SIZE_GameResultInfo = 0x18
-    OFFSET_InGameTime = 0x0
-    return dword(GameResultInfo + (player_id * SIZE_GameResultInfo) + OFFSET_InGameTime)
-}
-function StartCampaign(player_id)
-{
-    start_map_ids = {
-        PLAYER_Joshua: 01000000,
-        PLAYER_Amber: 02020000,
-        PLAYER_Isaac: 03010000,
-        PLAYER_Paige: 04020000,
-        PLAYER_Ivan: 05010000,
-    }
-
-    return MapWithGateID() == start_map_ids[player_id]
-}
-function CancelCampaign()
-{
-    return CurrentMenu == MENU_Title || CurrentMenu == MENU_GameOver
-}
-function StartAndNeverLeaveCampaignOrDie(player_id)
-{
-    return once(StartCampaign(player_id)) && never(CancelCampaign())
-}
-function CreditsStarted()
-{
-    // I know this gets set to NULL every time the map changes, and
-    // it should also get set to NULL when exiting to the title or going to the game result screen I think
-    // so this should be fine to check even if you immediately get the easy achievement, and then exit and load up a hard difficulty
-    // save (which you shouldn't have anyways) at the last checkpoint
-    return CreditsScript != NULL && prev(CreditsScript) == NULL
-}
 function ItemNowExists(item_id)
 {
     // This checks if an item came into existence in the world. This does NOT check if a specific player has an item in their inventory
@@ -352,6 +304,14 @@ function EndingGetBool(flag)
     return EndingGet(flag) == 1
 }
 function EndingChangedToSet(flag) => prev(EndingGet(flag)) == 0 && EndingGet(flag) == 1
+function CreditsStarted()
+{
+    // I know this gets set to NULL every time the map changes, and
+    // it should also get set to NULL when exiting to the title or going to the game result screen I think
+    // so this should be fine to check even if you immediately get the easy achievement, and then exit and load up a hard difficulty
+    // save (which you shouldn't have anyways) at the last checkpoint
+    return CreditsScript != NULL && prev(CreditsScript) == NULL
+}
 
 // Jewelries
 function JewelryGet(player_id)
@@ -366,6 +326,68 @@ function JewelryGetBool(player_id)
 }
 function JewelryChangedToSet(player_id) => prev(JewelryGet(player_id)) == 0 && JewelryGet(player_id) != 0
 
+// Time Trials
+function TimeToFrames(hours=0, minutes=0, seconds=0)
+{
+    return SecondsToFrames(hours * 3600 + minutes * 60 + seconds)
+}
+function SecondsToFrames(seconds)
+{
+    // NOTE: seconds should be an int here, not a float
+    return seconds * FRAMES_PER_SECOND
+}
+function GetInGameTime(player_id=-1)
+{
+    if (player_id == -1)
+    {
+        return InGameTime
+    }
+    
+    SIZE_GameResultInfo = 0x18
+    OFFSET_InGameTime = 0x0
+    return dword(GameResultInfo + (player_id * SIZE_GameResultInfo) + OFFSET_InGameTime)
+}
+function StartCampaign(player_id)
+{
+    start_map_ids = {
+        PLAYER_Joshua: 01000000,
+        PLAYER_Amber: 02020000,
+        PLAYER_Isaac: 03010000,
+        PLAYER_Paige: 04020000,
+        PLAYER_Ivan: 05010000,
+    }
+
+    return MapWithGateID() == start_map_ids[player_id] &&
+           // Should be the case every time we start a campaign
+           // and prevents leaderboards/achievements from triggering if we go to the options menu, or w/e,
+           // after exiting from the start checkpoint
+           CurrentMenu == MENU_Game &&
+           // Check against Ivan just dying at the start of his campaign
+           GetInGameTime(player_id) == 0
+}
+function CancelCampaign()
+{
+    return CurrentMenu == MENU_Title || CurrentMenu == MENU_GameOver
+}
+function StartAndNeverLeaveCampaignOrDie(player_id)
+{
+    return once(StartCampaign(player_id)) && never(CancelCampaign())
+}
+function TimeTrialTrigger(player_id, endings=[], hours=0, minutes=0, seconds=0, additional_requirement=always_true())
+{
+    // Starts when entering the beginning checkpoint and cancels when dying or going to the title
+    // (you can't save on the same map/checkpoint ID as the starting IDs, as far as I'm aware)
+    // and checks we're on chapter select (free mode) and hard difficulty, checks our IGT, 
+    // checks an additional optional user-supplied requirement,
+    // and then finally triggers the icon if all those are true and awards the achievement when getting
+    // an appropriate ending and reaching the game result screen.
+    return StartAndNeverLeaveCampaignOrDie(player_id) &&
+           IsFreeMode() &&
+           Difficulty == DIFFICULTY_Hard &&
+           GetInGameTime(player_id) <= TimeToFrames(hours=hours, minutes=minutes, seconds=seconds) &&
+           additional_requirement &&
+           trigger_when(any_of(endings, EndingGetBool) && CurrentMenu == MENU_Result)
+}
 
 // ACHIEVEMENTS START
 
@@ -914,7 +936,7 @@ achievement(
     id=393434,
     title="Up & Running", // Smashing Drive reference :)
     description="Deliver the maintenance worker to Downtown Geo and receive the best assessment as Isaac [See comment].",
-    points=5,
+    points=3,
     trigger=TRIGGER_UpNRunning()
 )
 
@@ -1036,6 +1058,7 @@ achievement(
 // unless the system save file is deleted (this is just normal save data which can be deleted on the bios memory card screen).
 FLAG_HotDogCompassObtained = 24227
 achievement(
+    id=393620,
     title="Frozen Memories",
     description="Obtain the Hot Dog Compass and relive a bad memory as Paige.",
     points=3,
@@ -1047,6 +1070,7 @@ achievement(
 // regardless of whether or not you actually use it inside the interaction or not but at least you discover this interaction.
 FLAG_UsedVegetableOil = 24229
 achievement(
+    id=393621,
     title="Tight Squeeze",
     description="Consider using Vegetable Oil to free the trapped teacher as Paige.",
     points=2,
@@ -1056,6 +1080,7 @@ achievement(
 // And a progression achievement (both because we're missing out on *forced* progression achievements and because Paige's
 // chapter is so short she doesn't get many achievements so we'll take what we can get.)
 achievement(
+    id=393622,
     title="Evacuate to the Gym",
     description="Reach the gymnasium as Paige.",
     points=3,
@@ -1067,6 +1092,7 @@ achievement(
 
 // But first, jewelry -- just talk to the thief outside the gymnasium entrance
 achievement(
+    id=393623,
     title="You're a Lot Like Me",
     description="Obtain the Crimson Ruby.",
     points=4,
@@ -1076,6 +1102,7 @@ achievement(
 // Either save or let Emily fall and continue to the roof, both give 4-A
 // Why does this only get one ending when Joshua gets two separate short endings?
 achievement(
+    id=393624,
     title="Forgive or Forget",
     description="Obtain Ending 4-A.",
     points=10,
@@ -1086,6 +1113,7 @@ achievement(
 // For reference, the size of Super Mario Bros (NES) is about 32KB
 // At the collapsing stairs, yell at Emily a dozen or so times to get this one.
 achievement(
+    id=393625,
     title="My Life as a Teenage Onryou", // https://en.wikipedia.org/wiki/Onry%C5%8D
     description="Obtain Ending 4-B.",
     points=10,
@@ -1102,6 +1130,7 @@ achievement(
 // In Ivan's apartment, choose "That dreadful container..." when prompted
 FLAG_FragmentBrave = 39057
 achievement(
+    id=393627,
     title="Memory Fragment - Brave",
     description="Obtain the Brave memory fragment as Ivan.",
     points=3,
@@ -1111,6 +1140,7 @@ achievement(
 // In Ivan's apartment, choose "I remember Echidna!" when prompted
 FLAG_FragmentCurious = 39053
 achievement(
+    id=393628,
     title="Memory Fragment - Curious",
     description="Obtain the Curious memory fragment as Ivan.",
     points=3,
@@ -1120,6 +1150,7 @@ achievement(
 // In M5_01_00 (the first area), give the man in the underhang next to the medical tent a cardboard box, then talk to him twice.
 FLAG_FragmentDevoted = 39051
 achievement(
+    id=393629,
     title="Memory Fragment - Devoted",
     description="Obtain the Devoted memory fragment as Ivan.",
     points=3,
@@ -1129,6 +1160,7 @@ achievement(
 // In Ivan's apartment, choose "That dreadful container..." when prompted OR say "Excellent!" after Spritz dies at the high school
 FLAG_FragmentEvil = 39061
 achievement(
+    id=393630,
     title="Memory Fragment - Evil",
     description="Obtain the Evil memory fragment as Ivan.",
     points=3,
@@ -1138,6 +1170,7 @@ achievement(
 // Deny Sierra from coming with Ivan at the end of Del Ray High School, and say David wanted to protect her
 FLAG_FragmentFriendship = 39050
 achievement(
+    id=393631,
     title="Memory Fragment - Friendship",
     description="Obtain the Friendship memory fragment as Ivan.",
     points=3,
@@ -1147,6 +1180,7 @@ achievement(
 // In Ivan's apartment, choose "That dreadful container..." when prompted
 FLAG_FragmentHonorable = 39052
 achievement(
+    id=393632,
     title="Memory Fragment - Honorable",
     description="Obtain the Honorable memory fragment as Ivan.",
     points=3,
@@ -1156,6 +1190,7 @@ achievement(
 // Deny Sierra from coming with Ivan at the end of Del Ray High School, and say you love her
 FLAG_FragmentInLove = 39055
 achievement(
+    id=393633,
     title="Memory Fragment - In Love",
     description="Obtain the In Love memory fragment as Ivan.",
     points=3,
@@ -1165,6 +1200,7 @@ achievement(
 // Deny Sierra from coming with Ivan at the end of Del Ray High School
 FLAG_FragmentLoyal = 39056
 achievement(
+    id=393634,
     title="Memory Fragment - Loyal",
     description="Obtain the Loyal memory fragment as Ivan.",
     points=3,
@@ -1174,6 +1210,7 @@ achievement(
 // Have Paige call Ivan handsome when she sees him
 FLAG_FragmentNarcissist = 39058
 achievement(
+    id=393635,
     title="Memory Fragment - Narcissist",
     description="Obtain the Narcissist memory fragment as Ivan.",
     points=3,
@@ -1183,6 +1220,7 @@ achievement(
 // In Ivan's apartment, choose "That lovely container..." when prompted OR have Paige call Ivan a pervert in the high school
 FLAG_FragmentPervert = 39060
 achievement(
+    id=393636,
     title="Memory Fragment - Pervert",
     description="Obtain the Pervert memory fragment as Ivan.",
     points=3,
@@ -1192,6 +1230,7 @@ achievement(
 // Deny Sierra from coming with Ivan at the end of Del Ray High School, and say she'll get in your way
 FLAG_FragmentSelfish = 39054
 achievement(
+    id=393643,
     title="Memory Fragment - Selfish",
     description="Obtain the Selfish memory fragment as Ivan.",
     points=3,
@@ -1205,6 +1244,7 @@ achievement(
 // hard work to assemble some Assembled Oars instead. What a deal!
 ITEM_AssembledOars = 190
 achievement(
+    id=393626,
     title="Your Name is MacGyver",
     description="Assemble Assembled Oars.",
     points=5,
@@ -1215,6 +1255,7 @@ achievement(
 
 // Just jewelry here
 achievement(
+    id=393637,
     title="Do You Think Love Can Bloom, Even in a Disaster?",
     description="Obtain the Large Diamond.",
     points=4,
@@ -1226,6 +1267,7 @@ achievement(
 
 FLAG_IvanEnterApartment = 5334
 achievement(
+    id=393638,
     title="No Central Heating",
     description="Reach Ivan's apartment as Ivan.",
     points=3,
@@ -1240,6 +1282,7 @@ achievement(
 
 // Have Joshua dislodge the stuck train here and then fail to catch the container
 achievement(
+    id=393644,
     title="A Worldwide Pandemic (& Knuckles)",
     description="Obtain Ending 5-C [No Free Mode].",
     points=10,
@@ -1251,6 +1294,7 @@ achievement(
 
 // Destroy Echidna
 achievement(
+    id=393639,
     title="Prosperity Built From Sacrifice", // https://www.youtube.com/watch?v=A_MA2GCNbG8
     description="Obtain Ending 5-A.",
     points=10,
@@ -1259,6 +1303,7 @@ achievement(
 
 // Give Echidna to Apolon
 achievement(
+    id=393645,
     title="Grab an Umbrella",
     description="Obtain Ending 5-B.",
     points=10,
@@ -1270,6 +1315,7 @@ achievement(
 // Beat the game
 // This one exists mostly just to mark as a Win Condition (so the actual endings can be marked Missable)
 achievement(
+    id=393640,
     title="I'm Just Warming Up",
     description="Beat the game and witness the credits on the Easy difficulty or higher.",
     points=5,
@@ -1278,6 +1324,7 @@ achievement(
 
 // And hard difficulty for good measure
 achievement(
+    id=393646,
     title="I'm on Fire!",
     description="Beat the game and witness the credits on the Hard difficulty.",
     points=25,
@@ -1288,6 +1335,7 @@ achievement(
 
 // Normal ending
 achievement(
+    id=393641,
     title="I Saw the Sun Shining Through the Clouds",
     description="Obtain Ending 6-A (Joshua).",
     points=25,
@@ -1298,6 +1346,7 @@ achievement(
 
 // Ending 3-B not obtained
 achievement(
+    id=393642,
     title="This'll Make a Good Story",
     description="Obtain Ending 6-A (Keith).",
     points=25,
@@ -1306,6 +1355,7 @@ achievement(
 
 // Ending 3-B not obtained
 achievement(
+    id=393647,
     title="This Would Have Made a Good Story",
     description="Obtain Ending 6-B (Keith) [No Free Mode].",
     points=25,
@@ -1314,21 +1364,142 @@ achievement(
 
 // FREE MODE
 
-// Simple one to start to test logic
+// NOTE: Apparently the IGT I'm checking doesn't reset after game over, so strictly for speedrunning 0 game overs
+// doesn't need to be enforced (it may be faster to take deaths at certain points to reset body heat and wetness, however,
+// which may be difficult to balance around)
+
+// First attempt 47:28 (though admittably I did have to cheat body heat at the very very end because I didn't
+// realize the game would eat my heating pad effect between maps -- alt. could add 6 seconds to pick up an energy drink near the
+// raft and that would have allowed me to push through legit -- UPDATE following the above note:
+// I skipped the circus cutscene mentioned below and lost some time, so I probably would have had a time
+// under 47:28, even, if that wasn't the case and I routed a bit better). This didn't use any speedrun glitches but did require a lot of
+// game knowledge and some general optimization strategies.
+// NOTE: Do NOT skip the cutscene in Del Ray Inner Park when the rescue helicopter arrives, as you'll get stuck and die.
 achievement(
-    title="Rush Hour",
-    description="Complete Isaac's chapter in 4 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Any Ending].",
-    points=10,
-    trigger=StartAndNeverLeaveCampaignOrDie(PLAYER_Isaac) &&
-            IsFreeMode() &&
-            Difficulty == DIFFICULTY_Hard &&
-            GetInGameTime(PLAYER_Isaac) <= TimeToFrames(minutes=4, seconds=0) &&
-            trigger_when(CurrentMenu == MENU_Result)
+    id=394216,
+    title="Survivor - Joshua",
+    description="Complete Joshua's chapter in 48 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 1-A] [See Comments].",
+    points=50,
+    trigger=TimeTrialTrigger(PLAYER_Joshua, endings=[ENDING_1A], minutes=48)
 )
 
+// First attempt 27:46, a bit scuffed - bigger buffers for your 25 point cheevo :)
+achievement(
+    id=394217,
+    title="Survivor - Amber",
+    description="Complete Amber's chapter in 29 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 2-A].",
+    points=25,
+    trigger=TimeTrialTrigger(PLAYER_Amber, endings=[ENDING_2A], minutes=29)
+)
+
+// My times:
+// 4:31
+// 4:00
+// 3:57
+// Really tight timing but we can always move em up
+achievement(
+    id=393759,
+    title="Rush Hour",
+    description="Complete Isaac's chapter in 4 minutes and 15 seconds or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Any Ending].",
+    points=10,
+    trigger=TimeTrialTrigger(PLAYER_Isaac, endings=[ENDING_3A, ENDING_3B], minutes=4, seconds=15)
+)
+
+// First attempt 21:59
+achievement(
+    id=394218,
+    title="Survivor - Isaac",
+    description="Complete Isaac's chapter in 23 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 3-A].",
+    points=25,
+    trigger=TimeTrialTrigger(PLAYER_Isaac, endings=[ENDING_3A], minutes=23)
+)
+
+// First attempt 11:22
+achievement(
+    id=394219,
+    title="Survivor - Paige",
+    description="Complete Paige's chapter in 13 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 4-A].",
+    points=25,
+    trigger=TimeTrialTrigger(PLAYER_Paige, endings=[ENDING_4A], minutes=13)
+)
+
+// First attempt 19:21
+// Why Ending 5-B?
+// Main reason is that the US/EU versions of the game have a censored cutscene which would add additional time to the JP version
+// but also Ivan dies in 5-A so that wouldn't fit the "Survivor" moniker would it ;)
+achievement(
+    id=394220,
+    title="Survivor - Ivan",
+    description="Complete Ivan's chapter in 21 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 5-B].",
+    points=25,
+    trigger=TimeTrialTrigger(PLAYER_Ivan, endings=[ENDING_5B], minutes=21)
+)
+
+// ACHIEVEMENTS END 
+
+// LEADERBOARDS START
+
+// Joshua
+FLAG_WentWithStephanie = 41080 // Can no longer get 1-B/C after this is set
+leaderboard(
+    id=87941,
+    title="Joshua [Ending 1-B/C] - Fastest Time",
+    description="Complete Joshua's chapter in Free Mode and obtain Ending 1-B or 1-C as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    start=StartCampaign(PLAYER_Joshua) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
+    cancel=CancelCampaign() || FlagChangedToSet(FLAG_WentWithStephanie),
+    submit=any_of([ENDING_1B, ENDING_1C], EndingGetBool) && CurrentMenu == MENU_Result,
+    value=GetInGameTime(PLAYER_Joshua) * (60/FRAMES_PER_SECOND),
+    format="FRAMES",
+    lower_is_better=true
+)
+leaderboard(
+    id=87942,
+    title="Joshua [Ending 1-A] - Fastest Time",
+    description="Complete Joshua's chapter in Free Mode and obtain Ending 1-A as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    start=once(StartCampaign(PLAYER_Joshua) && never(CancelCampaign())) && 
+          IsFreeMode() && 
+          Difficulty == DIFFICULTY_Hard &&
+          FlagChangedToSet(FLAG_WentWithStephanie), // Start this leaderboard once we can no longer get 1-B/C
+    cancel=CancelCampaign(),
+    submit=EndingGetBool(ENDING_1A) && CurrentMenu == MENU_Result,
+    value=GetInGameTime(PLAYER_Joshua) * (60/FRAMES_PER_SECOND),
+    format="FRAMES",
+    lower_is_better=true
+)
+
+// Aidan
+FLAG_WentWithAidan = 2420
+leaderboard(
+    id=87943,
+    title="Amber [Ending 2-B] - Fastest Time",
+    description="Complete Amber's chapter in Free Mode and obtain Ending 2-B as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    start=StartCampaign(PLAYER_Amber) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
+    cancel=CancelCampaign() || FlagChangedToSet(FLAG_WentWithAidan),
+    submit=EndingGetBool(ENDING_2B) && CurrentMenu == MENU_Result,
+    value=GetInGameTime(PLAYER_Amber) * (60/FRAMES_PER_SECOND),
+    format="FRAMES",
+    lower_is_better=true
+)
+leaderboard(
+    id=87944,
+    title="Amber [Ending 2-A] - Fastest Time",
+    description="Complete Amber's chapter in Free Mode and obtain Ending 2-A as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    start=once(StartCampaign(PLAYER_Amber) && never(CancelCampaign())) && 
+          IsFreeMode() && 
+          Difficulty == DIFFICULTY_Hard &&
+          FlagChangedToSet(FLAG_WentWithAidan), // Start this leaderboard once we can no longer get 2-B
+    cancel=CancelCampaign(),
+    submit=EndingGetBool(ENDING_2A) && CurrentMenu == MENU_Result,
+    value=GetInGameTime(PLAYER_Amber) * (60/FRAMES_PER_SECOND),
+    format="FRAMES",
+    lower_is_better=true
+)
+
+// Isaac
 FLAG_RescuedSophia = 3261 // Can no longer get 3-B after this is set
 leaderboard(
-    title="Isaac's Chapter - Fastest Completion [Ending 3-B]",
+    id=87939,
+    title="Isaac [Ending 3-B] - Fastest Time",
     description="Complete Isaac's chapter in Free Mode and obtain Ending 3-B as fast as possible [Hard Difficulty] [0 Game Overs]!",
     start=StartCampaign(PLAYER_Isaac) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign() || FlagChangedToSet(FLAG_RescuedSophia),
@@ -1338,7 +1509,8 @@ leaderboard(
     lower_is_better=true
 )
 leaderboard(
-    title="Isaac's Chapter - Fastest Completion [Ending 3-A]",
+    id=87940,
+    title="Isaac [Ending 3-A] - Fastest Time",
     description="Complete Isaac's chapter in Free Mode and obtain Ending 3-A as fast as possible [Hard Difficulty] [0 Game Overs]!",
     start=once(StartCampaign(PLAYER_Isaac) && never(CancelCampaign())) && 
           IsFreeMode() && 
@@ -1351,8 +1523,33 @@ leaderboard(
     lower_is_better=true
 )
 
+// Paige
+leaderboard(
+    id=87945,
+    title="Paige [Ending 4-A] - Fastest Time",
+    description="Complete Paige's chapter in Free Mode and obtain Ending 4-A as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    start=StartCampaign(PLAYER_Paige) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
+    cancel=CancelCampaign(),
+    submit=EndingGetBool(ENDING_4A) && CurrentMenu == MENU_Result,
+    value=GetInGameTime(PLAYER_Paige) * (60/FRAMES_PER_SECOND),
+    format="FRAMES",
+    lower_is_better=true
+)
 
-// ACHIEVEMENTS END 
+// Ivan
+leaderboard(
+    id=87946,
+    title="Ivan [Ending 5-B] - Fastest Time",
+    description="Complete Ivan's chapter in Free Mode and obtain Ending 5-B as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    start=StartCampaign(PLAYER_Ivan) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
+    cancel=CancelCampaign(),
+    submit=EndingGetBool(ENDING_5B) && CurrentMenu == MENU_Result,
+    value=GetInGameTime(PLAYER_Ivan) * (60/FRAMES_PER_SECOND),
+    format="FRAMES",
+    lower_is_better=true
+)
+
+// LEADERBOARDS END
 
 // RICH PRESENCE START
 
@@ -1387,7 +1584,7 @@ MapNameLookup = {
     //02080030-02080099=Amber is climbing a really long ladder while in handcuffs at the Cascade Dam
     //03010000-03010099=Isaac is reading a magazine in the Convenience Store Area // Isaac's campaign
     //03020000-03020099=Isaac is arguing with a customer about their taxi fare in the Geo City Downtown Area
-    //03020100-03020099=Isaac and his customer are passing by the Geo Police Station
+    //03020100-03020199=Isaac and his customer are passing by the Geo Police Station
     //03030000-03030091,03030093-03030099=Isaac decided to drive to the Downtown Station Area while looking for Jaden Bradford, for some reason. Doesn't he know all the content for him here was cut?
     //03030092=Isaac managed to exploit his way to the north entrance of the Downtown Station Area and is enjoying the unvoiced cutscenes, what a cool dude
     //03050000-03050099=Isaac and his customer are trying to break into Landmark Apartments
