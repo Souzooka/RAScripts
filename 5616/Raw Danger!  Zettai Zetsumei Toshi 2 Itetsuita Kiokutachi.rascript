@@ -1319,7 +1319,7 @@ achievement(
     title="I'm Just Warming Up",
     description="Beat the game and witness the credits on the Easy difficulty or higher.",
     points=5,
-    trigger=CreditsStarted()
+    trigger=CreditsStarted() && !IsFreeMode()
 )
 
 // And hard difficulty for good measure
@@ -1328,7 +1328,7 @@ achievement(
     title="I'm on Fire!",
     description="Beat the game and witness the credits on the Hard difficulty.",
     points=25,
-    trigger=CreditsStarted() && Difficulty == DIFFICULTY_Hard
+    trigger=CreditsStarted() && !IsFreeMode() && Difficulty == DIFFICULTY_Hard
 )
 
 // Joshua
