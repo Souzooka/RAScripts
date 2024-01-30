@@ -44,6 +44,7 @@ IsaacIntroDrivingGrade = dword(GetRealAddress(0x48EDC0, 0x48D818))
 // (e.g. who "owns" those items and has them in their inventory or equipped, etc.)
 ItemController = GetRealAddress(0x622000, 0x61F900)
 CreditsScript = dword(GetRealAddress(0x48FD74, 0x48E76C))
+ItemCollection = GetRealAddress(0x710190, 0x70D8E0)
 
 // Map IDs
 AreaID = dword(GetRealAddress(0x492450, 0x490E50))
@@ -123,8 +124,6 @@ function ItemNowExists(item_id)
 {
     // This checks if an item came into existence in the world. This does NOT check if a specific player has an item in their inventory
     // or equipped (we just don't have the power to do that in this script), just that now there is an existing item instance with the specific item ID.
-    // very very very very performant code here don't worry, better than Lua probably -- just checking for a length change and then the 
-    // top element of the buffer isn't something our CPUs our optimized for, we'll put these 128 delta checks in an AVX512 instruction
     buffer_capacity = 0x80
     SIZE_ItemWork = 0x44
     OFFSET_ItemID = 0x14
@@ -1434,6 +1433,196 @@ achievement(
     points=25,
     trigger=TimeTrialTrigger(PLAYER_Ivan, endings=[ENDING_5B], minutes=21)
 )
+
+// COLLECTION
+
+// Coat (19 items)
+// Cloth Jacket (505)
+// Work Coat (506)
+// Parka (507)
+// Cotton Jacket (508)
+// Taxi Driver Coat (509)
+// Makeshift Coat (532)
+// Raincoat (533)
+// White Gown (544)
+// Santa Coat (545)
+// Team Jacket (546)
+// Riding Jacket (547)
+// Down Jacket (549)
+// Jeweled Suit (561)
+// Wool Coat (600)
+// Custom Jacket (604)
+// Fur Shawl (605)
+// Fur Coat (606)
+// Leopard Jacket (607)
+// Christmas Coat (608)
+COLLECTION_Coats = [505, 506, 507, 508, 509, 532, 533, 544, 545, 546, 547, 549, 561, 600, 604, 605, 606, 607, 608]
+
+// Inner Wear (11 items)
+// Waiter Uniform (517) - Joshua initial outfit
+// Mens Jersey (518)
+// Knit Sweater (519)
+// Driving Shirt (520)
+// Handmade Sweater (521)
+// Waitress Uniform (609) - Angelina Area (giant parking lot) - the item from the box in the banquet hall is a different item and does not count
+// Knit Turtleneck (611) - Amber initial outfit
+// Blazer (612)
+// Nurse's Uniform (613)
+// Officer's Suit (614)
+// Woman's Jersey (616)
+COLLECTION_InnerWear = [517, 518, 519, 520, 521, 609, 611, 612, 613, 614, 616]
+
+// Pants / Skirt (13 Items)
+// Waiter's Pants (522) - Joshua initial outfit
+// Driving Pants (523) - Isaac initial outfit
+// Jeans (524)
+// Sweat Pants (525)
+// Black Pants (526)
+// Wading Pants (534)
+// Santa Pants (558)
+// Tight Skirt (619)
+// Seude Skirt (620)
+// School Skirt (622)
+// Workout Pants (623)
+// Christmas Skirt (625)
+COLLECTION_Pants = [522, 523, 524, 525, 526, 534, 558, 619, 620, 622, 623, 625]
+
+// Head (15 items)
+// Taxi Driver Cap (500)
+// Afro Wig (501)
+// Wool Cap (502)
+// Santa Hat (503)
+// Helmet (504)
+// Bunny Ears (513)
+// Kitten Ears (535)
+// Silk Hat (536)
+// Child's Cap (537)
+// Pirate Hat (538)
+// Baseball Cap (539)
+// Chef's Hat (540)
+// Knitted Cap (541)
+// Nurse's Cap (542)
+// Officer's Cap (543)
+COLLECTION_Head = [500, 501, 502, 503, 504, 514, 535, 536, 537, 538, 539, 540, 541, 542, 543]
+
+// Hands (4 items)
+// Rubber Gloves (510)
+// Knit Gloves (511)
+// Driving Gloves (553)
+// Ski Gloves (554)
+COLLECTION_Hands = [510, 511, 553, 554]
+
+// Shoes (13 items)
+// Cheap Shoes (527)
+// Tennis Shoes (528)
+// Rubber Boots (529)
+// Driving Shoes (531)
+// Hunting Boots (559)
+// Santa Boots (560)
+// Dress Shoes (566)
+// Flat Loafers (629)
+// Lace-up Boots (630)
+// School Shoes (632)
+// Slippers (633)
+// Sneakers (634)
+// Christmas Boots (635)
+COLLECTION_Shoes = [527, 538, 529, 531, 539, 560, 566, 629, 630, 632, 633, 634, 635]
+
+// Other (15 items) (this is backpacks, pouches and glasses)
+// Emergency Pack (0) -- first item in the game! Congrats! Joshua (don't pick up knapsack, spawns later in destroyed banquet hall); Amber (near police uniform); Ivan (in laundromat)
+// Knapsack (60)
+// Backpack (137)
+// Large Backpack (138)
+// Satchel (209)
+// Sports Bag (232)
+// Shoulder Bag (208)
+// Travel Pouch (134)
+// Sunglasses (512)
+// Ear Muffs (514)
+// Party Glasses (515)
+// Red Glasses (516)
+// Goggles (551)
+// Myopia Glasses (552)
+// Cloth Mask (555)
+COLLECTION_Other = [0, 60, 137, 138, 209, 232, 208, 134, 512, 514, 515, 516, 551, 552, 555]
+
+function ItemGet(item_id)
+{
+    return bit(item_id % 8, ItemCollection + (item_id / 8))
+}
+function ItemGetPrev(item_id)
+{
+    return prev(ItemGet(item_id))
+}
+function ItemCount(items_list)
+{
+    count = 0
+    for item_id in items_list
+    {
+        count = count + ItemGet(item_id)
+    }
+    return count
+}
+function ItemCountPrev(items_list)
+{
+    count = 0
+    for item_id in items_list
+    {
+        count = count + ItemGetPrev(item_id)
+    }
+    return count
+}
+function CreateMeasuredCollectionTrigger(items_list)
+{
+    return LoadProtection() && measured(ItemCount(COLLECTION_Coats) == length(COLLECTION_Coats), when=LoadProtection())
+}
+
+collection_names = [
+    "Coat",
+    "Inner Wear",
+    "Pants/Skirts",
+    "Head",
+    "Hands",
+    "Shoes",
+    "Other",
+]
+collection_lists = {
+    "Coat": COLLECTION_Coats,
+    "Inner Wear": COLLECTION_InnerWear,
+    "Pants/Skirts": COLLECTION_Pants,
+    "Head": COLLECTION_Head,
+    "Hands": COLLECTION_Hands,
+    "Shoes": COLLECTION_Shoes,
+    "Other": COLLECTION_Other,
+}
+collection_points = {
+    "Coat": 10,
+    "Inner Wear": 10,
+    "Pants/Skirts": 10,
+    "Head": 10,
+    "Hands": 5,
+    "Shoes": 10,
+    "Other": 10,
+}
+collection_achievement_ids = {
+    "Coat": 0,
+    "Inner Wear": 0,
+    "Pants/Skirts": 0,
+    "Head": 0,
+    "Hands": 0,
+    "Shoes": 0,
+    "Other": 0,
+}
+
+for name in collection_names
+{
+    achievement(
+        title=format("Collection - {0}", name),
+        description=format("Pick up all items in the {0} category of the Collection.", name),
+        points=collection_points[name],
+        trigger=CreateMeasuredCollectionTrigger(collection_lists[name])
+    )
+}
 
 // ACHIEVEMENTS END 
 
