@@ -87,6 +87,7 @@ DIFFICULTY_Normal = 1
 DIFFICULTY_Hard = 2
 
 MENU_Title = 11
+MENU_NewGame = 12 // Set when initializing game flags/other data after selecting a character
 MENU_LdGameOv = 13 // Dunno
 MENU_LoadGame = 14 // Dunno
 MENU_Tutorial = 17
@@ -455,7 +456,7 @@ function TRIGGER_DisasterPrepared()
 achievement(
     id=392855,
     title="Disaster-Prepared",
-    description="Obtain the rank of 'Master' in the tutorial.",
+    description="Obtain the rank of 'Master' in the tutorial (Japan: 'Saigai no Tatsujin').",
     points=5,
     trigger=TRIGGER_DisasterPrepared()
 )
@@ -732,7 +733,7 @@ achievement(
 // This achievement requires telling the park owner "Don't give up!"
 // Though if you want to change it to just talking to the ringmaster,
 // Using just flag 1648 should work fine.
-// You get a Pirate Hat out of this conversation, which I think is the only way to acquire it (actually, Ivan might find one on a highway overpass...).
+// You get a Pirate Hat out of this conversation, which I think is the only way to acquire it.
 FLAG_RingmasterDontGiveUp = 1645
 FLAG_RingmasterConversationOver = 1648 // Just for achievement pop timing purposes (this should place the redeem after the last subtitle)
 achievement(
@@ -961,7 +962,7 @@ achievement(
 // M3_05_00 (Landmark Apartments Area)
 // Nothing here but to further the story; have a psuedo-progression achievement buddy
 
-// The only thing this game does is set this flag then immediately check it and, if it's not set (never) then it skips the fade into the cutscene.
+// The only thing this game does with this flag is set this flag then immediately check it and, if it's not set (never) then it skips the fade into the cutscene.
 // Brilliant. The game's weird code is our gain.
 FLAG_IsaacReplacedTire = 3535
 achievement(
@@ -1148,7 +1149,7 @@ achievement(
     trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentCurious)
 )
 
-// In M5_01_00 (the first area), give the man in the underhang next to the medical tent a cardboard box, then talk to him twice.
+// In M5_01_00 (the first area), give the man in the underhang next to the medical tent a cardboard wall, then talk to him twice.
 FLAG_FragmentDevoted = 39051
 achievement(
     id=393629,
@@ -1576,7 +1577,16 @@ function ItemCountPrev(items_list)
 }
 function CreateMeasuredCollectionTrigger(items_list)
 {
-    return LoadProtection() && measured(ItemCount(items_list) == length(items_list))
+    // NOTE: Ugh, The game *attempts* to add the main characters' initial outfits during new game,
+    // but fails because it relies on data it hasn't loaded yet, at least on a fresh boot.
+    // When you load the item menu overlay (either by explicitly opening the item menu or picking up an item)
+    // then exit and start a new game, or a new chapter, the game successfully adds all initial outfits (except Keith)
+    // We need to check for this new game state (since Keith could have the last outfit pieces in a category)
+    // but it's probably better to hide the icon during this state
+    // (the player may also experience a mysterious jump in measurement when picking up new equipment in second
+    // chapter due to this bug)
+    load_protection = LoadProtection() || CurrentMenu == MENU_NewGame
+    return load_protection && measured(ItemCount(items_list) == length(items_list), when=CurrentMenu != MENU_NewGame)
 }
 
 collection_names = [
@@ -1635,10 +1645,6 @@ function CompassGet(index)
 {
     return bit(index % 8, CompassFlags + index / 8)
 }
-function CompassGetPrev(index)
-{
-    return prev(CompassGet(index))
-}
 function CompassCount()
 {
     count = 0
@@ -1648,18 +1654,20 @@ function CompassCount()
     }
     return count
 }
-function CompassCountPrev()
+function CreateMeasuredCompassTrigger(new_count, old_count=-1)
 {
-    count = 0
-    for i in range(0, compass_count - 1)
+    // You'd think you could just always use CompassCount() > old_count but that causes an error with Compass Novice
+    // (Ironically, the error is "Expression is always true")
+    if (old_count == -1)
     {
-        count = count + CompassGetPrev(i)
+        // The only government-sanctioned always true expression
+        when = always_true()
     }
-    return count
-}
-function CreateMeasuredCompassTrigger(new_count, old_count=0)
-{
-    return LoadProtection() && measured(CompassCount() == new_count, when=CompassCount() > old_count)
+    else
+    {
+        when = CompassCount() > old_count
+    }
+    return LoadProtection() && measured(CompassCount() == new_count, when=when)
 }
 
 achievement(
