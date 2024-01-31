@@ -45,6 +45,7 @@ IsaacIntroDrivingGrade = dword(GetRealAddress(0x48EDC0, 0x48D818))
 ItemController = GetRealAddress(0x622000, 0x61F900)
 CreditsScript = dword(GetRealAddress(0x48FD74, 0x48E76C))
 ItemCollection = GetRealAddress(0x710190, 0x70D8E0)
+CompassFlags = GetRealAddress(0x717440, 0x714B80)
 
 // Map IDs
 AreaID = dword(GetRealAddress(0x492450, 0x490E50))
@@ -362,7 +363,8 @@ function StartCampaign(player_id)
            // after exiting from the start checkpoint
            CurrentMenu == MENU_Game &&
            // Check against Ivan just dying at the start of his campaign
-           GetInGameTime(player_id) == 0
+           // Give this a little buffer because checking for 0 frames IGT seems inconsistent and it takes like 17 seconds for Ivan to die anyways
+           GetInGameTime(player_id) < SecondsToFrames(5)
 }
 function CancelCampaign()
 {
@@ -1574,7 +1576,7 @@ function ItemCountPrev(items_list)
 }
 function CreateMeasuredCollectionTrigger(items_list)
 {
-    return LoadProtection() && measured(ItemCount(COLLECTION_Coats) == length(COLLECTION_Coats), when=LoadProtection())
+    return LoadProtection() && measured(ItemCount(items_list) == length(items_list))
 }
 
 collection_names = [
@@ -1605,24 +1607,82 @@ collection_points = {
     "Other": 10,
 }
 collection_achievement_ids = {
-    "Coat": 0,
-    "Inner Wear": 0,
-    "Pants/Skirts": 0,
-    "Head": 0,
-    "Hands": 0,
-    "Shoes": 0,
-    "Other": 0,
+    "Coat": 394415,
+    "Inner Wear": 394416,
+    "Pants/Skirts": 394417,
+    "Head": 394418,
+    "Hands": 394419,
+    "Shoes": 394420,
+    "Other": 394421,
 }
 
 for name in collection_names
 {
     achievement(
+        id=collection_achievement_ids[name],
         title=format("Collection - {0}", name),
-        description=format("Pick up all items in the {0} category of the Collection.", name),
+        description=format("Obtain all items in the {0} category of the Collection.", name),
         points=collection_points[name],
         trigger=CreateMeasuredCollectionTrigger(collection_lists[name])
     )
 }
+
+// COMPASS
+
+// Standard Compass (0) to Survivor Compass (64)
+compass_count = 65
+function CompassGet(index)
+{
+    return bit(index % 8, CompassFlags + index / 8)
+}
+function CompassGetPrev(index)
+{
+    return prev(CompassGet(index))
+}
+function CompassCount()
+{
+    count = 0
+    for i in range(0, compass_count - 1)
+    {
+        count = count + CompassGet(i)
+    }
+    return count
+}
+function CompassCountPrev()
+{
+    count = 0
+    for i in range(0, compass_count - 1)
+    {
+        count = count + CompassGetPrev(i)
+    }
+    return count
+}
+function CreateMeasuredCompassTrigger(new_count, old_count=0)
+{
+    return LoadProtection() && measured(CompassCount() == new_count, when=CompassCount() > old_count)
+}
+
+achievement(
+    id=394422,
+    title="Compass Novice",
+    description="Obtain 20 compasses.",
+    points=10,
+    trigger=CreateMeasuredCompassTrigger(20)
+)
+achievement(
+    id=394423,
+    title="Compass Enthusiast",
+    description="Obtain 40 compasses.",
+    points=10,
+    trigger=CreateMeasuredCompassTrigger(40, old_count=20)
+)
+achievement(
+    id=394424,
+    title="Compass Master",
+    description=format("Obtain all {0} compasses.", compass_count),
+    points=25,
+    trigger=CreateMeasuredCompassTrigger(compass_count, old_count=40)
+)
 
 // ACHIEVEMENTS END 
 
