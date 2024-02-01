@@ -79,6 +79,10 @@ PLAYER_Sierra = 11
 PLAYER_Emily = 19
 PLAYER_SantaGeo = 60
 
+CHR_ACT_TALK = 15
+CHR_ACT_LOOK = 16
+CHR_ACT_CUTSCENE = 23
+
 GAMEMODE_Normal = 0
 GAMEMODE_FreeMode = 1
 
@@ -267,6 +271,10 @@ function PlayerGetP(player)
 function PlayerGetR(player)
 {
     return float(player + 0xB8)
+}
+function PlayerGetChrAct(player)
+{
+    return dword(player + 0xB80)
 }
 function PlayerGetVehicle(player)
 {
@@ -812,7 +820,7 @@ achievement(
 achievement(
     id=392848,
     title="Aidan Today, Saiban Tomorrow",
-    description="Obtain Ending 2-B [No Free Mode].",
+    description="Obtain Ending 2-B. Free Mode is disallowed.",
     points=10,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_2B) && !IsFreeMode()
 )
@@ -937,7 +945,7 @@ function TRIGGER_UpNRunning()
 achievement(
     id=393434,
     title="Up & Running", // Smashing Drive reference :)
-    description="Deliver the maintenance worker to Downtown Geo and receive the best assessment as Isaac [See comment].",
+    description="Deliver the maintenance worker to Downtown Geo and receive the best assessment as Isaac.",
     points=3,
     trigger=TRIGGER_UpNRunning()
 )
@@ -954,7 +962,7 @@ achievement(
 achievement(
     id=393429,
     title="She Didn't Have Any Money",
-    description="Obtain ending 3-B [No Free Mode].",
+    description="Obtain ending 3-B. Free Mode is disallowed.",
     points=10,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_3B) && !IsFreeMode()
 )
@@ -1129,6 +1137,24 @@ achievement(
 // which may be fun to collect.
 // Fun fact: These are called "memory fragment" or "fragment of memory" depending on the map -- very primo translation job
 
+function CreateFragmentTrigger(flag)
+{
+    // The flag for memory fragments is set before players see the text for it,
+    // so let's only award the achievement once they leave the cutscene.
+    start = once(LoadProtection() && FlagChangedToSet(flag))
+    cancel = never(CancelCampaign())
+    // We use a tally here because there's 1 frame (2 hits for 30fps?) where cancel isn't true
+    // if we exit via the pause menu, so we want to avoid giving the achievement if the flag is set,
+    // but the player just exits the game 
+    submit = tally(3,
+        !IsInCutscene() && 
+        !any_of([CHR_ACT_TALK, CHR_ACT_LOOK, CHR_ACT_CUTSCENE], s=>s==PlayerGetChrAct(Player))
+    )
+    // and of course we have to pause the submit tally from just ticking whenever too
+    pause = disable_when(always_true(), until=start)
+    return start && cancel && submit && pause
+}
+
 // In Ivan's apartment, choose "That dreadful container..." when prompted
 FLAG_FragmentBrave = 39057
 achievement(
@@ -1136,7 +1162,7 @@ achievement(
     title="Memory Fragment - Brave",
     description="Obtain the Brave memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentBrave)
+    trigger=CreateFragmentTrigger(FLAG_FragmentBrave)
 )
 
 // In Ivan's apartment, choose "I remember Echidna!" when prompted
@@ -1146,7 +1172,7 @@ achievement(
     title="Memory Fragment - Curious",
     description="Obtain the Curious memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentCurious)
+    trigger=CreateFragmentTrigger(FLAG_FragmentCurious)
 )
 
 // In M5_01_00 (the first area), give the man in the underhang next to the medical tent a cardboard wall, then talk to him twice.
@@ -1156,7 +1182,7 @@ achievement(
     title="Memory Fragment - Devoted",
     description="Obtain the Devoted memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentDevoted)
+    trigger=CreateFragmentTrigger(FLAG_FragmentDevoted)
 )
 
 // In Ivan's apartment, choose "That dreadful container..." when prompted OR say "Excellent!" after Spritz dies at the high school
@@ -1166,7 +1192,7 @@ achievement(
     title="Memory Fragment - Evil",
     description="Obtain the Evil memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentEvil)
+    trigger=CreateFragmentTrigger(FLAG_FragmentEvil)
 )
 
 // Deny Sierra from coming with Ivan at the end of Del Ray High School, and say David wanted to protect her
@@ -1176,7 +1202,7 @@ achievement(
     title="Memory Fragment - Friendship",
     description="Obtain the Friendship memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentFriendship)
+    trigger=CreateFragmentTrigger(FLAG_FragmentFriendship)
 )
 
 // In Ivan's apartment, choose "That dreadful container..." when prompted
@@ -1186,7 +1212,7 @@ achievement(
     title="Memory Fragment - Honorable",
     description="Obtain the Honorable memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentHonorable)
+    trigger=CreateFragmentTrigger(FLAG_FragmentHonorable)
 )
 
 // Deny Sierra from coming with Ivan at the end of Del Ray High School, and say you love her
@@ -1196,7 +1222,7 @@ achievement(
     title="Memory Fragment - In Love",
     description="Obtain the In Love memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentInLove)
+    trigger=CreateFragmentTrigger(FLAG_FragmentInLove)
 )
 
 // Deny Sierra from coming with Ivan at the end of Del Ray High School
@@ -1206,7 +1232,7 @@ achievement(
     title="Memory Fragment - Loyal",
     description="Obtain the Loyal memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentLoyal)
+    trigger=CreateFragmentTrigger(FLAG_FragmentLoyal)
 )
 
 // Have Paige call Ivan handsome when she sees him
@@ -1216,7 +1242,7 @@ achievement(
     title="Memory Fragment - Narcissist",
     description="Obtain the Narcissist memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentNarcissist)
+    trigger=CreateFragmentTrigger(FLAG_FragmentNarcissist)
 )
 
 // In Ivan's apartment, choose "That lovely container..." when prompted OR have Paige call Ivan a pervert in the high school
@@ -1226,7 +1252,7 @@ achievement(
     title="Memory Fragment - Pervert",
     description="Obtain the Pervert memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentPervert)
+    trigger=CreateFragmentTrigger(FLAG_FragmentPervert)
 )
 
 // Deny Sierra from coming with Ivan at the end of Del Ray High School, and say she'll get in your way
@@ -1236,7 +1262,7 @@ achievement(
     title="Memory Fragment - Selfish",
     description="Obtain the Selfish memory fragment as Ivan.",
     points=3,
-    trigger=LoadProtection() && FlagChangedToSet(FLAG_FragmentSelfish)
+    trigger=CreateFragmentTrigger(FLAG_FragmentSelfish)
 )
 
 // M5_01_00 (Convenience Store Area)
@@ -1286,7 +1312,7 @@ achievement(
 achievement(
     id=393644,
     title="A Worldwide Pandemic (& Knuckles)",
-    description="Obtain Ending 5-C [No Free Mode].",
+    description="Obtain Ending 5-C. Free Mode is disallowed.",
     points=10,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_5C) && !IsFreeMode()
 )
@@ -1339,7 +1365,7 @@ achievement(
 achievement(
     id=393641,
     title="I Saw the Sun Shining Through the Clouds",
-    description="Obtain Ending 6-A (Joshua).",
+    description="Obtain Ending 6-A as Joshua.",
     points=25,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_6A_J)
 )
@@ -1350,7 +1376,7 @@ achievement(
 achievement(
     id=393642,
     title="This'll Make a Good Story",
-    description="Obtain Ending 6-A (Keith).",
+    description="Obtain Ending 6-A as Keith.",
     points=25,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_6A_K)
 )
@@ -1359,7 +1385,7 @@ achievement(
 achievement(
     id=393647,
     title="This Would Have Made a Good Story",
-    description="Obtain Ending 6-B (Keith) [No Free Mode].",
+    description="Obtain Ending 6-B as Keith. Free Mode is disallowed.",
     points=25,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_6B_K) && !IsFreeMode()
 )
@@ -1380,7 +1406,7 @@ achievement(
 achievement(
     id=394216,
     title="Survivor - Joshua",
-    description="Complete Joshua's chapter in 48 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 1-A] [See Comments].",
+    description="Without dying and on Hard difficulty, complete Joshua's chapter in 48 minutes or less in Free Mode and obtain Ending 1-A. It is recommended not to skip the cutscene where the helicopter arrives in Del Ray Inner Park, as this may cause a softlock.",
     points=50,
     trigger=TimeTrialTrigger(PLAYER_Joshua, endings=[ENDING_1A], minutes=48)
 )
@@ -1389,7 +1415,7 @@ achievement(
 achievement(
     id=394217,
     title="Survivor - Amber",
-    description="Complete Amber's chapter in 29 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 2-A].",
+    description="Without dying and on Hard difficulty, complete Amber's chapter in 29 minutes or less in Free Mode and obtain Ending 2-A.",
     points=25,
     trigger=TimeTrialTrigger(PLAYER_Amber, endings=[ENDING_2A], minutes=29)
 )
@@ -1402,7 +1428,7 @@ achievement(
 achievement(
     id=393759,
     title="Rush Hour",
-    description="Complete Isaac's chapter in 4 minutes and 15 seconds or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Any Ending].",
+    description="Without dying and on Hard difficulty, complete Isaac's chapter in 4 minutes and 15 seconds or less in Free Mode and obtain any ending.",
     points=10,
     trigger=TimeTrialTrigger(PLAYER_Isaac, endings=[ENDING_3A, ENDING_3B], minutes=4, seconds=15)
 )
@@ -1411,7 +1437,7 @@ achievement(
 achievement(
     id=394218,
     title="Survivor - Isaac",
-    description="Complete Isaac's chapter in 23 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 3-A].",
+    description="Without dying and on Hard difficulty, complete Isaac's chapter in 23 minutes or less in Free Mode and obtain Ending 3-A.",
     points=25,
     trigger=TimeTrialTrigger(PLAYER_Isaac, endings=[ENDING_3A], minutes=23)
 )
@@ -1420,7 +1446,7 @@ achievement(
 achievement(
     id=394219,
     title="Survivor - Paige",
-    description="Complete Paige's chapter in 13 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 4-A].",
+    description="Without dying and on Hard difficulty, complete Paige's chapter in 13 minutes or less in Free Mode and obtain Ending 4-A.",
     points=25,
     trigger=TimeTrialTrigger(PLAYER_Paige, endings=[ENDING_4A], minutes=13)
 )
@@ -1432,7 +1458,7 @@ achievement(
 achievement(
     id=394220,
     title="Survivor - Ivan",
-    description="Complete Ivan's chapter in 21 minutes or less [Free Mode] [Hard Difficulty] [0 Game Overs] [Ending 5-B].",
+    description="Without dying and on Hard difficulty, complete Ivan's chapter in 21 minutes or less in Free Mode and obtain Ending 5-B.",
     points=25,
     trigger=TimeTrialTrigger(PLAYER_Ivan, endings=[ENDING_5B], minutes=21)
 )
@@ -1701,7 +1727,7 @@ FLAG_WentWithStephanie = 41080 // Can no longer get 1-B/C after this is set
 leaderboard(
     id=87941,
     title="Joshua [Ending 1-B/C] - Fastest Time",
-    description="Complete Joshua's chapter in Free Mode and obtain Ending 1-B or 1-C as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    description="Without dying and on Hard difficulty, complete Joshua's chapter in Free Mode and obtain Ending 1-B or 1-C as fast as possible!",
     start=StartCampaign(PLAYER_Joshua) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign() || FlagChangedToSet(FLAG_WentWithStephanie),
     submit=any_of([ENDING_1B, ENDING_1C], EndingGetBool) && CurrentMenu == MENU_Result,
@@ -1712,7 +1738,7 @@ leaderboard(
 leaderboard(
     id=87942,
     title="Joshua [Ending 1-A] - Fastest Time",
-    description="Complete Joshua's chapter in Free Mode and obtain Ending 1-A as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    description="Without dying and on Hard difficulty, complete Joshua's chapter in Free Mode and obtain Ending 1-A as fast as possible!",
     start=once(StartCampaign(PLAYER_Joshua) && never(CancelCampaign())) && 
           IsFreeMode() && 
           Difficulty == DIFFICULTY_Hard &&
@@ -1729,7 +1755,7 @@ FLAG_WentWithAidan = 2420
 leaderboard(
     id=87943,
     title="Amber [Ending 2-B] - Fastest Time",
-    description="Complete Amber's chapter in Free Mode and obtain Ending 2-B as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    description="Without dying and on Hard difficulty, complete Amber's chapter in Free Mode and obtain Ending 2-B as fast as possible!",
     start=StartCampaign(PLAYER_Amber) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign() || FlagChangedToSet(FLAG_WentWithAidan),
     submit=EndingGetBool(ENDING_2B) && CurrentMenu == MENU_Result,
@@ -1740,7 +1766,7 @@ leaderboard(
 leaderboard(
     id=87944,
     title="Amber [Ending 2-A] - Fastest Time",
-    description="Complete Amber's chapter in Free Mode and obtain Ending 2-A as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    description="Without dying and on Hard difficulty, complete Amber's chapter in Free Mode and obtain Ending 2-A as fast as possible!",
     start=once(StartCampaign(PLAYER_Amber) && never(CancelCampaign())) && 
           IsFreeMode() && 
           Difficulty == DIFFICULTY_Hard &&
@@ -1757,7 +1783,7 @@ FLAG_RescuedSophia = 3261 // Can no longer get 3-B after this is set
 leaderboard(
     id=87939,
     title="Isaac [Ending 3-B] - Fastest Time",
-    description="Complete Isaac's chapter in Free Mode and obtain Ending 3-B as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    description="Without dying and on Hard difficulty, complete Isaac's chapter in Free Mode and obtain Ending 3-B as fast as possible!",
     start=StartCampaign(PLAYER_Isaac) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign() || FlagChangedToSet(FLAG_RescuedSophia),
     submit=EndingGetBool(ENDING_3B) && CurrentMenu == MENU_Result,
@@ -1768,7 +1794,7 @@ leaderboard(
 leaderboard(
     id=87940,
     title="Isaac [Ending 3-A] - Fastest Time",
-    description="Complete Isaac's chapter in Free Mode and obtain Ending 3-A as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    description="Without dying and on Hard difficulty, complete Isaac's chapter in Free Mode and obtain Ending 3-A as fast as possible!",
     start=once(StartCampaign(PLAYER_Isaac) && never(CancelCampaign())) && 
           IsFreeMode() && 
           Difficulty == DIFFICULTY_Hard &&
@@ -1784,7 +1810,7 @@ leaderboard(
 leaderboard(
     id=87945,
     title="Paige [Ending 4-A] - Fastest Time",
-    description="Complete Paige's chapter in Free Mode and obtain Ending 4-A as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    description="Without dying and on Hard difficulty, complete Paige's chapter in Free Mode and obtain Ending 4-A as fast as possible!",
     start=StartCampaign(PLAYER_Paige) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign(),
     submit=EndingGetBool(ENDING_4A) && CurrentMenu == MENU_Result,
@@ -1797,7 +1823,7 @@ leaderboard(
 leaderboard(
     id=87946,
     title="Ivan [Ending 5-B] - Fastest Time",
-    description="Complete Ivan's chapter in Free Mode and obtain Ending 5-B as fast as possible [Hard Difficulty] [0 Game Overs]!",
+    description="Complete Ivan's chapter in Free Mode and obtain Ending 5-B as fast as possible!",
     start=StartCampaign(PLAYER_Ivan) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign(),
     submit=EndingGetBool(ENDING_5B) && CurrentMenu == MENU_Result,
