@@ -1611,6 +1611,15 @@ function ItemsGet(items_list)
     }
     return items
 }
+function ItemsCheckDelta(items_list)
+{
+    requirement = always_false()
+    for item_id in items_list
+    {
+        requirement = requirement || ItemGet(item_id) != prev(ItemGet(item_id))
+    }
+    return requirement
+}
 function CreateMeasuredCollectionTrigger(items_list)
 {
     // NOTE: Ugh, The game *attempts* to add the main characters' initial outfits during new game,
@@ -1623,19 +1632,14 @@ function CreateMeasuredCollectionTrigger(items_list)
     // fashion (unless they're playing in a very specific way to exploit the above bug (to no benefit to them) for some reason).
     
     // We need to check for this new game state (since Keith could have the last outfit pieces in a category)
-    // but it's probably better to hide the icon during this state
-    // (the player may also experience a mysterious jump in measurement when picking up new equipment in second
-    // chapter due to this bug)
     // We also need to check tutorial menu since the game adds items there
     safety_check = CurrentMenu == MENU_NewGame || CurrentMenu == MENU_Tutorial
     load_protection = LoadProtection() || safety_check
     measured_condition = sum_of(ItemsGet(items_list), s=>s) == length(items_list)
+    delta_check = ItemsCheckDelta(items_list)
+    when = load_protection && delta_check && (!safety_check || measured_condition)
     
-    return load_protection && 
-           // Delta check (NOTE: There are some circumstances where more than 1 item in a category can be added at once, e.g. starting chapters)
-           sum_of(ItemsGet(items_list), s=>prev(s)) < length(items_list) &&
-           // Hide the measured icon when in a menu where the game batch adds items, as this may look weird.
-           measured(measured_condition, when=(LoadProtection() && !safety_check) || measured_condition)
+    return measured(measured_condition, when=when)
 }
 
 collection_names = [
@@ -1703,25 +1707,31 @@ function CompassesGet()
     }
     return compasses
 }
+function CompassCheckDelta()
+{
+    // This prevents the compass achievement icon from showing up in weird places like exiting the menu
+    // or entering the results screen
+    requirement = always_false()
+    for i in range(0, 9 - 1) // log2(compass_count) :(
+    {
+        acc = bitcount(CompassFlags + i)
+        requirement = requirement || (acc != prev(acc))
+    }
+    return requirement
+}
 function CreateMeasuredCompassTrigger(new_count, old_count=-1)
 {
     measured_condition = sum_of(CompassesGet(), s=>s) == new_count
-
+    delta_check = CompassCheckDelta()
+    when = LoadProtection() && delta_check && sum_of(CompassesGet(), s=>prev(s)) < new_count
+    
     // You'd think you could just always use sum_of(CompassesGet(), s=>s) > old_count (and hopefully have it optimized out for Novice)
     // but that causes an error with Compass Novice (Ironically, the error is "Expression is always true")
-    if (old_count == -1)
+    if (old_count != -1)
     {
-        // The only government-sanctioned always true expression
-        when = always_true()
+        when = when && sum_of(CompassesGet(), s=>s) > old_count
     }
-    else
-    {
-        when = sum_of(CompassesGet(), s=>s) > old_count
-    }
-    return LoadProtection() && 
-           sum_of(CompassesGet(), s=>prev(s)) < new_count &&
-           // Ignore Result to avoid the icon popping up there
-           measured(measured_condition, when=(when && LoadProtection() && CurrentMenu != MENU_Result))
+    return measured(measured_condition, when=when)
 }
 
 achievement(
@@ -2032,3 +2042,4 @@ rich_presence_display(rp_fallback_string, rich_presence_lookup("Region", GetRegi
 
 
 // RICH PRESENCE END
+
