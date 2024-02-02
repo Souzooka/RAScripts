@@ -35,6 +35,8 @@ LoadedMapPack = dword(GetRealAddress(0x48F4F0, 0x48DEF0))
 CutsceneFlag = byte(GetRealAddress(0x48F900, 0x48E300))
 // When set to 1 the player won't become wet/lose BT, should be set consistently in cutscenes
 PlayerCutsceneFlag = dword(GetRealAddress(0x48F8F4, 0x48E2F4))
+// For cutscenes indicates the current state of fade ins/fade outs
+FadeStatus = dword(GetRealAddress(0x6A4318, 0x6A1AD8))
 // 24-bit bitset which records all endings seen during one playthrough
 // (I did check and this does properly zero-out during new game)
 EndingBitset = GetRealAddress(0x67DDB6, 0x67B576)
@@ -93,6 +95,10 @@ GAMEMODE_FreeMode = 1
 DIFFICULTY_Easy = 0
 DIFFICULTY_Normal = 1
 DIFFICULTY_Hard = 2
+
+FADE_NONE = 0
+FADE_IN_PROGRESS = 1
+FADE_COMPLETE = 3
 
 MENU_Title = 11
 MENU_NewGame = 12 // Set when initializing game flags/other data after selecting a character
@@ -323,7 +329,13 @@ function CreditsStarted()
     // it should also get set to NULL when exiting to the title or going to the game result screen I think
     // so this should be fine to check even if you immediately get the easy achievement, and then exit and load up a hard difficulty
     // save (which you shouldn't have anyways) at the last checkpoint
-    return CreditsScript != NULL && prev(CreditsScript) == NULL
+    return LoadProtection() && CreditsScript != NULL && prev(CreditsScript) == NULL
+}
+function CreditsEnded()
+{
+    // When this is non-NULL (in final cutscene), there is one fade to epilogue. We'll check the fade status
+    // to time this achievement popping perfectly.
+    return CreditsScript != NULL && prev(FadeStatus) == FADE_COMPLETE && FadeStatus == FADE_IN_PROGRESS
 }
 
 // Jewelries
@@ -1351,7 +1363,7 @@ achievement(
     title="I'm Just Warming Up",
     description="Beat the game and witness the credits on the Easy difficulty or higher.",
     points=5,
-    trigger=CreditsStarted() && !IsFreeMode()
+    trigger=CreditsEnded() && !IsFreeMode()
 )
 
 // And hard difficulty for good measure
@@ -1360,7 +1372,7 @@ achievement(
     title="I'm on Fire!",
     description="Beat the game and witness the credits on the Hard difficulty.",
     points=25,
-    trigger=CreditsStarted() && !IsFreeMode() && Difficulty == DIFFICULTY_Hard
+    trigger=CreditsEnded() && !IsFreeMode() && Difficulty == DIFFICULTY_Hard
 )
 
 // Joshua
