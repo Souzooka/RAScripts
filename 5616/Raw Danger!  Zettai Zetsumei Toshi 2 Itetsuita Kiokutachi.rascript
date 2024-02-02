@@ -1571,7 +1571,7 @@ COLLECTION_Hands = [510, 511, 553, 554]
 // Slippers (633)
 // Sneakers (634)
 // Christmas Boots (635)
-COLLECTION_Shoes = [527, 538, 529, 531, 539, 560, 566, 629, 630, 632, 633, 634, 635]
+COLLECTION_Shoes = [527, 528, 529, 531, 539, 560, 566, 629, 630, 632, 633, 634, 635]
 
 // Other (15 items) (this is backpacks, pouches and glasses)
 // Emergency Pack (0) -- first item in the game! Congrats! Joshua (don't pick up knapsack, spawns later in destroyed banquet hall); Amber (near police uniform); Ivan (in laundromat)
