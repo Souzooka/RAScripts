@@ -54,6 +54,9 @@ ItemCollection = GetRealAddress(0x710190, 0x70D8E0)
 CompassFlags = GetRealAddress(0x717440, 0x714B80)
 
 // Map IDs
+// TECHNICAL NOTE: When transitioning maps, a function which accepts the area, level, sublevel, and gate ID to transition to
+// is called (11C1D0 for PAL and 11C170 in NTSCJ) -- this can be intercepted using the PCSX2 debugger and the registers
+// a0, a1, a2, a3 (which hold those arguments) can be changed to warp to a different map.
 AreaID = dword(GetRealAddress(0x492450, 0x490E50))
 LevelID = dword(GetRealAddress(0x492454, 0x490E54))
 SublevelID = dword(GetRealAddress(0x492458, 0x490E58))
@@ -569,7 +572,10 @@ achievement(
     trigger=LoadProtection() && 
             FlagChangedToSet(FLAG_DrinkerEventDone) && 
             !FlagGetBool(FLAG_DrinkerIgnoredByJoshua) && 
-            !FlagGetBool(FLAG_DrinkerWasRefusedDrinks)
+            !FlagGetBool(FLAG_DrinkerWasRefusedDrinks) &&
+            // Apparently just getting the water pitcher finishes this event, so we'll make sure Joshua is in the hall
+            // using the 27.0 number from the HiImGeo achievement above
+            PlayerGetX(Player) < 27.0
 )
 
 // After delivering food, go to the outer area and talk to Stephanie to kick this one off
@@ -1388,6 +1394,7 @@ achievement(
 
 // Keith (Get Ending 1-B or 1-C)
 
+// TECHNICAL NOTE: The internal criteria that decides this is if flag 4615 is set; 0=Ending 6-B, 1=Ending 6-A
 // Ending 3-B not obtained
 achievement(
     id=393642,
@@ -1713,7 +1720,8 @@ function CreateMeasuredCompassTrigger(new_count, old_count=-1)
     }
     return LoadProtection() && 
            sum_of(CompassesGet(), s=>prev(s)) < new_count &&
-           measured(measured_condition, when=(when && LoadProtection()))
+           // Ignore Result to avoid the icon popping up there
+           measured(measured_condition, when=(when && LoadProtection() && CurrentMenu != MENU_Result))
 }
 
 achievement(
