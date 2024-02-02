@@ -1623,12 +1623,17 @@ function CreateMeasuredCollectionTrigger(items_list)
     // but fails because it relies on data it hasn't loaded yet, at least on a fresh boot.
     // When you load the item menu overlay (either by explicitly opening the item menu or picking up an item)
     // then exit and start a new game, or a new chapter, the game successfully adds all initial outfits (except Keith)
+    
     // We need to check for this new game state (since Keith could have the last outfit pieces in a category)
     // but it's probably better to hide the icon during this state
     // (the player may also experience a mysterious jump in measurement when picking up new equipment in second
     // chapter due to this bug)
-    load_protection = LoadProtection() || CurrentMenu == MENU_NewGame
-    return load_protection && measured(ItemCount(items_list) == length(items_list), when=CurrentMenu != MENU_NewGame)
+    // We also need to check tutorial menu since the game adds items there
+    safety_check = CurrentMenu == MENU_NewGame || CurrentMenu == MENU_Tutorial
+    load_protection = LoadProtection() || safety_check
+    
+    // Hide the measured icon when in a menu where the game batch adds items, as this may look weird.
+    return load_protection && measured(ItemCount(items_list) == length(items_list), when=!safety_check)
 }
 
 collection_names = [
