@@ -1595,27 +1595,14 @@ function ItemGet(item_id)
 {
     return bit(item_id % 8, ItemCollection + (item_id / 8))
 }
-function ItemGetPrev(item_id)
+function ItemsGet(items_list)
 {
-    return prev(ItemGet(item_id))
-}
-function ItemCount(items_list)
-{
-    count = 0
+    items = []
     for item_id in items_list
     {
-        count = count + ItemGet(item_id)
+        array_push(items, ItemGet(item_id))
     }
-    return count
-}
-function ItemCountPrev(items_list)
-{
-    count = 0
-    for item_id in items_list
-    {
-        count = count + ItemGetPrev(item_id)
-    }
-    return count
+    return items
 }
 function CreateMeasuredCollectionTrigger(items_list)
 {
@@ -1631,9 +1618,13 @@ function CreateMeasuredCollectionTrigger(items_list)
     // We also need to check tutorial menu since the game adds items there
     safety_check = CurrentMenu == MENU_NewGame || CurrentMenu == MENU_Tutorial
     load_protection = LoadProtection() || safety_check
+    measured_condition = sum_of(ItemsGet(items_list), s=>s) == length(items_list)
     
-    // Hide the measured icon when in a menu where the game batch adds items, as this may look weird.
-    return load_protection && measured(ItemCount(items_list) == length(items_list), when=!safety_check)
+    return load_protection && 
+           // Delta check (NOTE: There are some circumstances where more than 1 item in a category can be added at once, e.g. starting chapters)
+           sum_of(ItemsGet(items_list), s=>prev(s)) < length(items_list) &&
+           // Hide the measured icon when in a menu where the game batch adds items, as this may look weird.
+           measured(measured_condition, when=(LoadProtection() && !safety_check) || measured_condition)
 }
 
 collection_names = [
