@@ -30,7 +30,11 @@ Flags = GetRealAddress(0x609470, 0x607E70)
 MapObjs = GetRealAddress(0x492460, 0x490E60)
 MapTimeFrames = dword(GetRealAddress(0x48F49C, 0x48DE9C))
 LoadedMapPack = dword(GetRealAddress(0x48F4F0, 0x48DEF0))
+// This is set to 1, BY CONVENTION (sigh), when a cutscene begins, and set to 0 afterwards
+// This is mostly for debug afaik so might not always get set to 1
 CutsceneFlag = byte(GetRealAddress(0x48F900, 0x48E300))
+// When set to 1 the player won't become wet/lose BT, should be set consistently in cutscenes
+PlayerCutsceneFlag = dword(GetRealAddress(0x48F8F4, 0x48E2F4))
 // 24-bit bitset which records all endings seen during one playthrough
 // (I did check and this does properly zero-out during new game)
 EndingBitset = GetRealAddress(0x67DDB6, 0x67B576)
@@ -181,7 +185,7 @@ function IsInTutorial()
 
 function IsInCutscene()
 {
-    return CutsceneFlag == 1
+    return CutsceneFlag == 1 || PlayerCutsceneFlag == 1
 }
 
 function IsInMenuTransition(to_menu)
@@ -1145,9 +1149,9 @@ function CreateFragmentTrigger(flag)
     cancel = never(CancelCampaign())
     // We use a tally here because there's 1 frame (2 hits for 30fps?) where cancel isn't true
     // if we exit via the pause menu, so we want to avoid giving the achievement if the flag is set,
-    // but the player just exits the game 
+    // but the player just exits the game before finishing the cutscene for whatever reason.
     submit = tally(3,
-        !IsInCutscene() && 
+        !IsInCutscene() &&
         !any_of([CHR_ACT_TALK, CHR_ACT_LOOK, CHR_ACT_CUTSCENE], s=>s==PlayerGetChrAct(Player))
     )
     // and of course we have to pause the submit tally from just ticking whenever too
