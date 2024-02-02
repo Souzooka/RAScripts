@@ -1611,6 +1611,10 @@ function CreateMeasuredCollectionTrigger(items_list)
     // When you load the item menu overlay (either by explicitly opening the item menu or picking up an item)
     // then exit and start a new game, or a new chapter, the game successfully adds all initial outfits (except Keith)
     
+    // NOTE: The game can also add items to the collection when leaving the tutorial or new game menu;
+    // these should just be the initial character outfits anyways, and a player probably shouldn't get the award in this
+    // fashion (unless they're playing in a very specific way to exploit the above bug (to no benefit to them) for some reason).
+    
     // We need to check for this new game state (since Keith could have the last outfit pieces in a category)
     // but it's probably better to hide the icon during this state
     // (the player may also experience a mysterious jump in measurement when picking up new equipment in second
@@ -1683,19 +1687,21 @@ function CompassGet(index)
 {
     return bit(index % 8, CompassFlags + index / 8)
 }
-function CompassCount()
+function CompassesGet()
 {
-    count = 0
+    compasses = []
     for i in range(0, compass_count - 1)
     {
-        count = count + CompassGet(i)
+        array_push(compasses, CompassGet(i))
     }
-    return count
+    return compasses
 }
 function CreateMeasuredCompassTrigger(new_count, old_count=-1)
 {
-    // You'd think you could just always use CompassCount() > old_count but that causes an error with Compass Novice
-    // (Ironically, the error is "Expression is always true")
+    measured_condition = sum_of(CompassesGet(), s=>s) == new_count
+
+    // You'd think you could just always use sum_of(CompassesGet(), s=>s) > old_count (and hopefully have it optimized out for Novice)
+    // but that causes an error with Compass Novice (Ironically, the error is "Expression is always true")
     if (old_count == -1)
     {
         // The only government-sanctioned always true expression
@@ -1703,9 +1709,11 @@ function CreateMeasuredCompassTrigger(new_count, old_count=-1)
     }
     else
     {
-        when = CompassCount() > old_count
+        when = sum_of(CompassesGet(), s=>s) > old_count
     }
-    return LoadProtection() && measured(CompassCount() == new_count, when=when)
+    return LoadProtection() && 
+           sum_of(CompassesGet(), s=>prev(s)) < new_count &&
+           measured(measured_condition, when=(when && LoadProtection()))
 }
 
 achievement(
