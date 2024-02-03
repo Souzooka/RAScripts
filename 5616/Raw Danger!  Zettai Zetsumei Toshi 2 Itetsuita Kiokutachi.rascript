@@ -134,9 +134,9 @@ ENDING_4B = 8 // Paige - During the collapsed stairs cutscene, yell at Emily abo
 ENDING_5A = 9 // Ivan - Destroy Echidna
 ENDING_5B = 10 // Ivan - Return Echidna to Apolon
 ENDING_5C = 11 // Ivan - Have Joshua dislodge the stuck train in Central Geo, then have Ivan fail to catch the drifting container
-ENDING_6A_J = 12 // Joshua (Final Chapter) - Normal Ending
-ENDING_6A_K = 13 // Keith (Final Chapter; leave early as Joshua for his chapter) - Sophia survives police station (i.e. no ending 3-B)
-ENDING_6B_K = 14 // Keith (Final Chapter) - Sophia dies at police station (ending 3-B)
+ENDING_6A = 12 // Joshua (Final Chapter) - Normal Ending
+ENDING_7A = 13 // Keith (Final Chapter; leave early as Joshua for his chapter) - Sophia survives police station (i.e. no ending 3-B)
+ENDING_7B = 14 // Keith (Final Chapter) - Sophia dies at police station (ending 3-B)
 
 // General functions
 function ItemNowExists(item_id)
@@ -1387,9 +1387,9 @@ achievement(
 achievement(
     id=393641,
     title="I Saw the Sun Shining Through the Clouds",
-    description="Obtain Ending 6-A as Joshua.",
+    description="Obtain Ending 6-A.",
     points=25,
-    trigger=LoadProtection() && EndingChangedToSet(ENDING_6A_J)
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_6A)
 )
 
 // Keith (Get Ending 1-B or 1-C)
@@ -1399,18 +1399,18 @@ achievement(
 achievement(
     id=393642,
     title="This'll Make a Good Story",
-    description="Obtain Ending 6-A as Keith.",
+    description="Obtain Ending 7-A.",
     points=25,
-    trigger=LoadProtection() && EndingChangedToSet(ENDING_6A_K)
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_7A)
 )
 
 // Ending 3-B not obtained
 achievement(
     id=393647,
     title="This Would Have Made a Good Story",
-    description="Obtain Ending 6-B as Keith. Free Mode is disallowed.",
+    description="Obtain Ending 7-B. Free Mode is disallowed.",
     points=25,
-    trigger=LoadProtection() && EndingChangedToSet(ENDING_6B_K) && !IsFreeMode()
+    trigger=LoadProtection() && EndingChangedToSet(ENDING_7B) && !IsFreeMode()
 )
 
 // FREE MODE
