@@ -2025,6 +2025,13 @@ RegionLookup = {
     REGION_EU: "ᵉᵘ",
 }
 
+function CodeLoaded()
+{
+    // This is an arbitrary byte later in the ELF that is constantly 0x3C on both the PAL and JP version
+    // (it belongs to code and as such should not change). We simply check this to see if we can accurately determine region.
+    return byte(0x376078) == 0x3C
+}
+
 rp_fallback_string = "{0} In a loading screen or the title screen"
 
 for region in [REGION_EU, REGION_JP] {
@@ -2038,7 +2045,8 @@ for region in [REGION_EU, REGION_JP] {
     )
 }
 
-rich_presence_display(rp_fallback_string, rich_presence_lookup("Region", GetRegion(), RegionLookup))
+rich_presence_conditional_display(CodeLoaded(), rp_fallback_string, rich_presence_lookup("Region", GetRegion(), RegionLookup))
+rich_presence_display("Initializing Raw Danger! | Zettai Zetsumei Toshi 2: Itetsuita Kiokutachi")
 
 
 // RICH PRESENCE END
