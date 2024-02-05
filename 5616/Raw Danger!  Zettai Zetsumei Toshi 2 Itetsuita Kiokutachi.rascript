@@ -1861,7 +1861,7 @@ leaderboard(
 leaderboard(
     id=87946,
     title="Ivan [Ending 5-B] - Fastest Time",
-    description="Complete Ivan's chapter in Free Mode and obtain Ending 5-B as fast as possible!",
+    description="Without dying and on Hard difficulty, complete Ivan's chapter in Free Mode and obtain Ending 5-B as fast as possible!",
     start=StartCampaign(PLAYER_Ivan) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign(),
     submit=EndingGetBool(ENDING_5B) && CurrentMenu == MENU_Result,
