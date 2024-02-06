@@ -196,20 +196,25 @@ function IsFreeMode()
 {
     return GameMode == GAMEMODE_FreeMode
 }
-
 function IsInTutorial()
 {
     return MapID() == 019900
 }
-
 function IsInCutscene()
 {
     return CutsceneFlag == 1 || PlayerCutsceneFlag == 1
 }
-
 function IsInMenuTransition(to_menu)
 {
     return prev(CurrentMenu) != to_menu && CurrentMenu == to_menu
+}
+function CutsceneFadeStarted()
+{
+    return prev(FadeStatus) == FADE_COMPLETE && FadeStatus == FADE_IN_PROGRESS
+}
+function CutsceneFadeEnded()
+{
+    return prev(FadeStatus) == FADE_IN_PROGRESS && FadeStatus == FADE_COMPLETE
 }
 
 //function IsTransitioningToResult(map_id=-1)
@@ -373,7 +378,7 @@ function CreditsEnded()
 {
     // When this is non-NULL (in final cutscene), there is one fade to epilogue. We'll check the fade status
     // to time this achievement popping perfectly.
-    return CreditsScript != NULL && prev(FadeStatus) == FADE_COMPLETE && FadeStatus == FADE_IN_PROGRESS
+    return CreditsScript != NULL && CutsceneFadeStarted()
 }
 
 // Jewelries
@@ -507,24 +512,14 @@ FLAG_BadGrades = [17, 18, 28, 29, 38, 39, 49, 140, 57, 58]
 FLAG_BadStamps = [20028, 20029, 20031, 20032, 20034, 20035, 20037, 20038, 20040, 20041]
 // 20 point stamp flags for each room
 FLAG_GoodStamps = [20027, 20030, 20033, 20036, 20039]
-function TRIGGER_DisasterPrepared() 
-{
-    start = once(LoadProtection() && IsInTutorial())
-    cancel = never(
-                CancelAllTriggers() ||
-                any_of([MENU_Tutorial, MENU_Title], menu => menu==CurrentMenu) || 
-                any_of(FLAG_BadStamps, FlagGetBool)
-    )
-    submit = trigger_when(FlagGetBool(FLAG_MasterGrade) && FlagChangedToSet(FLAG_GradingOver))
-    
-    return start && cancel && submit
-}
+
+// This was originally getting all "Cool!" stamps, or a score of 100, but was made easier to ease people into the set.
 achievement(
     id=392855,
     title="Disaster-Prepared",
-    description="Obtain the rank of 'Master' in the tutorial (Japan: 'Saigai no Tatsujin').",
-    points=5,
-    trigger=TRIGGER_DisasterPrepared()
+    description="In the Tutorial, complete the training program and receive a performance evaluation.",
+    points=1,
+    trigger=LoadProtection() && FlagChangedToSet(FLAG_GradingOver)
 )
 
 // JOSHUA
