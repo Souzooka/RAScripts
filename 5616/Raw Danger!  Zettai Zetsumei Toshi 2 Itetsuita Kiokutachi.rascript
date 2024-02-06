@@ -43,7 +43,6 @@ EndingBitset = GetRealAddress(0x67DDB6, 0x67B576)
 GameMode = byte(GetRealAddress(0x67DDBA, 0x67B57A))
 Difficulty = byte(GetRealAddress(0x67DDBB, 0x67B57B))
 InGameTime = dword(GetRealAddress(0x67DDC0, 0x67B580)) // number of frames, divide by 30 for seconds
-CurrentMenu = dword(GetRealAddress(0x48F604, 0x48E008))
 GameResultInfo = GetRealAddress(0x7173A0, 0x714AE0) // this is probably actually meta information for the game results screen but I would have to investigate
 IsaacIntroDrivingGrade = dword(GetRealAddress(0x48EDC0, 0x48D818))
 // The ItemController holds multiple buffers of item instances and meta information for how those items are being handled
@@ -52,6 +51,17 @@ ItemController = GetRealAddress(0x622000, 0x61F900)
 CreditsScript = dword(GetRealAddress(0x48FD74, 0x48E76C))
 ItemCollection = GetRealAddress(0x710190, 0x70D8E0)
 CompassFlags = GetRealAddress(0x717440, 0x714B80)
+ItemMenuState = GetRealAddress(0x70F9C0, 0x70D110)
+
+// MENU FSM
+// These values hold various numbers (there's a few values defined down below with enums)
+// which determine what sort of meta state the game is in (whether you're in the title menu,
+// the normal game, the item menu, etc.). PrevMenu is the last state you were in,
+// CurrMenu is the current state (or -1 in transition), and NextMenu is the state which
+// the game wants to transition to the next frame.
+PrevMenu = dword(GetRealAddress(0x48F600, 0x48E004))
+CurrentMenu = dword(GetRealAddress(0x48F604, 0x48E008))
+NextMenu = dword(GetRealAddress(0x48F608, 0x48E00C))
 
 // Map IDs
 // TECHNICAL NOTE: When transitioning maps, a function which accepts the area, level, sublevel, and gate ID to transition to
@@ -216,10 +226,14 @@ function IsInMenuTransition(to_menu)
 
 function LoadProtection()
 {    
-    return CurrentMenu == MENU_Game ||     // Normal game state
+    return (CurrentMenu == MENU_Game ||    // Normal game state
            CurrentMenu == MENU_ItemMenu || // Needed for some other Jewelry
            CurrentMenu == MENU_IRESENT ||  // Needed for Isaac's Jewelry
-           CurrentMenu == MENU_Result      // Needed for properly recording Jeweled Suit
+           CurrentMenu == MENU_Result) &&  // Needed for properly recording Jeweled Suit
+           // For whatever reason the game restores save file data when exiting to title via the item menu in the tutorial
+           // so we want to avoid that via all costs as it'll trigger many achievements which rely on the Flags variable
+           // (actually, it restores a ton of data outside the tutorial too, probably to create parity with the last checkpoint state)
+           !ExitToTitleFromItemMenu()
     // Checking that we're not in a menu (or rather, just in the normal game mode) should work fine for most achievements,
     // though some other triggers (like for the map transition logic) may have its own special logic.
     //return (is_EU() && EU_CurrentMenu == MENU_Game) ||
@@ -234,6 +248,14 @@ function LoadProtection()
     
     //return (is_EU() && EU_MapTimeFrames >= MIN_FRAMES) ||
     //       (is_JP() && JP_MapTimeFrames >= MIN_FRAMES)
+}
+function ExitToTitleFromItemMenu()
+{
+    // This is only set for a short time and is properly cleared to 0 when reaching the title menu,
+    // so we shouldn't have to worry about this value sticking around as the value 8
+    OFFSET_ExitCode = 0x1A
+    EXIT_TO_TITLE = 8
+    return byte(ItemMenuState + OFFSET_ExitCode) == EXIT_TO_TITLE
 }
 
 // Map Objects
