@@ -224,6 +224,7 @@ function IsInMenuTransition(to_menu)
 //    return IsInMenuTransition(MENU_Result) && is_on_map
 //}
 
+// Save file / general memory protection
 function LoadProtection()
 {    
     return (CurrentMenu == MENU_Game ||    // Normal game state
@@ -256,6 +257,18 @@ function ExitToTitleFromItemMenu()
     OFFSET_ExitCode = 0x1A
     EXIT_TO_TITLE = 8
     return byte(ItemMenuState + OFFSET_ExitCode) == EXIT_TO_TITLE
+}
+function CodeLoaded()
+{
+    // This is an arbitrary byte later in the ELF that is constantly 0x3C on both the PAL and JP version
+    // (it belongs to code and as such should not change). We simply check this to see if we can accurately determine region.
+    return byte(0x376078) == 0x3C
+}
+function CancelAllTriggers()
+{
+    // When resetting the game via the in-emulator overlay, trigger icons appear to persist. While I feel this should eventually
+    // be fixed on the emulator level, this should offer a 0-risk check for both the PAL and JP versions that this has in fact occurred.
+    return !CodeLoaded()
 }
 
 // Map Objects
@@ -418,7 +431,7 @@ function StartCampaign(player_id)
 }
 function CancelCampaign()
 {
-    return CurrentMenu == MENU_Title || CurrentMenu == MENU_GameOver
+    return CurrentMenu == MENU_Title || CurrentMenu == MENU_GameOver || CancelAllTriggers()
 }
 function StartAndNeverLeaveCampaignOrDie(player_id)
 {
@@ -497,7 +510,11 @@ FLAG_GoodStamps = [20027, 20030, 20033, 20036, 20039]
 function TRIGGER_DisasterPrepared() 
 {
     start = once(LoadProtection() && IsInTutorial())
-    cancel = never(any_of([MENU_Tutorial, MENU_Title], menu => menu==CurrentMenu) || any_of(FLAG_BadStamps, FlagGetBool))
+    cancel = never(
+                CancelAllTriggers() ||
+                any_of([MENU_Tutorial, MENU_Title], menu => menu==CurrentMenu) || 
+                any_of(FLAG_BadStamps, FlagGetBool)
+    )
     submit = trigger_when(FlagGetBool(FLAG_MasterGrade) && FlagChangedToSet(FLAG_GradingOver))
     
     return start && cancel && submit
@@ -981,7 +998,12 @@ function TRIGGER_UpNRunning()
     // Reset the icon if Isaac leaves the taxi
     // 030200 is just a cutscene so the vehicle pointer for Isaac might be NULL, just gonna check MapID for the vehicle NULL check just in case.
     // Additionally, the vehicle pointer might get set to NULL during the map transition, so we'll put in a menu state check just in case.
-    cancel = never(CurrentMenu == MENU_Title || IsaacIntroDrivingGrade < 91 || (CurrentMenu == MENU_Game && MapID() == 030100 && PlayerGetVehicle(Player) == NULL))
+    cancel = never(
+                CancelAllTriggers() ||
+                CurrentMenu == MENU_Title || 
+                IsaacIntroDrivingGrade < 91 || 
+                (CurrentMenu == MENU_Game && MapID() == 030100 && PlayerGetVehicle(Player) == NULL)
+    )
     submit = trigger_when(FlagChangedToSet(FLAG_IsaacPassengerBestGrade))
     
     return start && cancel && submit
@@ -2045,13 +2067,6 @@ WetLookup = {
 RegionLookup = {
     REGION_JP: "ʲᵖ",
     REGION_EU: "ᵉᵘ",
-}
-
-function CodeLoaded()
-{
-    // This is an arbitrary byte later in the ELF that is constantly 0x3C on both the PAL and JP version
-    // (it belongs to code and as such should not change). We simply check this to see if we can accurately determine region.
-    return byte(0x376078) == 0x3C
 }
 
 rp_fallback_string = "{0} In a loading screen or the title screen"
