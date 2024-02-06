@@ -475,7 +475,7 @@ FLAG_GoodStamps = [20027, 20030, 20033, 20036, 20039]
 function TRIGGER_DisasterPrepared() 
 {
     start = once(LoadProtection() && IsInTutorial())
-    cancel = never(CurrentMenu == MENU_Tutorial || any_of(FLAG_BadStamps, FlagGetBool))
+    cancel = never(any_of([MENU_Tutorial, MENU_Title], menu => menu==CurrentMenu) || any_of(FLAG_BadStamps, FlagGetBool))
     submit = trigger_when(FlagGetBool(FLAG_MasterGrade) && FlagChangedToSet(FLAG_GradingOver))
     
     return start && cancel && submit
