@@ -1530,47 +1530,63 @@ achievement(
 // Coat (19 items)
 // Cloth Jacket (505)
 // Work Coat (506)
+// Joshua - in destroyed banquet hall - in warehouse room opposite mens locker room, in a box OR in a box after igniting the survival point in a box near the survival point
 // Parka (507)
 // Cotton Jacket (508)
 // Taxi Driver Coat (509)
+// Isaac - Initial outfit
 // Makeshift Coat (532)
 // Raincoat (533)
+// Joshua - in Downtown Geo, in construction hut near rope
 // White Gown (544)
 // Santa Coat (545)
+// Joshua - outside Downtown Station, in bus to south
 // Team Jacket (546)
 // Riding Jacket (547)
+// Joshua - Historic Rest Area - at end of first flooded road, there is an overturned monorail car. It can be crawled under to gain access, and the jacket is inside.
 // Down Jacket (549)
 // Jeweled Suit (561)
 // Wool Coat (600)
 // Custom Jacket (604)
 // Fur Shawl (605)
+// Joshua - West Junction, west lane, in bed of truck
 // Fur Coat (606)
 // Leopard Jacket (607)
 // Christmas Coat (608)
 COLLECTION_Coats = [505, 506, 507, 508, 509, 532, 533, 544, 545, 546, 547, 549, 561, 600, 604, 605, 606, 607, 608]
 
 // Inner Wear (11 items)
-// Waiter Uniform (517) - Joshua initial outfit
+// Waiter Uniform (517)
+// Joshua - Default outfit
 // Mens Jersey (518)
+// Joshua - West Junction, east lane, in van
 // Knit Sweater (519)
 // Driving Shirt (520)
 // Handmade Sweater (521)
-// Waitress Uniform (609) - Angelina Area (giant parking lot) - the item from the box in the banquet hall is a different item and does not count
-// Knit Turtleneck (611) - Amber initial outfit
+// Waitress Uniform (609)
+// Angelina Area (giant parking lot) (NOTE: The item from the box in the banquet hall is a different item and does not count)
+// Knit Turtleneck (611)
+// Amber - Initial outfit
 // Blazer (612)
+// Paige - Initial outfit
 // Nurse's Uniform (613)
 // Officer's Suit (614)
 // Woman's Jersey (616)
 COLLECTION_InnerWear = [517, 518, 519, 520, 521, 609, 611, 612, 613, 614, 616]
 
 // Pants / Skirt (13 Items)
-// Waiter's Pants (522) - Joshua initial outfit
-// Driving Pants (523) - Isaac initial outfit
+// Waiter's Pants (522)
+// Joshua - Default outfit
+// Driving Pants (523)
+// Isaac - Default outfit
 // Jeans (524)
 // Sweat Pants (525)
+// Joshua - West Junction, east lane, in van
 // Black Pants (526)
 // Wading Pants (534)
+// Joshua - Historic Rest Area - near crowbar
 // Santa Pants (558)
+// Joshua - outside Downtown Station, on bench to the south
 // Tight Skirt (619)
 // Seude Skirt (620)
 // School Skirt (622)
@@ -1580,32 +1596,39 @@ COLLECTION_Pants = [522, 523, 524, 525, 526, 534, 558, 619, 620, 622, 623, 625]
 
 // Head (15 items)
 // Taxi Driver Cap (500)
+// Isaac - Initial outfit
 // Afro Wig (501)
 // Wool Cap (502)
 // Santa Hat (503)
+// Joshua - In Downtown Station, up staircase at northern entrance
 // Helmet (504)
 // Bunny Ears (513)
 // Kitten Ears (535)
 // Silk Hat (536)
+// Joshua - In Downtown Geo, in PAPCO, on north wall
 // Child's Cap (537)
 // Pirate Hat (538)
 // Baseball Cap (539)
 // Chef's Hat (540)
+// Joshua - West Junction, west lane, end of lane under tarp; Ivan - Craft Cardboard Wall and give to person shivering next to unfinished cardboard wall
 // Knitted Cap (541)
 // Nurse's Cap (542)
 // Officer's Cap (543)
-COLLECTION_Head = [500, 501, 502, 503, 504, 514, 535, 536, 537, 538, 539, 540, 541, 542, 543]
+COLLECTION_Head = [500, 501, 502, 503, 504, 513, 535, 536, 537, 538, 539, 540, 541, 542, 543]
 
 // Hands (4 items)
 // Rubber Gloves (510)
 // Knit Gloves (511)
+// Joshua - In Downtown Geo in PAPCO building, on bench on south wall near entrance
 // Driving Gloves (553)
 // Ski Gloves (554)
 COLLECTION_Hands = [510, 511, 553, 554]
 
 // Shoes (13 items)
 // Cheap Shoes (527)
+// Joshua - Default outfit
 // Tennis Shoes (528)
+// Joshua - in Downtown Geo, immediately after using rope, under an overhang to the west
 // Rubber Boots (529)
 // Driving Shoes (531)
 // Hunting Boots (559)
@@ -1617,20 +1640,32 @@ COLLECTION_Hands = [510, 511, 553, 554]
 // Slippers (633)
 // Sneakers (634)
 // Christmas Boots (635)
+// Joshua - outside Downtown Station, along the south wall of the entrance
 COLLECTION_Shoes = [527, 528, 529, 531, 539, 560, 566, 629, 630, 632, 633, 634, 635]
 
 // Other (15 items) (this is backpacks, pouches and glasses)
-// Emergency Pack (0) -- first item in the game! Congrats! Joshua (don't pick up knapsack, spawns later in destroyed banquet hall); Amber (near police uniform); Ivan (in laundromat)
+// Emergency Pack (0)
+// Joshua (in destroyed banquet hall, if knapsack is not picked up); Amber (in parking lot break room with disguise; in hudson tunnel); Ivan (in laundromat)
 // Knapsack (60)
+// Joshua (in his locker, A-5, after evacuation starts in banquet hall)
 // Backpack (137)
+// Joshua (Downtown Station, top story, down the stairs)
 // Large Backpack (138)
+// Isaac (Hudson Dam, in far room on the lower level, opposite room with gas can)
 // Satchel (209)
+// Joshua (East Junction, on elevated road near where Beth's mother is waiting for Beth)
 // Sports Bag (232)
+// Paige (After escaping Mr. Savage, on top of a locker near school store)
 // Shoulder Bag (208)
+// Amber (May be added by default; in jail locker)
 // Travel Pouch (134)
+// Joshua (at West Junction evac. point, in box near survival point); Isaac/Ivan (At recycle bin next to convenience store parking lot)
 // Sunglasses (512)
+// Joshua (Historic Rest Area, in bathroom); Amber (if not pointed out to Trapp by Joshua, in an alley next to the gas station building)
 // Ear Muffs (514)
+// Joshua (Historic Rest Area, in hallway to kitchen)
 // Party Glasses (515)
+// Amber (Hudson Tunnel, near the stairs to the exit to the center of the bridge)
 // Red Glasses (516)
 // Goggles (551)
 // Myopia Glasses (552)
@@ -1732,6 +1767,26 @@ for name in collection_names
 // COMPASS
 
 // Standard Compass (0) to Survivor Compass (64)
+// Standard Compass (0)
+// Default compass.
+// Relief Center Compass (1)
+// Finish tutorial.
+// Mascot Compass (2)
+// Joshua - In lobby of banquet hall, near staff hallway entrance
+// Pedometer Compass (3)
+// Joshua - In start of destroyed banquet hall, near Stephanie's locker
+// Backpack Compass (4)
+// Joshua - In Downtown Geo, outside PAPCO entrance near survival point
+// Holiday Tree Compass (5)
+// Joshua - In Downtown Geo, outside construction hut immediately east on concrete step
+// Monorail Compass (6)
+// Joshua - Outside Downtown Station, near no entry signs on road to west
+// Steambot Compass (7)
+// Joshua - West Junction; on highway ramp going upwards
+// Fisherman Compass (8)
+// Joshua - Historic Rest Area - on top of stairs outside east entrance of building
+// Jetski Compass (9)
+// Joshua - Historic Rest Area - behind west side of building, near entrance to restroom
 compass_count = 65
 function CompassGet(index)
 {
