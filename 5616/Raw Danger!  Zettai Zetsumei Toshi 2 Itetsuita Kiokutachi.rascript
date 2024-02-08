@@ -1536,6 +1536,7 @@ achievement(
 // Taxi Driver Coat (509)
 // Isaac - Initial outfit
 // Makeshift Coat (532)
+// Craft at any point using duct tape + garbage bag
 // Raincoat (533)
 // Joshua - in Downtown Geo, in construction hut near rope
 // White Gown (544)
@@ -1545,14 +1546,20 @@ achievement(
 // Riding Jacket (547)
 // Joshua - Historic Rest Area - at end of first flooded road, there is an overturned monorail car. It can be crawled under to gain access, and the jacket is inside.
 // Down Jacket (549)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - South end of dining room
 // Jeweled Suit (561)
+// Complete a playthrough having obtained all five jewelries.
 // Wool Coat (600)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - Open north gate of department store with Speed Handle
 // Custom Jacket (604)
+// Amber - Police Station - in a room near where she escapes police station basement via ladder
 // Fur Shawl (605)
 // Joshua - West Junction, west lane, in bed of truck
 // Fur Coat (606)
 // Leopard Jacket (607)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - On floor next to Ivan's apartment
 // Christmas Coat (608)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - In restaurant womens' rest room
 COLLECTION_Coats = [505, 506, 507, 508, 509, 532, 533, 544, 545, 546, 547, 549, 561, 600, 604, 605, 606, 607, 608]
 
 // Inner Wear (11 items)
@@ -1562,14 +1569,16 @@ COLLECTION_Coats = [505, 506, 507, 508, 509, 532, 533, 544, 545, 546, 547, 549, 
 // Joshua - West Junction, east lane, in van
 // Knit Sweater (519)
 // Driving Shirt (520)
+// Isaac - initial outfit; Joshua - Del Ray East Junction - south lane of road Joshua starts on in truck bed
 // Handmade Sweater (521)
 // Waitress Uniform (609)
-// Angelina Area (giant parking lot) (NOTE: The item from the box in the banquet hall is a different item and does not count)
+// Joshua/Amber/Isaac/Ivan  - Angelina Area (giant parking lot) OR in truck in giant parking lot from south entrance (NOTE: The item from the box in the banquet hall is a different item and does not count)
 // Knit Turtleneck (611)
 // Amber - Initial outfit
 // Blazer (612)
 // Paige - Initial outfit
 // Nurse's Uniform (613)
+// Joshua - Mission Care Center - in ambulance next to Jasper
 // Officer's Suit (614)
 // Woman's Jersey (616)
 COLLECTION_InnerWear = [517, 518, 519, 520, 521, 609, 611, 612, 613, 614, 616]
@@ -1580,18 +1589,24 @@ COLLECTION_InnerWear = [517, 518, 519, 520, 521, 609, 611, 612, 613, 614, 616]
 // Driving Pants (523)
 // Isaac - Default outfit
 // Jeans (524)
+// Joshua - Mission Care Center - after getting in boat, go north immediately and there will be apartments to west. This is on one of the apartment balconies; Keith - initial outfit
 // Sweat Pants (525)
 // Joshua - West Junction, east lane, in van
 // Black Pants (526)
+// Joshua - Mission Care Center - after getting in boat, go north immediately and there will be apartments to west. This is on one of the apartment balconies; Ivan - initial outfit
 // Wading Pants (534)
 // Joshua - Historic Rest Area - near crowbar
 // Santa Pants (558)
 // Joshua - outside Downtown Station, on bench to the south
 // Tight Skirt (619)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - Locker Room
 // Seude Skirt (620)
+// Amber - Default outfit
 // School Skirt (622)
+// Paige - Default outfit
 // Workout Pants (623)
 // Christmas Skirt (625)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - Locker Room
 COLLECTION_Pants = [522, 523, 524, 525, 526, 534, 558, 619, 620, 622, 623, 625]
 
 // Head (15 items)
@@ -1600,19 +1615,24 @@ COLLECTION_Pants = [522, 523, 524, 525, 526, 534, 558, 619, 620, 622, 623, 625]
 // Afro Wig (501)
 // Wool Cap (502)
 // Santa Hat (503)
-// Joshua - In Downtown Station, up staircase at northern entrance
+// Joshua - In Downtown Station, up staircase at northern entrance; Joshua/Amber/Isaac/Ivan - Angelina Area - Open south gate of department store with Speed Handle
 // Helmet (504)
+// Joshua/Ivan - In hole where Sierra is trapped
 // Bunny Ears (513)
 // Kitten Ears (535)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - in truck next to south entrance of giant parking lot
 // Silk Hat (536)
 // Joshua - In Downtown Geo, in PAPCO, on north wall
 // Child's Cap (537)
+// Joshua - Del Ray East Junction - east side of river on road
 // Pirate Hat (538)
+// Joshua - Del Ray Circus - Talk to ringmaster (man in purple coat)
 // Baseball Cap (539)
 // Chef's Hat (540)
 // Joshua - West Junction, west lane, end of lane under tarp; Ivan - Craft Cardboard Wall and give to person shivering next to unfinished cardboard wall
 // Knitted Cap (541)
 // Nurse's Cap (542)
+// Joshua - Mission Care Center - on stretcher in park
 // Officer's Cap (543)
 COLLECTION_Head = [500, 501, 502, 503, 504, 513, 535, 536, 537, 538, 539, 540, 541, 542, 543]
 
@@ -1630,18 +1650,24 @@ COLLECTION_Hands = [510, 511, 553, 554]
 // Tennis Shoes (528)
 // Joshua - in Downtown Geo, immediately after using rope, under an overhang to the west
 // Rubber Boots (529)
+// Joshua - Del Ray East Junction - north end of side maintenance walk of raised road (that walk you're on when you finish climbing the ladder up)
 // Driving Shoes (531)
 // Hunting Boots (559)
+// Joshua - Del Ray Circus - on northern broken bridge heading west
 // Santa Boots (560)
+// Joshua - outside Downtown Station, along the south wall of the entrance
 // Dress Shoes (566)
 // Flat Loafers (629)
 // Lace-up Boots (630)
+// Joshua - Mission Care Center - after getting in boat, go north immediately and there will be apartments to west. This is on one of the apartment balconies; Amber - in Police Station locker
 // School Shoes (632)
+// Paige - Initial Outfit
 // Slippers (633)
 // Sneakers (634)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - Through south parking lot entrance (next to big giant pink 909 sign), next to west cliff
 // Christmas Boots (635)
-// Joshua - outside Downtown Station, along the south wall of the entrance
-COLLECTION_Shoes = [527, 528, 529, 531, 539, 560, 566, 629, 630, 632, 633, 634, 635]
+// Joshua/Amber/Isaac/Ivan - Angelina Area - Locker Room
+COLLECTION_Shoes = [527, 528, 529, 531, 559, 560, 566, 629, 630, 632, 633, 634, 635]
 
 // Other (15 items) (this is backpacks, pouches and glasses)
 // Emergency Pack (0)
@@ -1659,7 +1685,7 @@ COLLECTION_Shoes = [527, 528, 529, 531, 539, 560, 566, 629, 630, 632, 633, 634, 
 // Shoulder Bag (208)
 // Amber (May be added by default; in jail locker)
 // Travel Pouch (134)
-// Joshua (at West Junction evac. point, in box near survival point); Isaac/Ivan (At recycle bin next to convenience store parking lot)
+// Joshua (at West Junction evac. point, in box near survival point); Isaac/Ivan (At recycle bin next to convenience store parking lot); Joshua/Amber/Isaac/Ivan - Angelina Area - Giant parking lot
 // Sunglasses (512)
 // Joshua (Historic Rest Area, in bathroom); Amber (if not pointed out to Trapp by Joshua, in an alley next to the gas station building)
 // Ear Muffs (514)
@@ -1787,6 +1813,20 @@ for name in collection_names
 // Joshua - Historic Rest Area - on top of stairs outside east entrance of building
 // Jetski Compass (9)
 // Joshua - Historic Rest Area - behind west side of building, near entrance to restroom
+// Cloud Compass (10)
+// Joshua - East Junction - on balcony after climbing ladder after jumping onto awning from sign
+// Cucumber Compass (11)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - enter parking lot from south entrance (next to giant pink sign), use car to east to pass gap, compass in truck to east
+// Rabbit Compass (12)
+// Joshua - Mission Care Center - Mission Care Center parking lot (North wall)
+// Rabbit Compass (14)
+// Joshua - Del Ray Circus - Before circus entrance, south wall east corner
+// Cucumber Compass (38)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - on road heading north from restaurant (behind the back of a Geo truck)
+// Curry Rice Compass (54)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - on road heading south running along restaurant
+// Sea Urchin Compass (55)
+// Joshua/Amber/Isaac/Ivan - Angelina Area - on road heading east running along restaurant
 compass_count = 65
 function CompassGet(index)
 {
