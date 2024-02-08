@@ -1580,6 +1580,7 @@ COLLECTION_Coats = [505, 506, 507, 508, 509, 532, 533, 544, 545, 546, 547, 549, 
 // Nurse's Uniform (613)
 // Joshua - Mission Care Center - in ambulance next to Jasper
 // Officer's Suit (614)
+// Amber - Police Station - in room in parking lot garage
 // Woman's Jersey (616)
 COLLECTION_InnerWear = [517, 518, 519, 520, 521, 609, 611, 612, 613, 614, 616]
 
@@ -1607,7 +1608,9 @@ COLLECTION_InnerWear = [517, 518, 519, 520, 521, 609, 611, 612, 613, 614, 616]
 // Workout Pants (623)
 // Christmas Skirt (625)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - Locker Room
-COLLECTION_Pants = [522, 523, 524, 525, 526, 534, 558, 619, 620, 622, 623, 625]
+// Officer's Skirt (626)
+// Amber - Police Station - in room in parking lot garage
+COLLECTION_Pants = [522, 523, 524, 525, 526, 534, 558, 619, 620, 622, 623, 625, 626]
 
 // Head (15 items)
 // Taxi Driver Cap (500)
@@ -1634,14 +1637,18 @@ COLLECTION_Pants = [522, 523, 524, 525, 526, 534, 558, 619, 620, 622, 623, 625]
 // Nurse's Cap (542)
 // Joshua - Mission Care Center - on stretcher in park
 // Officer's Cap (543)
+// Amber - Police Station - in room in parking lot garage
 COLLECTION_Head = [500, 501, 502, 503, 504, 513, 535, 536, 537, 538, 539, 540, 541, 542, 543]
 
 // Hands (4 items)
 // Rubber Gloves (510)
+// Joshua - Central Geo District - After jumping off train tracks with Stephanie, immediately south at tanks
 // Knit Gloves (511)
 // Joshua - In Downtown Geo in PAPCO building, on bench on south wall near entrance
 // Driving Gloves (553)
+// Isaac - Initial outfit
 // Ski Gloves (554)
+// Joshua - Del Ray Circus - on a red container behind and to the south of circus tent
 COLLECTION_Hands = [510, 511, 553, 554]
 
 // Shoes (13 items)
@@ -1815,18 +1822,30 @@ for name in collection_names
 // Joshua - Historic Rest Area - behind west side of building, near entrance to restroom
 // Cloud Compass (10)
 // Joshua - East Junction - on balcony after climbing ladder after jumping onto awning from sign
-// Cucumber Compass (11)
+// Porridge Compass (11)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - enter parking lot from south entrance (next to giant pink sign), use car to east to pass gap, compass in truck to east
 // Rabbit Compass (12)
 // Joshua - Mission Care Center - Mission Care Center parking lot (North wall)
-// Rabbit Compass (14)
+// Clown Compass (13)
+// Joshua - Del Ray Circus - on a red container behind and to the south of circus tent
+// Heart Compass (14)
 // Joshua - Del Ray Circus - Before circus entrance, south wall east corner
+// Train Compass (15)
+// Joshua - Central Geo District - after climbing down to bottom train tracks and then back up to top train tracks at stage beginning, at east end of top train track segment
+// Media Tower Compass (16)
+// Joshua (epilogue) - Media Tower Area - on the penultimate floor of the media tower
+// "Ice Cream" Compass (17)
+// Amber - Police Station basement - in a room next to escape window
+// Music Box Compass (23)
+// Amber - Landmark Apartments (flashback) - on David's apartment's balcony
 // Cucumber Compass (38)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - on road heading north from restaurant (behind the back of a Geo truck)
 // Curry Rice Compass (54)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - on road heading south running along restaurant
 // Sea Urchin Compass (55)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - on road heading east running along restaurant
+// King Crab Compass (63)
+// Joshua - Del Ray Platform (after Central Geo) - Immediately north from start location, near red train cars
 compass_count = 65
 function CompassGet(index)
 {
