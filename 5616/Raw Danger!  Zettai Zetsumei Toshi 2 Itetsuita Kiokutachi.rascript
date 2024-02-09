@@ -1529,10 +1529,14 @@ achievement(
 
 // Coat (19 items)
 // Cloth Jacket (505)
+// Amber/Isaac - Landmark Apartments - in David Brazil's bedroom; Ivan - Del Ray High School - on air mattress in courtyard, on unsubmerged area in southwest corner
 // Work Coat (506)
 // Joshua - in destroyed banquet hall - in warehouse room opposite mens locker room, in a box OR in a box after igniting the survival point in a box near the survival point
+// Isaac - Behind car park near police station, NW corner
 // Parka (507)
+// Ivan - David's apartment
 // Cotton Jacket (508)
+// Isaac - Angelina Area - in truck bed against North wall of giant parking lot
 // Taxi Driver Coat (509)
 // Isaac - Initial outfit
 // Makeshift Coat (532)
@@ -1540,22 +1544,26 @@ achievement(
 // Raincoat (533)
 // Joshua - in Downtown Geo, in construction hut near rope
 // White Gown (544)
+// Ivan - Initial outfit
 // Santa Coat (545)
 // Joshua - outside Downtown Station, in bus to south
 // Team Jacket (546)
+// Isaac - Police Station - in alley south of car park
 // Riding Jacket (547)
 // Joshua - Historic Rest Area - at end of first flooded road, there is an overturned monorail car. It can be crawled under to gain access, and the jacket is inside.
+// Ivan - Central Geo District - in area with City Flag in NW corner
 // Down Jacket (549)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - South end of dining room
 // Jeweled Suit (561)
 // Complete a playthrough having obtained all five jewelries.
 // Wool Coat (600)
-// Joshua/Amber/Isaac/Ivan - Angelina Area - Open north gate of department store with Speed Handle
+// Joshua/Amber/Isaac/Ivan - Angelina Area - Open north gate of department store with Speed Handle; Isaac - NorCal Area - after parking behind above-ground building
 // Custom Jacket (604)
 // Amber - Police Station - in a room near where she escapes police station basement via ladder
 // Fur Shawl (605)
-// Joshua - West Junction, west lane, in bed of truck
+// Joshua - West Junction, west lane, in bed of truck; Amber - Downtown Station - in green COFFEE shop
 // Fur Coat (606)
+// Paige - In room through door next to staff room survival point
 // Leopard Jacket (607)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - On floor next to Ivan's apartment
 // Christmas Coat (608)
@@ -1566,11 +1574,12 @@ COLLECTION_Coats = [505, 506, 507, 508, 509, 532, 533, 544, 545, 546, 547, 549, 
 // Waiter Uniform (517)
 // Joshua - Default outfit
 // Mens Jersey (518)
-// Joshua - West Junction, east lane, in van
+// Joshua - West Junction, east lane, in van; Ivan - Landmark Apartments Area - at highway segment, east ledge, after air mattress ride
 // Knit Sweater (519)
 // Driving Shirt (520)
 // Isaac - initial outfit; Joshua - Del Ray East Junction - south lane of road Joshua starts on in truck bed
 // Handmade Sweater (521)
+// Amber/Isaac - Landmark Apartments - behind door right next to apartments front entrance
 // Waitress Uniform (609)
 // Joshua/Amber/Isaac/Ivan  - Angelina Area (giant parking lot) OR in truck in giant parking lot from south entrance (NOTE: The item from the box in the banquet hall is a different item and does not count)
 // Knit Turtleneck (611)
@@ -1582,6 +1591,7 @@ COLLECTION_Coats = [505, 506, 507, 508, 509, 532, 533, 544, 545, 546, 547, 549, 
 // Officer's Suit (614)
 // Amber - Police Station - in room in parking lot garage
 // Woman's Jersey (616)
+// Amber/Isaac - Landmark Apartments - In Room 003 (B1F) bedroom
 COLLECTION_InnerWear = [517, 518, 519, 520, 521, 609, 611, 612, 613, 614, 616]
 
 // Pants / Skirt (13 Items)
@@ -1592,11 +1602,11 @@ COLLECTION_InnerWear = [517, 518, 519, 520, 521, 609, 611, 612, 613, 614, 616]
 // Jeans (524)
 // Joshua - Mission Care Center - after getting in boat, go north immediately and there will be apartments to west. This is on one of the apartment balconies; Keith - initial outfit
 // Sweat Pants (525)
-// Joshua - West Junction, east lane, in van
+// Joshua - West Junction, east lane, in van; Ivan - Landmark Apartments Area - at end of pedestrian bridge after air mattress ride
 // Black Pants (526)
 // Joshua - Mission Care Center - after getting in boat, go north immediately and there will be apartments to west. This is on one of the apartment balconies; Ivan - initial outfit
 // Wading Pants (534)
-// Joshua - Historic Rest Area - near crowbar
+// Joshua - Historic Rest Area - near crowbar; Amber - Hudson Tunnel - Before going on the bridge take a turn to the right (SE) and it's under a planted tree; Isaac - NorCal Area - in keycard-locked room
 // Santa Pants (558)
 // Joshua - outside Downtown Station, on bench to the south
 // Tight Skirt (619)
@@ -1606,22 +1616,26 @@ COLLECTION_InnerWear = [517, 518, 519, 520, 521, 609, 611, 612, 613, 614, 616]
 // School Skirt (622)
 // Paige - Default outfit
 // Workout Pants (623)
+// Amber/Isaac - Landmark Apartments - In Room 003 (B1F) bedroom
 // Christmas Skirt (625)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - Locker Room
 // Officer's Skirt (626)
-// Amber - Police Station - in room in parking lot garage
+// Amber - Police Station - in room in parking lot garage (you can also steal from northern most officer in the parking lot -- why?)
 COLLECTION_Pants = [522, 523, 524, 525, 526, 534, 558, 619, 620, 622, 623, 625, 626]
 
 // Head (15 items)
 // Taxi Driver Cap (500)
 // Isaac - Initial outfit
 // Afro Wig (501)
+// Amber/Isaac - Southeast corner of back courtyard
 // Wool Cap (502)
+// Ivan - Central Geo District - In area with City Flag, on a bench to northeast
 // Santa Hat (503)
 // Joshua - In Downtown Station, up staircase at northern entrance; Joshua/Amber/Isaac/Ivan - Angelina Area - Open south gate of department store with Speed Handle
 // Helmet (504)
-// Joshua/Ivan - In hole where Sierra is trapped
+// Joshua/Ivan - Angelina Area - In hole where Sierra is trapped; Amber - Cascade Dam - go up first stairs at start and double back
 // Bunny Ears (513)
+// Paige - In room through door next to staff room survival point
 // Kitten Ears (535)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - in truck next to south entrance of giant parking lot
 // Silk Hat (536)
@@ -1629,11 +1643,13 @@ COLLECTION_Pants = [522, 523, 524, 525, 526, 534, 558, 619, 620, 622, 623, 625, 
 // Child's Cap (537)
 // Joshua - Del Ray East Junction - east side of river on road
 // Pirate Hat (538)
-// Joshua - Del Ray Circus - Talk to ringmaster (man in purple coat)
+// Joshua - Del Ray Circus - Talk to ringmaster (man in purple coat); Ivan - Landmark Apartments Area - at highway segment, east ledge, after air mattress ride
 // Baseball Cap (539)
+// Amber - After entering underground downtown station, through a broken window on left
 // Chef's Hat (540)
 // Joshua - West Junction, west lane, end of lane under tarp; Ivan - Craft Cardboard Wall and give to person shivering next to unfinished cardboard wall
 // Knitted Cap (541)
+// Amber/Isaac - In alley running along south of Landmark Apartments, SW corner
 // Nurse's Cap (542)
 // Joshua - Mission Care Center - on stretcher in park
 // Officer's Cap (543)
@@ -1642,13 +1658,14 @@ COLLECTION_Head = [500, 501, 502, 503, 504, 513, 535, 536, 537, 538, 539, 540, 5
 
 // Hands (4 items)
 // Rubber Gloves (510)
-// Joshua - Central Geo District - After jumping off train tracks with Stephanie, immediately south at tanks
+// Joshua - Central Geo District - After jumping off train tracks with Stephanie, immediately south at tanks; Isaac - NorCal Area - in keycard-locked room
 // Knit Gloves (511)
-// Joshua - In Downtown Geo in PAPCO building, on bench on south wall near entrance
+// Joshua - In Downtown Geo in PAPCO building, on bench on south wall near entrance; Amber - After meeting Aidan at top of escalator, immediately north under stairs on sidewalk
+// Paige - In school store
 // Driving Gloves (553)
 // Isaac - Initial outfit
 // Ski Gloves (554)
-// Joshua - Del Ray Circus - on a red container behind and to the south of circus tent
+// Joshua - Del Ray Circus - on a red container behind and to the south of circus tent; Amber - Landmark Apartments - Near B1F elevators
 COLLECTION_Hands = [510, 511, 553, 554]
 
 // Shoes (13 items)
@@ -1660,18 +1677,22 @@ COLLECTION_Hands = [510, 511, 553, 554]
 // Joshua - Del Ray East Junction - north end of side maintenance walk of raised road (that walk you're on when you finish climbing the ladder up)
 // Driving Shoes (531)
 // Hunting Boots (559)
-// Joshua - Del Ray Circus - on northern broken bridge heading west
+// Joshua - Del Ray Circus - on northern broken bridge heading west; Ivan - Geo Central District - in area with City Flag, near east vending machines
 // Santa Boots (560)
 // Joshua - outside Downtown Station, along the south wall of the entrance
 // Dress Shoes (566)
+// Ivan - David's apartment
 // Flat Loafers (629)
+// Amber - Downtown Station - REQUIRES AMBER TO HAVE SPEED HANDLE AND JOSHUA TO NOT REMOVE IRON BAR - past coffee shop - through shutter gate with blinking light
 // Lace-up Boots (630)
 // Joshua - Mission Care Center - after getting in boat, go north immediately and there will be apartments to west. This is on one of the apartment balconies; Amber - in Police Station locker
 // School Shoes (632)
-// Paige - Initial Outfit
+// Amber - Steal from Jasper outside Hudson Tunnel Entrance
 // Slippers (633)
+// Paige - Initial Outfit
 // Sneakers (634)
-// Joshua/Amber/Isaac/Ivan - Angelina Area - Through south parking lot entrance (next to big giant pink 909 sign), next to west cliff
+// Joshua/Amber/Isaac/Ivan - Angelina Area - Through south parking lot entrance (next to big giant pink 909 sign), next to west cliff; Amber - steal from Jasper outside police station
+// Amber/Isaac - Landmark Apartments - Room 003 (B1F) in entryway
 // Christmas Boots (635)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - Locker Room
 COLLECTION_Shoes = [527, 528, 529, 531, 559, 560, 566, 629, 630, 632, 633, 634, 635]
@@ -1679,14 +1700,15 @@ COLLECTION_Shoes = [527, 528, 529, 531, 559, 560, 566, 629, 630, 632, 633, 634, 
 // Other (15 items) (this is backpacks, pouches and glasses)
 // Emergency Pack (0)
 // Joshua (in destroyed banquet hall, if knapsack is not picked up); Amber (in parking lot break room with disguise; in hudson tunnel); Ivan (in laundromat)
+// Isaac - In car park near police station, NE
 // Knapsack (60)
 // Joshua (in his locker, A-5, after evacuation starts in banquet hall)
 // Backpack (137)
-// Joshua (Downtown Station, top story, down the stairs)
+// Joshua (Downtown Station, top story, down the stairs); Amber - Downtown Station - before getting on top of subway cars
 // Large Backpack (138)
-// Isaac (Hudson Dam, in far room on the lower level, opposite room with gas can)
+// Isaac (Hudson Dam, in far room on the lower level, opposite room with gas can); Ivan - Central Geo District - in area with City Flag, near center statue
 // Satchel (209)
-// Joshua (East Junction, on elevated road near where Beth's mother is waiting for Beth)
+// Joshua (East Junction, on elevated road near where Beth's mother is waiting for Beth); Ivan - David's apartment
 // Sports Bag (232)
 // Paige (After escaping Mr. Savage, on top of a locker near school store)
 // Shoulder Bag (208)
@@ -1696,13 +1718,17 @@ COLLECTION_Shoes = [527, 528, 529, 531, 559, 560, 566, 629, 630, 632, 633, 634, 
 // Sunglasses (512)
 // Joshua (Historic Rest Area, in bathroom); Amber (if not pointed out to Trapp by Joshua, in an alley next to the gas station building)
 // Ear Muffs (514)
-// Joshua (Historic Rest Area, in hallway to kitchen)
+// Joshua (Historic Rest Area, in hallway to kitchen); Isaac/Ivan - Convenience Store - in restroom (NW)
 // Party Glasses (515)
 // Amber (Hudson Tunnel, near the stairs to the exit to the center of the bridge)
 // Red Glasses (516)
+// Isaac - Police Station - SW corner of car park
 // Goggles (551)
+// Amber - Cascade Dam - in the first room up the stairs from the start, near couches on south wall; Ivan - Substation - behind building where power is turned on, NW corner
 // Myopia Glasses (552)
+// Ivan - Convenience Store Area - In Cardboard Wall shelter
 // Cloth Mask (555)
+// Ivan - Del Ray High School - on air mattress in courtyard, on unsubmerged area in southwest corner
 COLLECTION_Other = [0, 60, 137, 138, 209, 232, 208, 134, 512, 514, 515, 516, 551, 552, 555]
 
 function ItemGet(item_id)
@@ -1833,19 +1859,103 @@ for name in collection_names
 // Train Compass (15)
 // Joshua - Central Geo District - after climbing down to bottom train tracks and then back up to top train tracks at stage beginning, at east end of top train track segment
 // Media Tower Compass (16)
-// Joshua (epilogue) - Media Tower Area - on the penultimate floor of the media tower
+// Joshua (epilogue) - Media Tower Area - on the penultimate floor of the media tower, to the NW
 // "Ice Cream" Compass (17)
 // Amber - Police Station basement - in a room next to escape window
+// Frozen Compass (18)
+// Amber - Police Station parking lot - near west fence, near broken wall near oil tanker
+// Blokus Compass (19)
+// Amber - Downtown Geo - JOSHUA CANNOT RAT OUT AMBER - After getting to hallway with construction scaffolding on right, head south and compass is on road.
+// Fig Compass (20)
+// Amber - Downtown Geo - After seeing news report, take few steps to left and find compass
+// Stocking Compass (21)
+// Amber - Downtown Station - REQUIRES AMBER TO HAVE SPEED HANDLE AND JOSHUA TO NOT REMOVE IRON BAR - past coffee shop - through shutter gate with blinking light
+// Fruitcake Compass (22)
+// Amber - Downtown Station - Near exit to downtown station on east side of station
 // Music Box Compass (23)
 // Amber - Landmark Apartments (flashback) - on David's apartment's balcony
+// Diver Compass (24)
+// Amber - Hudson Tunnel - outside of bridge entrance to hudson tunnel, near jewelry thief in the direction of her back
+// Piglet Compass (25)
+// Amber - Hudson Tunnel - SE corner of the underwater room of the tunnel
+// Snowflake Compass (26)
+// Amber/Isaac - Landmark Apartments - alley running along south of apartments, above the door to rear entrance
+// Baby Compass (27)
+// Amber/Isaac - Landmark Apartments - NE corner of back courtyard
+// Dam Compass (28)
+// Amber - Cascade Dam - after going up some stairs which collapse, double back over west instead of going up more stairs
+// Therapy Ball Compass (29)
+// Isaac/Ivan - Convenience Store - on sidewalk heading south outside convenience store entrance
+// Turkey Leg Compass (30)
+// Issac/Ivan - Convenience Store - on sales counter
+// Trumpet Compass (31)
+// Isaac - Police Station - in alley south of car park
+// Anime Compass (32)
+// Isaac - Police Station - near fence east of Sophia
+// Yose Nabe Compass (33)
+// Amber/Isaac - Landmark Apartments - End of hallway 1F
+// NorCal Compass (34)
+// Isaac - NorCal Area - in room opposite hall after leaving keycard-locked room
+// Banana Compass (35)
+// Isaac - NorCal Area - in keycard-locked room
+// Hostess Compass (36)
+// Isaac - NorCal Area - after going down escalator, in first room on right
+// Kiddo Compass (37)
+// Isaac - Discovery Heights - GO HERE FIRST AFTER SOPHIA IS TRAPPED - Go down street and you will see people on stairs to left near end, honk (map button; L3) near them for cutscene and take them
 // Cucumber Compass (38)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - on road heading north from restaurant (behind the back of a Geo truck)
+// Blue Marlin Compass (39)
+// Isaac - Cascade Dam - go all the way west from the room Jaden is standing in
+// Snowboarder Compass (40)
+// Isaac - Cascade Dam - Near gas container
+// Assistant Compass (41)
+// Isaac - Del Ray Station Area - on southern part of the looped road, under raised walking area
+// Tweezers Compass (42)
+// Paige - In lab room west of where Kelly is trapped, in the sink
+// Triangle Compass (43)
+// Paige - Outside window where Kelly calls out to Paige
+// Statue Compass (44)
+// Ivan - Del Ray High School - on air mattress in courtyard, on soccer net to south
+// Beam Compass (45)
+// Paige - All the way top of the staircase next to school store
+// Hot Dog Compass (46)
+// Paige - In school store
+// Rubber Compass (47)
+// Paige/Ivan - Upper walkway of gym, NE corner
+// Cat Compass (48)
+// Paige/Ivan - In female restroom north past where Ivan/Sierra are standing
+// Hardhat Compass (49)
+// Paige/Ivan - Walk along west awning outside gym after encountering Emily
+// Rudolph's Compass (50)
+// Ivan - Convenience Store Area - on pedestrian bridge
+// R-9D Compass (51)
+// Ivan - Convenience Store Area - Near bench outside Hudson Tunnel entrance
+// Snowman Compass (52)
+// Ivan - Landmark Apartments Area - on pedestrian bridge after air mattress ride
+// Samurai Compass (53)
+// Ivan - Landmark Apartments Area - at end of pedestrian bridge after air mattress ride
 // Curry Rice Compass (54)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - on road heading south running along restaurant
 // Sea Urchin Compass (55)
 // Joshua/Amber/Isaac/Ivan - Angelina Area - on road heading east running along restaurant
+// Candle Compass (56)
+// Ivan - Angelina Area - In Ivan's apartment
+// Faucet Compass (57)
+// Keith - On walkway from Capitol Magazine to Del Ray Station
+// Helicopter Compass (58)
+// Ivan - Central Geo District - in area with City Flag, near center statue
+// Sea Gull Compass (59)
+// Ivan - Central Geo District - in area with City Flag, near lightpole northeast
+// Big Dipper Compass (60)
+// Ivan - Substation - NE corner of substation, next to falling pillar
+// Cartoon Compass (61)
+// Joshua/Keith - Del Ray Station - After climbing 3 escalators will be immediately west
+// Crowbar Compass (62)
+// Keith - Near start point
 // King Crab Compass (63)
 // Joshua - Del Ray Platform (after Central Geo) - Immediately north from start location, near red train cars
+// Survivor Compass (64)
+// Keith - Near Del Ray Station, on raised platform over road, on a small grassy planter on west side.
 compass_count = 65
 function CompassGet(index)
 {
@@ -2088,7 +2198,7 @@ MapNameLookup = {
     //05070000-05070029=Ivan is attempting to destroy Echidna at a Substation
     //05070030-05070039=Ivan is confronting Apolon at the Substation
     //05070040-05070099=Ivan will destroy Echidna, regardless of Apolon's interference in his plans
-    //06010000,06010012=Keith is attempting to escape to higher ground via the Media Center building // Keith epilogue
+    //06010000-06010012=Keith is attempting to escape to higher ground via the Media Center building // Keith epilogue
     //06010013-06010099=Keith is climbing up the Media Tower
 }
 
