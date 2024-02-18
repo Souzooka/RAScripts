@@ -2291,12 +2291,12 @@ RegionLookup = {
 rp_fallback_string = "{0} In a loading screen or the title screen"
 
 for region in [REGION_EU, REGION_JP] {
-    rich_presence_conditional_display(region == GetRegion() && PlayerExists(), "{0} {1} | {2} 🧭 | {3} Difficulty | BT: {4} / 30000.0 | {5}",
+    rich_presence_conditional_display(region == GetRegion() && PlayerExists(), "{0} {1} | {2} 🧭 | {3} Difficulty | BT: {4}% | {5}",
         rich_presence_lookup("Region", GetRegion(), RegionLookup),
         rich_presence_lookup("MapName", MapWithGateID(), MapNameLookup),
         rich_presence_lookup("Compass", CompassID, CompassLookup),
         rich_presence_lookup("Difficulty", Difficulty, DifficultyLookup),
-        rich_presence_value("Float1", BodyHeat, format="FLOAT1"),
+        rich_presence_value("BodyHeat", BodyHeat * (100.0/30000), "FLOAT1"),
         rich_presence_lookup("WetLevel", WetLevel, WetLookup)
     )
 }
