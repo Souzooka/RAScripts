@@ -1,19 +1,23 @@
 // Firefighter F.D.18
 // #ID = 27515
 
+NULL = 0
+
 function GetRealAddress(us_address, eu_address, jp_address)
 {
     // TODO
     return us_address
 }
 
+StageClearedMenu = dword(GetRealAddress(0x52AF00, 0x0, 0x0))
 GameStatus = dword(GetRealAddress(0x5A5108, 0x0, 0x0))
 StageID = GetRealAddress(0x5A5118, 0x0, 0x0)
 Difficulty = dword(GetRealAddress(0x5A51F8, 0x0, 0x0))
+CharacterID = dword(GetRealAddress(0x5A548C, 0x0, 0x0))
 PlayerInitialMaxHealth = dword(GetRealAddress(0x5C4F90, 0x0, 0x0))
 PlayerMaxHealth = dword(GetRealAddress(0x5C4F94, 0x0, 0x0))
 PlayerHealth = dword(GetRealAddress(0x5C4F98, 0x0, 0x0))
-CharacterID = dword(GetRealAddress(0x5A548C, 0x0, 0x0))
+
 
 // Enums
 STATUS_SoftResetLoad = 2
@@ -158,3 +162,89 @@ for character_id in CharacterNames
 rich_presence_display("Playing Firefighter F.D.18")
 
 // RICH PRESENCE END
+
+// LEADERBOARDS START
+
+LeaderboardStageNames = {
+    0x11: "Tunnel",
+    0x21: "Lab. West wing 2F",
+    0x22: "Lab. West wing 3F",
+    0x23: "Lab. West wing 5F",
+    0x24: "Lab. East wing 4F",
+    0x25: "Lab. Stairwell",
+    0x31: "Cruiser Ballroom",
+    0x32: "Cruiser Cabin",
+    0x33: "Cruiser Engine room",
+    0x41: "Plant Storeroom",
+    0x42: "Plant Control room",
+    0x43: "Plant Chemical warehouse 1",
+    0x44: "Plant Production line",
+    0x45: "Plant Tank",
+    0x46: "Plant Chemical warehouse 2",
+}
+
+LeaderboardStageIDs = {
+    0x11: "1",
+    0x21: "2-1",
+    0x22: "2-2",
+    0x23: "2-3",
+    0x24: "2-4",
+    0x25: "2-5",
+    0x31: "3-1",
+    0x32: "3-2",
+    0x33: "3-3",
+    0x41: "4-1",
+    0x42: "4-2",
+    0x43: "4-3",
+    0x44: "4-4",
+    0x45: "4-5",
+    0x46: "4-6",
+}
+
+function CreateLeaderboardStart(stage_id, difficulty)
+{
+    OFFSET_clear_time = 0x128
+    return GameStatus == STATUS_StageCleared && 
+           byte(StageID) == stage_id && 
+           Difficulty == difficulty &&
+           StageClearedMenu != NULL &&
+           // Takes a bit for the clear time value to be initialized on the stage cleared screen
+           // It is memset to 0 immediately so we can count on the prev being 0
+           prev(float(StageClearedMenu + OFFSET_clear_time)) == 0 &&
+           float(StageClearedMenu + OFFSET_clear_time) != 0
+}
+
+function CreateLeaderboardCancel(stage_id, difficulty)
+{
+    return always_false()
+}
+
+function CreateLeaderboardSubmit(stage_id, difficulty)
+{
+    return CreateLeaderboardStart(stage_id, difficulty)
+}
+
+function CreateLeaderboardValue(stage_id, difficulty)
+{
+    OFFSET_clear_time = 0x128
+    return float(StageClearedMenu + OFFSET_clear_time) * 100.0 // convert to centisecs
+}
+
+for stage_id in LeaderboardStageNames
+{
+   for difficulty in Difficulties
+   {
+       leaderboard(
+           title=format("Stage {0} - Record Time - {1}", LeaderboardStageIDs[stage_id], Difficulties[difficulty]),
+           description=format("Complete the {0} stage on the {1} difficulty in the fastest time!", LeaderboardStageNames[stage_id], Difficulties[difficulty]),
+           start=CreateLeaderboardStart(stage_id, difficulty),
+           cancel=CreateLeaderboardCancel(stage_id, difficulty),
+           submit=CreateLeaderboardSubmit(stage_id, difficulty),
+           value=CreateLeaderboardValue(stage_id, difficulty),
+           format="MILLISECS",
+           lower_is_better=true
+       )
+   }
+}
+
+// LEADERBOARDS END
