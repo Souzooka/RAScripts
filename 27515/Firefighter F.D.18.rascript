@@ -204,14 +204,21 @@ LeaderboardStageIDs = {
 function CreateLeaderboardStart(stage_id, difficulty)
 {
     OFFSET_clear_time = 0x128
+    OFFSET_tallied_clear_time = 0x148
+    ClearTime = float(StageClearedMenu + OFFSET_clear_time)
+    TalliedClearTime = float(StageClearedMenu + OFFSET_tallied_clear_time)
+    
     return GameStatus == STATUS_StageCleared && 
            byte(StageID) == stage_id && 
            Difficulty == difficulty &&
            StageClearedMenu != NULL &&
-           // Takes a bit for the clear time value to be initialized on the stage cleared screen
-           // It is memset to 0 immediately so we can count on the prev being 0
-           prev(float(StageClearedMenu + OFFSET_clear_time)) == 0 &&
-           float(StageClearedMenu + OFFSET_clear_time) != 0
+           // Takes a bit for the clear time value to be set to the true value,
+           // but it is memset to 0 (nor do we expect someone to finish a stage in 0 frames)
+           // so we can just check it's not that value to make sure the time is accurate.
+           ClearTime != 0 &&
+           // And actually for timing purposes we'll send off the record once the display matches the actual clear time
+           prev(TalliedClearTime) != ClearTime &&
+           TalliedClearTime == ClearTime
 }
 
 function CreateLeaderboardCancel(stage_id, difficulty)
@@ -221,7 +228,7 @@ function CreateLeaderboardCancel(stage_id, difficulty)
 
 function CreateLeaderboardSubmit(stage_id, difficulty)
 {
-    return CreateLeaderboardStart(stage_id, difficulty)
+    return always_true()
 }
 
 function CreateLeaderboardValue(stage_id, difficulty)
