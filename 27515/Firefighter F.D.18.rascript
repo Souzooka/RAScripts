@@ -18,8 +18,9 @@ PlayerInitialMaxHealth = dword(GetRealAddress(0x5C4F90, 0x0, 0x0))
 PlayerMaxHealth = dword(GetRealAddress(0x5C4F94, 0x0, 0x0))
 PlayerHealth = dword(GetRealAddress(0x5C4F98, 0x0, 0x0))
 // See note for 0x5a5178
-PlayerLostItemsTemp = GetRealAddress(0x5A5188, 0x0, 0x0)
-PlayerLostItemsPerm = GetRealAddress(0x5A5CD8, 0x0, 0x0)
+LostItemsTemp = GetRealAddress(0x5A5188, 0x0, 0x0)
+LostItemsPerm = GetRealAddress(0x5A5CD8, 0x0, 0x0)
+AwardInfo = GetRealAddress(0x52AEE0, 0x0, 0x0)
 
 // Enums
 STATUS_SoftResetLoad = 2
@@ -36,6 +37,15 @@ STATUS_IntroCutsceneLoad = 16
 STATUS_IntroCutscene = 17
 STATUS_CinemaViewer = 22
 STATUS_DebugStart = 23
+
+DIFFICULTY_Easy = 0
+DIFFICULTY_Normal = 1
+DIFFICULTY_Hard = 2
+DIFFICULTY_VeryHard = 3
+
+AWARD_RecordTimeGold = 2
+AWARD_RescuedEntireCity = 13
+AWARD_ClearVeryHardMode = 14
 
 FINAL_RESULT = 1
 
@@ -121,10 +131,10 @@ StageActivities = {
 }
 
 Difficulties = {
-    0: "Easy",
-    1: "Normal",
-    2: "Hard",
-    3: "Very Hard",
+    DIFFICULTY_Easy: "Easy",
+    DIFFICULTY_Normal: "Normal",
+    DIFFICULTY_Hard: "Hard",
+    DIFFICULTY_VeryHard: "Very Hard",
 }
 
 // You *CAN* divide by a runtime value (i.e. PlayerInitialMaxHealth) BUT you
@@ -374,7 +384,7 @@ function LostItemsTrigger(stage_id)
     deltaVal = 0
     for lost_item_id in LostItemIDs[stage_id]
     {
-        nowItem = byte(PlayerLostItemsPerm + lost_item_id)
+        nowItem = byte(LostItemsPerm + lost_item_id)
         deltaItem = prev(nowItem)
     
         // NOTE: 0 / 0 is 0 in RA
@@ -398,6 +408,119 @@ for stage_id in LostItemIDs
         points=LostItemPoints[stage_id],
         trigger=LostItemsTrigger(stage_id)
     )
+}
+
+// RECORD TIMES - GOLD
+
+// While I don't necessarily agree with the design, we want to direct players to earn gold record times
+// on *EVERY* difficulty; earning all gold times on any one difficulty unlocks a new character in the Character Select
+
+// Arbitrary designations (mostly for course length + difficulty tweak) for point distributions
+// Kind of silly if a stage that is 3 minutes is scored the same as a 15 minute one
+
+SHORT = 0
+MEDIUM = 1
+LONG = 2
+VERY_LONG = 3
+
+RecordTimePoints = {
+    DIFFICULTY_Easy: {
+        SHORT: 2,
+        MEDIUM: 3,
+        LONG: 4,
+        VERY_LONG: 5,
+    },
+    DIFFICULTY_Normal: {
+        SHORT: 3,
+        MEDIUM: 4,
+        LONG: 5,
+        VERY_LONG: 10,
+    },
+    DIFFICULTY_Hard: {
+        SHORT: 4,
+        MEDIUM: 5,
+        LONG: 10,
+        VERY_LONG: 10,
+    },
+    DIFFICULTY_VeryHard: {
+        SHORT: 5,
+        MEDIUM: 10,
+        LONG: 10,
+        VERY_LONG: 25,
+    }
+}
+
+StageLengths = {
+    0x11: SHORT, // 3:30
+    0x21: SHORT, // 4:50 (5:14 Very Hard)
+    0x22: MEDIUM, // 5:20 (5:59)
+    0x23: MEDIUM, // 6:10 (9:30)
+    0x24: LONG, // 9:50 (12:38)
+    0x25: MEDIUM, // 6:20 (10:19)
+    0x31: SHORT, // 4:10 (4:43)
+    0x32: VERY_LONG, // 9:50 (16:14)
+    0x33: VERY_LONG, // 16:00 (16:53)
+    0x41: MEDIUM, // 4:10 (6:38)
+    0x42: MEDIUM, // 5:50
+    0x43: LONG, // 9:50 (10:17)
+    0x44: VERY_LONG, // 11:40 (14:57)
+    0x45: LONG, // 3:10 (3:46) - this one gets a boost because the final bosses are ass
+    0x46: SHORT, // 3:20 (5:10)
+}
+
+function RecordTimeTrigger(stage_id, difficulty)
+{
+    OFFSET_clear_type = 0x1C
+    ClearType = dword(StageClearedMenu + OFFSET_clear_type)
+
+    // Confirms we're actually on the stage cleared screen (for the right stage and difficulty)
+    primary_condition = GameStatus == STATUS_StageCleared && 
+                        byte(StageID) == stage_id && 
+                        Difficulty == difficulty &&
+                        StageClearedMenu != NULL &&
+                        ClearType != FINAL_RESULT
+                        
+    // Now we're going to check for when the "Record Time! Gold!" award appears up on screen
+    secondary_condition = always_false()
+    
+    for i in range(0, 8 - 1)
+    {
+        OFFSET_award_id = 0x150
+        award_info = dword(AwardInfo + i * 4)
+        award_id = dword(award_info + OFFSET_award_id)
+        OFFSET_award_shown = 0x2C
+        stage_cleared_menu = StageClearedMenu
+        award_shown = word(stage_cleared_menu + OFFSET_award_shown)
+        
+        cond = award_info != NULL &&
+               award_shown == i &&
+               prev(award_shown) != i &&
+               award_id == AWARD_RecordTimeGold
+        secondary_condition = secondary_condition || cond
+    }
+    
+    return primary_condition && secondary_condition
+}
+
+for difficulty in Difficulties
+{
+    for stage_id in StageLengths
+    {
+        achievement(
+            title=format(
+                "Record Time - {0} - {1}",
+                Difficulties[difficulty],
+                AchievementStageNames[stage_id]
+            ),
+            description=format(
+                "Obtain the \"Record Time! Gold!\" award on the {0} difficulty on Stage {1}.",
+                Difficulties[difficulty],
+                LeaderboardStageIDs[stage_id]
+            ),
+            points=RecordTimePoints[difficulty][StageLengths[stage_id]],
+            trigger=RecordTimeTrigger(stage_id, difficulty)
+        )   
+    }
 }
 
 // ACHIEVEMENTS END
