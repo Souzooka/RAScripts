@@ -35,6 +35,7 @@ STATUS_IntroCutscene = 17
 STATUS_CinemaViewer = 22
 STATUS_DebugStart = 23
 
+FINAL_RESULT = 1
 
 function TestStageIDElement(address, element_size, test_func)
 {
@@ -77,7 +78,6 @@ CharacterNames = {
     0x3: "Miss Crimson",
     0x4: "Miss Jet-Black",
     0x5: "Miss Holy White",
-    0x6: "Dean McGregor",
 }
 
 StageNames = {
@@ -125,8 +125,9 @@ Difficulties = {
     3: "Very Hard",
 }
 
-// Because dividing by a runtime value is too high tech,
-// we'll just copy the in-game RP 7 times, why not
+// You *CAN* divide by a runtime value (i.e. PlayerInitialMaxHealth) BUT you
+// seemingly can't string together 2 arithmetic operations for an RP value
+// so we have to do constant folding for max health / 100
 CharacterMaxHealths = {
     0x0: 60000,
     0x1: 60000,
@@ -134,7 +135,6 @@ CharacterMaxHealths = {
     0x3: (45000 - 10), // Tweak the value a little bit so rounding on RP display doesn't show 99% at full health
     0x4: 60000,
     0x5: 90000,
-    0x6: 90000,
 }
 
 main_menu_statuses = [STATUS_SoftResetLoad, STATUS_Initial, STATUS_Splash, STATUS_TitleMenu, STATUS_IntroCutsceneLoad, STATUS_IntroCutscene]
@@ -201,17 +201,31 @@ LeaderboardStageIDs = {
     0x46: "4-6",
 }
 
-function CreateLeaderboardStart(stage_id, difficulty)
+// Upon consultation with speedrunners these are different enough to justify splitting them up
+LeaderboardCharacterNames = {
+    0: "Dean Fire Coat",
+    1: "Dean Unarmed",
+    2: "Dean Max McGregor",
+    3: "Miss Crimson",
+    4: "Miss Jet-Black",
+    5: "Miss Holy White",
+}
+
+function CreateLeaderboardStart(stage_id, character_id, difficulty)
 {
+    OFFSET_clear_type = 0x1C
     OFFSET_clear_time = 0x128
     OFFSET_tallied_clear_time = 0x148
+    ClearType = dword(StageClearedMenu + OFFSET_clear_type)
     ClearTime = float(StageClearedMenu + OFFSET_clear_time)
     TalliedClearTime = float(StageClearedMenu + OFFSET_tallied_clear_time)
     
     return GameStatus == STATUS_StageCleared && 
            byte(StageID) == stage_id && 
+           CharacterID == character_id &&
            Difficulty == difficulty &&
            StageClearedMenu != NULL &&
+           ClearType != FINAL_RESULT &&
            // Takes a bit for the clear time value to be set to the true value,
            // but it is memset to 0 (nor do we expect someone to finish a stage in 0 frames)
            // so we can just check it's not that value to make sure the time is accurate.
@@ -221,37 +235,50 @@ function CreateLeaderboardStart(stage_id, difficulty)
            TalliedClearTime == ClearTime
 }
 
-function CreateLeaderboardCancel(stage_id, difficulty)
+function CreateLeaderboardCancel(stage_id, character_id, difficulty)
 {
     return always_false()
 }
 
-function CreateLeaderboardSubmit(stage_id, difficulty)
+function CreateLeaderboardSubmit(stage_id, character_id, difficulty)
 {
     return always_true()
 }
 
-function CreateLeaderboardValue(stage_id, difficulty)
+function CreateLeaderboardValue(stage_id, character_id, difficulty)
 {
     OFFSET_clear_time = 0x128
     return float(StageClearedMenu + OFFSET_clear_time) * 100.0 // convert to centisecs
 }
 
-for stage_id in LeaderboardStageNames
+for character_id in LeaderboardCharacterNames
 {
-   for difficulty in Difficulties
-   {
-       leaderboard(
-           title=format("Stage {0} - Record Time - {1}", LeaderboardStageIDs[stage_id], Difficulties[difficulty]),
-           description=format("Complete the {0} stage on the {1} difficulty in the fastest time!", LeaderboardStageNames[stage_id], Difficulties[difficulty]),
-           start=CreateLeaderboardStart(stage_id, difficulty),
-           cancel=CreateLeaderboardCancel(stage_id, difficulty),
-           submit=CreateLeaderboardSubmit(stage_id, difficulty),
-           value=CreateLeaderboardValue(stage_id, difficulty),
-           format="MILLISECS",
-           lower_is_better=true
-       )
-   }
+    for stage_id in LeaderboardStageNames
+    {
+       for difficulty in Difficulties
+       {
+           leaderboard(
+               title=format(
+                   "Stage {0} - Record Time - {1} - {2}",
+                   LeaderboardStageIDs[stage_id],
+                   LeaderboardCharacterNames[character_id],
+                   Difficulties[difficulty]
+               ),
+               description=format(
+                   "Complete the {0} stage on the {1} difficulty as {2} in the fastest time!", 
+                   LeaderboardStageNames[stage_id], 
+                   Difficulties[difficulty],
+                   LeaderboardCharacterNames[character_id]
+               ),
+               start=CreateLeaderboardStart(stage_id, character_id, difficulty),
+               cancel=CreateLeaderboardCancel(stage_id, character_id, difficulty),
+               submit=CreateLeaderboardSubmit(stage_id, character_id, difficulty),
+               value=CreateLeaderboardValue(stage_id, character_id, difficulty),
+               format="MILLISECS",
+               lower_is_better=true
+           )
+       }
+    }
 }
 
 // LEADERBOARDS END
