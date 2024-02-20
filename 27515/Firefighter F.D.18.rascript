@@ -17,7 +17,9 @@ CharacterID = dword(GetRealAddress(0x5A548C, 0x0, 0x0))
 PlayerInitialMaxHealth = dword(GetRealAddress(0x5C4F90, 0x0, 0x0))
 PlayerMaxHealth = dword(GetRealAddress(0x5C4F94, 0x0, 0x0))
 PlayerHealth = dword(GetRealAddress(0x5C4F98, 0x0, 0x0))
-
+// See note for 0x5a5178
+PlayerLostItemsTemp = GetRealAddress(0x5A5188, 0x0, 0x0)
+PlayerLostItemsPerm = GetRealAddress(0x5A5CD8, 0x0, 0x0)
 
 // Enums
 STATUS_SoftResetLoad = 2
@@ -282,3 +284,120 @@ for character_id in LeaderboardCharacterNames
 }
 
 // LEADERBOARDS END
+
+// ACHIEVEMENTS START
+
+// These are title case (as opposed to the in-game names used in the stage select for the leaderboard, which are not)
+AchievementStageNames = {
+    0x11: "Tunnel",
+    0x21: "Lab. West Wing 2F",
+    0x22: "Lab. West Wing 3F",
+    0x23: "Lab. West Wing 5F",
+    0x24: "Lab. East Wing 4F",
+    0x25: "Lab. Stairwell",
+    0x31: "Cruiser Ballroom",
+    0x32: "Cruiser Cabin",
+    0x33: "Cruiser Engine Room",
+    0x41: "Plant Storeroom",
+    0x42: "Plant Control Room",
+    0x43: "Plant Chemical Warehouse 1",
+    0x44: "Plant Production Line",
+    0x45: "Plant Tank",
+    0x46: "Plant Chemical Warehouse 2",
+}
+
+// LOST ITEMS
+
+function dict_map(dict, predicate)
+{
+    // no dict_map??
+    result = {}
+    for key in dict
+    {
+        result[key] = predicate(dict[key])
+    }
+    return result
+}
+
+function CalcLostItemPoints(arr)
+{
+    if length(arr) > 5
+    {
+        // 3-2 is a special boi
+        return 10
+    }
+    return length(arr)
+}
+
+// For constant-time logic
+StageIDToIndex = {
+    0x11: 1,
+    0x21: 2,
+    0x22: 3,
+    0x23: 4,
+    0x24: 5,
+    0x25: 6,
+    0x31: 7,
+    0x32: 8,
+    0x33: 9,
+    0x41: 10,
+    0x42: 11,
+    0x43: 12,
+    0x44: 13,
+    0x45: 14,
+    0x46: 15,
+}
+
+LostItemIDs = {
+    0x11: [16, 34, 42],
+    0x21: [2, 8, 17],
+    0x22: [11, 19, 21],
+    0x23: [5, 24, 40, 44],
+    0x24: [22, 27, 31],
+    0x25: [9, 13, 35, 38],
+    0x31: [0, 3, 6],
+    0x32: [1, 4, 7, 32, 39, 41, 43, 45], // bruh why do you have 8
+    0x33: [12, 14, 18, 36],
+    0x41: [15, 25],
+    0x42: [20, 29],
+    0x43: [23, 26, 33],
+    0x44: [28, 30, 46],
+    0x46: [10, 37, 47],
+}
+
+// This ends up being exactly 50 points, so it works out well
+LostItemPoints = dict_map(LostItemIDs, CalcLostItemPoints)
+
+function LostItemsTrigger(stage_id)
+{
+    nowVal = 0
+    deltaVal = 0
+    for lost_item_id in LostItemIDs[stage_id]
+    {
+        nowItem = byte(PlayerLostItemsPerm + lost_item_id)
+        deltaItem = prev(nowItem)
+    
+        // NOTE: 0 / 0 is 0 in RA
+        nowVal = nowVal + (nowItem / nowItem)
+        deltaVal = deltaVal + (deltaItem / deltaItem)
+    }
+    
+    return measured(
+               nowVal == length(LostItemIDs[stage_id]),
+               when=GameStatus == STATUS_StageCleared && 
+                    byte(StageID) == stage_id &&
+                    nowVal != deltaVal
+           )
+}
+
+for stage_id in LostItemIDs
+{
+    achievement(
+        title=format("Lost Items - {0}", AchievementStageNames[stage_id]),
+        description=format("Collect all Lost Items in Stage {0}.", LeaderboardStageIDs[stage_id]),
+        points=LostItemPoints[stage_id],
+        trigger=LostItemsTrigger(stage_id)
+    )
+}
+
+// ACHIEVEMENTS END
