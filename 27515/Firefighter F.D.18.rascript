@@ -656,6 +656,7 @@ function RegularBossTrigger(stage_id)
     boss_hp_cond = GetBossHPCond()
     return byte(StageID) == stage_id &&
            GameStatus == STATUS_Game &&
+           prev(GameStatus) == STATUS_Game && // Try to prevent a false trigger when entering a new stage after soft-resetting another stage while in the boss
            boss_hp_cond &&
            // This is just a sanity check because boss max/current HP aren't zeroed out from exit until entering the game
            // (and it might also prevent triggers on death too?)
@@ -693,6 +694,7 @@ function RepeatBossTrigger(stage_id, count)
     reset = never(!any_of([STATUS_Game, STATUS_GameCutscene, STATUS_GameCutsceneLoad], x=>GameStatus == x))
     return byte(StageID) == stage_id &&
            GameStatus == STATUS_Game &&
+           prev(GameStatus) == STATUS_Game && // Try to prevent a false trigger when entering a new stage after soft-resetting another stage while in the boss
            tally(count, boss_hp_cond) &&
            reset &&
            BossMaxHP != 0
