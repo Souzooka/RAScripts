@@ -14,9 +14,9 @@ GameStatus = dword(GetRealAddress(0x5A5108, 0x0, 0x0))
 StageID = GetRealAddress(0x5A5118, 0x0, 0x0)
 Difficulty = dword(GetRealAddress(0x5A51F8, 0x0, 0x0))
 CharacterID = dword(GetRealAddress(0x5A548C, 0x0, 0x0))
-PlayerInitialMaxHealth = dword(GetRealAddress(0x5C4F90, 0x0, 0x0))
-PlayerMaxHealth = dword(GetRealAddress(0x5C4F94, 0x0, 0x0))
-PlayerHealth = dword(GetRealAddress(0x5C4F98, 0x0, 0x0))
+PlayerInitialMaxHP = dword(GetRealAddress(0x5C4F90, 0x0, 0x0))
+PlayerMaxHP = dword(GetRealAddress(0x5C4F94, 0x0, 0x0))
+PlayerHP = dword(GetRealAddress(0x5C4F98, 0x0, 0x0))
 // See note for 0x5a5178
 LostItemsTemp = GetRealAddress(0x5A5188, 0x0, 0x0)
 LostItemsPerm = GetRealAddress(0x5A5CD8, 0x0, 0x0)
@@ -194,8 +194,8 @@ for character_id in CharacterNames
         rich_presence_lookup("StageActivity", byte(StageID), StageActivities),
         rich_presence_lookup("StageName", byte(StageID), StageNames),
         rich_presence_lookup("Difficulty", Difficulty, Difficulties),
-        rich_presence_value("MaxHealth", PlayerMaxHealth * (100.0/CharacterMaxHealths[character_id]), "VALUE"),
-        rich_presence_value("Health", PlayerHealth * (100.0/CharacterMaxHealths[character_id]), "VALUE")
+        rich_presence_value("MaxHealth", PlayerMaxHP * (100.0/CharacterMaxHealths[character_id]), "VALUE"),
+        rich_presence_value("Health", PlayerHP * (100.0/CharacterMaxHealths[character_id]), "VALUE")
     )
 }
 
@@ -649,7 +649,7 @@ function GetBossHPCond()
 {
     // The >= 0x80000000 is to check for if boss HP goes into the negatives
     return prev(BossHP) > 0 && (BossHP == 0 || BossHP >= 0x80000000) &&
-           !(PlayerHealth == 0 || PlayerHealth >= 0x80000000) // Prevent the achievement from triggering if Dean "kills" the boss in the afterlife (i.e. while dying)
+           !(PlayerHP == 0 || PlayerHP >= 0x80000000) // Prevent the achievement from triggering if Dean "kills" the boss in the afterlife (i.e. while dying)
 }
 
 function RegularBossTrigger(stage_id)
