@@ -988,8 +988,8 @@ achievement(
 FLAG_IsaacPassengerBestGrade = 23222
 function TRIGGER_UpNRunning() 
 {
-    // Just being on the map with the cutscene is A-OK (as long as the player exists -- map IDs aren't zeroed out on exiting)
-    map_cond = (MapID() == 030200 && Player != NULL) ||
+    // Just being on the map with the cutscene is A-OK
+    map_cond = MapID() == 030200 ||
     // bit more complicated for the first map (convenience store...)
     // we want the player to be in the taxi OR be transitioning to the next map.
     // For map transitions, the backup map IDs will indicate the next map
