@@ -988,19 +988,20 @@ achievement(
 FLAG_IsaacPassengerBestGrade = 23222
 function TRIGGER_UpNRunning() 
 {
-    // Just being on the map with the cutscene is A-OK
-    map_cond = MapID() == 030200 ||
-    // bit more complicated for the first map (convenience store...)
-    // we want the player to be in the taxi OR be transitioning to the next map.
-    // For map transitions, the backup map IDs will indicate the next map
-               (MapID() == 030100 && (MapIDBackup() == 030200 || Player != NULL && PlayerGetVehicle(Player) != NULL))
-
-    // Driving grade (has to be *over* 90 to get best assessment)
-    return IsaacIntroDrivingGrade > 90 &&
-    // Check our map-based conditions
-           map_cond &&
-    // And now finally trigger the icon, waiting for the assessment flag to be set
-           trigger_when(FlagChangedToSet(FLAG_IsaacPassengerBestGrade))
+    // Prime the icon if Isaac is in the taxi in the first area
+    start = once(MapID() == 030100 && Player != NULL && PlayerGetVehicle(Player) != NULL)
+    // Reset the icon if Isaac leaves the taxi
+    // 030200 is just a cutscene so the vehicle pointer for Isaac might be NULL, just gonna check MapID for the vehicle NULL check just in case.
+    // Additionally, the vehicle pointer might get set to NULL during the map transition, so we'll put in a menu state check just in case.
+    cancel = never(
+                CancelAllTriggers() ||
+                CurrentMenu == MENU_Title || 
+                IsaacIntroDrivingGrade < 91 || 
+                (CurrentMenu == MENU_Game && MapID() == 030100 && PlayerGetVehicle(Player) == NULL)
+    )
+    submit = trigger_when(FlagChangedToSet(FLAG_IsaacPassengerBestGrade))
+    
+    return start && cancel && submit
 }
 achievement(
     id=393434,
