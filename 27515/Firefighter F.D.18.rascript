@@ -73,7 +73,7 @@ RANK_Professional = 6
 RANK_Hero = 7
 
 SCM_STATUS_Awards = 39
-SCM_STATUS_AwardsDone = 20
+SCM_STATUS_AwardsDone = 29
 
 FINAL_RESULT = 1
 
@@ -645,12 +645,18 @@ BossAchievementTitles = {
     0x44: "Assume the Party Escort Submission Position"
 }
 
+function GetBossHPCond()
+{
+    // The >= 0x80000000 is to check for if boss HP goes into the negatives
+    return prev(BossHP) > 0 && (BossHP == 0 || BossHP >= 0x80000000)
+}
+
 function RegularBossTrigger(stage_id)
 {
+    boss_hp_cond = GetBossHPCond()
     return byte(StageID) == stage_id &&
            GameStatus == STATUS_Game &&
-           prev(BossHP) != 0 &&
-           BossHP == 0 &&
+           boss_hp_cond &&
            // This is just a sanity check because boss max/current HP aren't zeroed out from exit until entering the game
            // (and it might also prevent triggers on death too?)
            BossMaxHP != 0
@@ -683,10 +689,11 @@ achievement(
 // Bodyguard
 function RepeatBossTrigger(stage_id, count)
 {
+    boss_hp_cond = GetBossHPCond()
     reset = never(!any_of([STATUS_Game, STATUS_GameCutscene, STATUS_GameCutsceneLoad], x=>GameStatus == x))
     return byte(StageID) == stage_id &&
            GameStatus == STATUS_Game &&
-           tally(count, prev(BossHP) != 0 && BossHP == 0) &&
+           tally(count, boss_hp_cond) &&
            reset &&
            BossMaxHP != 0
 }
