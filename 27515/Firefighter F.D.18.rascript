@@ -648,7 +648,8 @@ BossAchievementTitles = {
 function GetBossHPCond()
 {
     // The >= 0x80000000 is to check for if boss HP goes into the negatives
-    return prev(BossHP) > 0 && (BossHP == 0 || BossHP >= 0x80000000)
+    return prev(BossHP) > 0 && (BossHP == 0 || BossHP >= 0x80000000) &&
+           !(PlayerHealth == 0 || PlayerHealth >= 0x80000000) // Prevent the achievement from triggering if Dean "kills" the boss in the afterlife (i.e. while dying)
 }
 
 function RegularBossTrigger(stage_id)
