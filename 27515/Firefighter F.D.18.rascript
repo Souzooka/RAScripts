@@ -640,7 +640,7 @@ BossAchievementTitles = {
     0x32: "Ghost Rider",
     0x33: "Emotion Engine",
     0x41: "Let It Rip",
-    0x42: "Skipped a Beat",
+    0x42: "Stop, This Beat is Killing Me",
     0x43: "Jumpman",
     0x44: "Assume the Party Escort Submission Position"
 }
@@ -692,7 +692,7 @@ achievement(
 function RepeatBossTrigger(stage_id, count)
 {
     boss_hp_cond = GetBossHPCond()
-    reset = never(!any_of([STATUS_Game, STATUS_GameCutscene, STATUS_GameCutsceneLoad], x=>GameStatus == x))
+    reset = never(!any_of([STATUS_Game, STATUS_GameLoad, STATUS_GameCutscene, STATUS_GameCutsceneLoad], x=>GameStatus == x))
     return byte(StageID) == stage_id &&
            GameStatus == STATUS_Game &&
            prev(GameStatus) == STATUS_Game && // Try to prevent a false trigger when entering a new stage after soft-resetting another stage while in the boss
