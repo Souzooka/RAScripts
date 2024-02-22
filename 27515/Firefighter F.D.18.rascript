@@ -774,7 +774,7 @@ achievement(
 // NOTE: It isn't (just) a really good time -- gotta figure out what this is
 achievement(
     title="A Super Great Friend to All",
-    description="Achieve \"Super Play\"!",
+    description="Achieve \"Super Play\" by achieving a gold record time, not using any firefighter support, and not using any recovery items in a stage.",
     points=4,
     trigger=AwardTrigger(AWARD_SuperPlay)
 )
