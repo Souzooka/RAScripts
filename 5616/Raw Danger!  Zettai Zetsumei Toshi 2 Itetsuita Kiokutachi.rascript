@@ -97,6 +97,7 @@ PLAYER_Sophia = 10
 PLAYER_Sierra = 11
 PLAYER_Emily = 19
 PLAYER_SantaGeo = 60
+PLAYER_RescueCrew0 = 71
 
 CHR_ACT_TALK = 15
 CHR_ACT_LOOK = 16
@@ -905,15 +906,18 @@ achievement(
 )
 
 // Interact with Ivan in the Hudson Tunnel and have Aidan carry him
-// Nothing particularly available to check to time this achievement well,
-// but we can just check Ivan's Y value (since when he's being carried away by rescue crew,
-// that's when he'll be at the highest point he can be)
-FLAG_RescuedIvan = 7026
+// Simplest thing is just checking that the rescue crew is carrying him I think
+//FLAG_RescuedIvan = 7026
 function TRIGGER_TooMuchEggnog() 
 {
-    // Not sure exactly what Y level he's at when carried, but Y=0 is probably just ground level. This should be fine.
-    ivan_y = PlayerGetY(PlayerFromIndex(PLAYER_Ivan))
-    return LoadProtection() && MapID() == 020500 && FlagGetBool(FLAG_RescuedIvan) && prev(ivan_y) > -1.0 && ivan_y <= -1.0
+    OFFSET_carried_player = 0x1884
+    rescue_crew = PlayerFromIndex(PLAYER_RescueCrew0)
+    carried_player = word(rescue_crew + OFFSET_carried_player)
+    
+    return MapID() == 020500 &&
+           rescue_crew != NULL &&
+           prev(carried_player) == 0xFFFF && 
+           carried_player == PLAYER_Ivan
 }
 achievement(
     id=392851,
