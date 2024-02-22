@@ -3,29 +3,56 @@
 
 NULL = 0
 
-function GetRealAddress(us_address, eu_address, jp_address)
+// Region checks
+// I'm working on a 60-fps hack but these addresses should be used for debug menu code, so they shouldn't get touched
+isEU = byte(0x280B0D)
+isJP = byte(0x280D7D)
+isUS = byte(0x280B21)
+
+// Just for scripting purposes
+Region = byte(0x28693C) // Direct lookup for RP, constant 0=US, 1=EU, 2=JP
+REGION_US = 0
+REGION_EU = 1
+REGION_JP = 2
+
+function isRegion(region)
 {
-    // TODO
-    return us_address
+    if region == REGION_US
+    {
+        return isUS == 1
+    }
+    if region == REGION_EU
+    {
+        return isEU == 1
+    }
+    return isJP == 1
 }
 
-StageClearedMenu = dword(GetRealAddress(0x52AF00, 0x0, 0x0))
-GameStatus = dword(GetRealAddress(0x5A5108, 0x0, 0x0))
-StageID = GetRealAddress(0x5A5118, 0x0, 0x0)
-Difficulty = dword(GetRealAddress(0x5A51F8, 0x0, 0x0))
-CharacterID = dword(GetRealAddress(0x5A548C, 0x0, 0x0))
-PlayerInitialMaxHP = dword(GetRealAddress(0x5C4F90, 0x0, 0x0))
-PlayerMaxHP = dword(GetRealAddress(0x5C4F94, 0x0, 0x0))
-PlayerHP = dword(GetRealAddress(0x5C4F98, 0x0, 0x0))
+function GetRealAddress(us_address, eu_address, jp_address)
+{
+    eu_offset = (eu_address - us_address) * isEU
+    jp_offset = 0 // We can't construct an address from multiple memory lookups -- BUT the US and JP memory addresses we use are exactly the same. Big W.
+    return us_address + eu_offset + jp_offset
+}
+
+StageClearedMenu = dword(GetRealAddress(0x52AF00, 0x52B080, 0x52AF00))
+GameStatus = dword(GetRealAddress(0x5A5108, 0x5A5288, 0x5A5108))
+StageID = GetRealAddress(0x5A5118, 0x5A5298, 0x5A5118)
+Difficulty = dword(GetRealAddress(0x5A51F8, 0x5A5378, 0x5A51F8))
+CharacterID = dword(GetRealAddress(0x5A548C, 0x5A560C, 0x5A548C))
+PlayerInitialMaxHP = dword(GetRealAddress(0x5C4F90, 0x5C5110, 0x5C4F90))
+PlayerMaxHP = dword(GetRealAddress(0x5C4F94, 0x5C5114, 0x5C4F94))
+PlayerHP = dword(GetRealAddress(0x5C4F98, 0x5C5118, 0x5C4F98))
 // See note for 0x5a5178
-LostItemsTemp = GetRealAddress(0x5A5188, 0x0, 0x0)
-LostItemsPerm = GetRealAddress(0x5A5CD8, 0x0, 0x0)
-AwardInfo = GetRealAddress(0x52AEE0, 0x0, 0x0)
-BossMaxHP = dword(GetRealAddress(0x5288F4, 0x0, 0x0))
-BossHP = dword(GetRealAddress(0x5288F8, 0x0, 0x0))
+LostItemsTemp = GetRealAddress(0x5A5188, 0x5A5308, 0x5A5188)
+LostItemsPerm = GetRealAddress(0x5A5CD8, 0x5A5E58, 0x5A5CD8)
+AwardInfo = GetRealAddress(0x52AEE0, 0x52B060, 0x52AEE0)
+BossMaxHP = dword(GetRealAddress(0x5288F4, 0x528A74, 0x5288F4))
+BossHP = dword(GetRealAddress(0x5288F8, 0x528A78, 0x5288F8))
 
 // Enums
 STATUS_SoftResetLoad = 2
+STATUS_LanguageSelect = 3
 STATUS_Initial = 4
 STATUS_Splash = 5
 STATUS_TitleMenu = 6
@@ -177,19 +204,58 @@ CharacterMaxHealths = {
     0x5: 90000,
 }
 
-main_menu_statuses = [STATUS_SoftResetLoad, STATUS_Initial, STATUS_Splash, STATUS_TitleMenu, STATUS_IntroCutsceneLoad, STATUS_IntroCutscene]
-game_statuses = [STATUS_GameLoad, STATUS_Game, STATUS_GameCutsceneLoad, STATUS_GameCutscene, STATUS_StageClearedLoad, STATUS_StageCleared]
+main_menu_statuses = [STATUS_SoftResetLoad, STATUS_LanguageSelect, STATUS_Initial, STATUS_Splash, STATUS_TitleMenu, STATUS_IntroCutsceneLoad, STATUS_IntroCutscene]
+pre_game_statuses = [STATUS_GameLoad, STATUS_GameCutsceneLoad, STATUS_GameCutscene]
+game_statuses = [STATUS_Game, STATUS_StageClearedLoad, STATUS_StageCleared]
 
-rich_presence_conditional_display(any_of(main_menu_statuses, x=>x==GameStatus), "ᵘˢ In the title menu.")
-rich_presence_conditional_display(GameStatus == STATUS_CinemaViewer, "ᵘˢ Watching a cutscene in the Realtime Cinema Viewer.")
-rich_presence_conditional_display(GameStatus >= STATUS_DebugStart, "ᵘˢ ⚠️ In a debug menu.")
+regions = [REGION_US, REGION_EU, REGION_JP]
+region_text = {
+    REGION_US: "ᵘˢ",
+    REGION_EU: "ᵉᵘ",
+    REGION_JP: "ʲᵖ",
+}
 
+
+// Title/Options
+rich_presence_conditional_display(
+    any_of(main_menu_statuses, x=>x==GameStatus),
+    "{0} In the title menu.",
+    rich_presence_lookup("Region", Region, region_text)
+)
+
+// Cinema viewer
+rich_presence_conditional_display(
+    GameStatus == STATUS_CinemaViewer, 
+    "{0} Watching a cutscene in the Realtime Cinema Viewer.",
+    rich_presence_lookup("Region", Region, region_text)
+)
+
+// Debug menus -- what are you doing there?
+rich_presence_conditional_display(
+    GameStatus >= STATUS_DebugStart,
+    "{0} ⚠️ In a debug menu.",
+    rich_presence_lookup("Region", Region, region_text)
+)
+
+// Pre-game (i.e. in a cutscene -- the character's HP isn't initialized at this point,
+// which could lead to Miss Crimson for example displaying as having 133% HP if Dean was played before)
+rich_presence_conditional_display(
+    any_of(pre_game_statuses, x=>x==GameStatus), 
+    "{0} {1} is {2} {3}. | {4} Difficulty",
+    rich_presence_lookup("Region", Region, region_text),
+    rich_presence_lookup("CharacterName", CharacterID, CharacterNames),
+    rich_presence_lookup("StageActivity", byte(StageID), StageActivities),
+    rich_presence_lookup("StageName", byte(StageID), StageNames),
+    rich_presence_lookup("Difficulty", Difficulty, Difficulties)
+)
+
+// Game state
 for character_id in CharacterNames
 {
     rich_presence_conditional_display(
         any_of(game_statuses, x=>x==GameStatus) && CharacterID == character_id, 
         "{0} {1} is {2} {3}. | {4} Difficulty | Max HP: {5}% | HP: {6}%",
-        "ᵘˢ ",
+        rich_presence_lookup("Region", Region, region_text),
         rich_presence_lookup("CharacterName", CharacterID, CharacterNames),
         rich_presence_lookup("StageActivity", byte(StageID), StageActivities),
         rich_presence_lookup("StageName", byte(StageID), StageNames),
@@ -198,6 +264,7 @@ for character_id in CharacterNames
         rich_presence_value("Health", PlayerHP * (100.0/CharacterMaxHealths[character_id]), "VALUE")
     )
 }
+
 
 rich_presence_display("Playing Firefighter F.D.18")
 
