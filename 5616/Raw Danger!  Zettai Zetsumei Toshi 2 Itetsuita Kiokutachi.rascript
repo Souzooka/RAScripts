@@ -1011,7 +1011,7 @@ achievement(
     id=393434,
     title="Up & Running", // Smashing Drive reference :)
     description="Deliver the maintenance worker to Downtown Geo and receive the best assessment as Isaac.",
-    points=3,
+    points=1,
     trigger=TRIGGER_UpNRunning()
 )
 
