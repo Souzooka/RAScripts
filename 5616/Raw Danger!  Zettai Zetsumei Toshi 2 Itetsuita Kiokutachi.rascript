@@ -1341,7 +1341,7 @@ achievement(
     title="Your Name is MacGyver",
     description="Assemble Assembled Oars.",
     points=5,
-    trigger=CurrentMenu == MENU_ItemMenu && ItemNowExists(ITEM_AssembledOars) // PAIN
+    trigger=LoadProtection() && CurrentMenu == MENU_ItemMenu && ItemNowExists(ITEM_AssembledOars) // PAIN
 )
 
 // M5_02_00 (Landmark Apartments Area)
@@ -1768,10 +1768,9 @@ function CreateMeasuredCollectionTrigger(items_list)
     // these should just be the initial character outfits anyways, and a player probably shouldn't get the award in this
     // fashion (unless they're playing in a very specific way to exploit the above bug (to no benefit to them) for some reason).
     
-    // We need to check for this new game state (since Keith could have the last outfit pieces in a category)
-    // We also need to check tutorial menu since the game adds items there
+    // We need to check for this new game state and tutorial state (since the game can conditionally add initial outfits here to the collection)
     safety_check = CurrentMenu == MENU_NewGame || CurrentMenu == MENU_Tutorial
-    load_protection = LoadProtection() || safety_check
+    load_protection = (LoadProtection() || safety_check) && !IsInTutorial() // ignore all collection differences in the tutorial map (i.e. the jeans + tennis shoes being added)
     measured_condition = sum_of(ItemsGet(items_list), s=>s) == length(items_list)
     delta_check = ItemsCheckDelta(items_list)
     when = load_protection && delta_check && (!safety_check || measured_condition)
