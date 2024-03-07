@@ -896,10 +896,10 @@ function RankTrigger(_rank)
 achievement(
     title="Brave Firefighter",
     description="Achieve the rank of Hero by, in one campaign playthrough and on the Hard difficulty or higher, " +
-                "obtaining 10 gold record times and no silver or worse record times, " +
+                "obtaining 10 gold record times and no worse times, " +
                 "rescuing all survivors with 45% health or more, " +
                 "using no continues, " +
-                "and obtaining at least 500,000 extinguish points.",
+                "and obtaining 500,000 extinguish points.",
     points=100,
     trigger=RankTrigger(RANK_Hero)
 )
