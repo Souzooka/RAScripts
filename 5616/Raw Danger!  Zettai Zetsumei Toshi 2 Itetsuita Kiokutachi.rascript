@@ -1136,7 +1136,7 @@ achievement(
     id=393620,
     title="Frozen Memories",
     description="Obtain the Hot Dog Compass and relive a bad memory as Paige.",
-    points=3,
+    points=1,
     trigger=LoadProtection() && FlagChangedToSet(FLAG_HotDogCompassObtained)
 )
 
@@ -1512,9 +1512,9 @@ achievement(
 achievement(
     id=394219,
     title="Survivor - Paige",
-    description="Without dying and on Hard difficulty, complete Paige's chapter in 13 minutes or less in Free Mode and obtain Ending 4-A.",
+    description="Without dying and on Hard difficulty, complete Paige's chapter in 12 minutes and 15 seconds or less in Free Mode and obtain Ending 4-A.",
     points=25,
-    trigger=TimeTrialTrigger(PLAYER_Paige, endings=[ENDING_4A], minutes=13)
+    trigger=TimeTrialTrigger(PLAYER_Paige, endings=[ENDING_4A], minutes=12, seconds=15)
 )
 
 // First attempt 19:21
@@ -1524,9 +1524,9 @@ achievement(
 achievement(
     id=394220,
     title="Survivor - Ivan",
-    description="Without dying and on Hard difficulty, complete Ivan's chapter in 21 minutes or less in Free Mode and obtain Ending 5-B.",
+    description="Without dying and on Hard difficulty, complete Ivan's chapter in 20 minutes and 15 seconds or less in Free Mode and obtain Ending 5-B.",
     points=25,
-    trigger=TimeTrialTrigger(PLAYER_Ivan, endings=[ENDING_5B], minutes=21)
+    trigger=TimeTrialTrigger(PLAYER_Ivan, endings=[ENDING_5B], minutes=20, seconds=15)
 )
 
 // COLLECTION
