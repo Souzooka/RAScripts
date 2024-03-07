@@ -1472,9 +1472,9 @@ achievement(
 achievement(
     id=394216,
     title="Survivor - Joshua",
-    description="Without dying and on Hard difficulty, complete Joshua's chapter in 48 minutes or less in Free Mode and obtain Ending 1-A. It is recommended not to skip the cutscene where the helicopter arrives in Del Ray Inner Park, as this may cause a softlock.",
-    points=50,
-    trigger=TimeTrialTrigger(PLAYER_Joshua, endings=[ENDING_1A], minutes=48)
+    description="Without dying and on Hard difficulty, complete Joshua's chapter in 32 minutes or less in Free Mode and obtain Ending 1-B or 1-C.",
+    points=25,
+    trigger=TimeTrialTrigger(PLAYER_Joshua, endings=[ENDING_1B, ENDING_1C], minutes=32)
 )
 
 // First attempt 27:46, a bit scuffed - bigger buffers for your 25 point cheevo :)
