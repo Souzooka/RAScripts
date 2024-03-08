@@ -708,7 +708,7 @@ BossAchievementTitles = {
     0x33: "Emotion Engine",
     0x41: "Let It Rip",
     0x42: "Stop, This Beat is Killing Me",
-    0x43: "Jumpman",
+    0x43: "Crank That",
     0x44: "Assume the Party Escort Submission Position"
 }
 
