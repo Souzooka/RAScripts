@@ -2299,7 +2299,7 @@ for region in [REGION_EU, REGION_JP] {
         rich_presence_lookup("MapName", MapWithGateID(), MapNameLookup),
         rich_presence_lookup("Compass", CompassID, CompassLookup),
         rich_presence_lookup("Difficulty", Difficulty, DifficultyLookup),
-        rich_presence_value("BodyHeat", BodyHeat * (100.0/30000), "FLOAT1"),
+        rich_presence_value("BodyHeat", BodyHeat * (100.0/(30000 - 5)), "FLOAT1"),
         rich_presence_lookup("WetLevel", WetLevel, WetLookup)
     )
 }
