@@ -6,12 +6,15 @@ NULL = 0
 REGION_US = 0
 REGION_EU = 1
 REGION_JP = 2
-regionByte = byte(0x13547A)
-regions = [REGION_US, REGION_EU, REGION_JP]
+US = REGION_US
+EU = REGION_EU
+JP = REGION_JP
+RegionByte = byte(0x13547A)
+Regions = [US, EU, JP]
 
-isUS = byte(0x135030)
-isEU = byte(0x1351DA)
-isJP = byte(0x135150)
+IsUS = byte(0x135030)
+IsEU = byte(0x1351DA)
+IsJP = byte(0x135150)
 
 // NOTE: bad blur call is at 0x00158BFC for US
 
@@ -19,15 +22,15 @@ function IsRegion(region)
 {
     if (region == REGION_US)
     {
-        return isUS == 1
+        return IsUS == 1
     }
     if (region == REGION_EU)
     {
-        return isEU == 1
+        return IsEU == 1
     }
     if (region == REGION_JP)
     {
-        return isJP == 1
+        return IsJP == 1
     }
     return always_false()
 }
@@ -36,62 +39,74 @@ DIFFICULTY_EASY = 0
 DIFFICULTY_NORMAL = 1
 DIFFICULTY_HARD = 2
 
-vars = {
-    REGION_US: {
-        "Area": dword(0x36bbb0),
-        "Subarea": dword(0x36bbb8),
-        "Gate": dword(0x36bbc0),
-        "Difficulty": dword(0x25C2C8),
-        "Compass": dword(0x3FE8E0),
-        "MapObjsLength": dword(0x36A8C0),
-        "MaxHealth": float(0x3808F0),
-        "MaxQP": float(0x3808F4),
-        "Health": float(0x380904),
-        "QP": float(0x380908),
-    },
-    REGION_EU: {
-        "Area": dword(0x3933B0),
-        "Subarea": dword(0x3933B8),
-        "Gate": dword(0x3933C0),
-        "Difficulty": dword(0x25F408),
-        "Compass": dword(0x4252E0),
-        "MapObjsLength": dword(0x3920C0),
-        "MaxHealth": float(0x3A70F0),
-        "MaxQP": float(0x3A70F4),
-        "Health": float(0x3A7104),
-        "QP": float(0x3A7108),
-    },
-    REGION_JP: {
-        "Area": dword(0x36dbb0),
-        "Subarea": dword(0x36dbb8),
-        "Gate": dword(0x36dbc0),
-        "Difficulty": dword(0x25D1E8),
-        "Compass": dword(0x40A360),
-        "MapObjsLength": dword(0x36C8C0),
-        "MaxHealth": float(0x3823F0),
-        "MaxQP": float(0x3823F4),
-        "Health": float(0x382404),
-        "QP": float(0x382408),
-    },
+Area = {
+    US: dword(0x36bbb0),
+    EU: dword(0x3933B0),
+    JP: dword(0x36dbb0),
+}
+Subarea = {
+    US: dword(0x36bbb8),
+    EU: dword(0x3933B8),
+    JP: dword(0x36dbb8),
+}
+Gate = {
+    US: dword(0x36bbc0),
+    EU: dword(0x3933C0),
+    JP: dword(0x36dbc0),
+}
+Difficulty = {
+    US: dword(0x25C2C8),
+    EU: dword(0x25F408),
+    JP: dword(0x25D1E8),
+}
+Compass = {
+    US: dword(0x3FE8E0),
+    EU: dword(0x4252E0),
+    JP: dword(0x40A360),
+}
+MapObjsLength = {
+    US: dword(0x36A8C0),
+    EU: dword(0x3920C0),
+    JP: dword(0x36C8C0),
+}
+MaxHealth = {
+    US: float(0x3808F0),
+    EU: float(0x3A70F0),
+    JP: float(0x3823F0),
+}
+MaxQP = {
+    US: float(0x3808F4),
+    EU: float(0x3A70F4),
+    JP: float(0x3823F4),
+}
+Health = {
+    US: float(0x380904),
+    EU: float(0x3A7104),
+    JP: float(0x382404),
+}
+QP = {
+    US: float(0x380908),
+    EU: float(0x3A7108),
+    JP: float(0x382408),
 }
 
 function MapID(region)
 {
-    area = vars[region]["Area"]
-    subarea = vars[region]["Subarea"]
+    area = Area[region]
+    subarea = Subarea[region]
     return area * 100 + subarea
 }
 
 function MapIDWithGate(region)
 {
-    gate = vars[region]["Gate"]
+    gate = Gate[region]
     return MapID(region) * 100 + gate
 }
 
 function IsInGame(region)
 {
     // Tentative
-    return vars[region]["MapObjsLength"] > 0
+    return MapObjsLength[region] > 0
 }
 
 RegionLookup = {
@@ -220,22 +235,22 @@ MapNameLookup = {
     0717: "Keith and Karen are continuing to escape the rising waters by climbing the Central Tower Building!",
 }
 
-for region in regions
+for region in Regions
 {
     rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region),
         "{0} | {1} | {2} 🧭 | {3} Difficulty | {4}% HP | {5}% QT",
-        rich_presence_lookup("GameName", regionByte, GameNameLookup),
+        rich_presence_lookup("GameName", RegionByte, GameNameLookup),
         rich_presence_lookup("MapName", MapID(region), MapNameLookup),
-        rich_presence_lookup("Compass", vars[region]["Compass"], CompassLookup),
-        rich_presence_lookup("Difficulty", vars[region]["Difficulty"], DifficultyLookup),
-        rich_presence_value("Health", vars[region]["Health"], format="FLOAT1"),
-        rich_presence_value("QP", vars[region]["QP"], format="FLOAT1")
+        rich_presence_lookup("Compass", Compass[region], CompassLookup),
+        rich_presence_lookup("Difficulty", Difficulty[region], DifficultyLookup),
+        rich_presence_value("Health", Health[region], format="FLOAT1"),
+        rich_presence_value("QP", QP[region], format="FLOAT1")
     )
     rich_presence_conditional_display(
         IsRegion(region),
         "{0} | In the title or loading screen.",
-        rich_presence_lookup("GameName", regionByte, GameNameLookup)
+        rich_presence_lookup("GameName", RegionByte, GameNameLookup)
     )
 }
 
