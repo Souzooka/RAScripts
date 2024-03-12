@@ -17,27 +17,25 @@ IsEU = byte(0x1351DA)
 IsJP = byte(0x135150)
 
 // NOTE: bad blur call is at 0x00158BFC for US
+// NOTE: Dialogue arrow not appearing in HW is a depth issue; arrow is at depth -0x1 and menu is at depth -0x2
+// the instruction at 0x192F88 (addiu t2, zero, -0x2) has to be changed to (addiu t2, zero, -0x81 (!!!)) for the arrow to show up. The imprecision!
 
 function IsRegion(region)
 {
-    if (region == REGION_US)
-    {
-        return IsUS == 1
-    }
-    if (region == REGION_EU)
-    {
-        return IsEU == 1
-    }
-    if (region == REGION_JP)
-    {
-        return IsJP == 1
-    }
-    return always_false()
+    return region == RegionByte
 }
 
 DIFFICULTY_EASY = 0
 DIFFICULTY_NORMAL = 1
 DIFFICULTY_HARD = 2
+
+BACKPACK_NONE = -1
+BACKPACK_KNAPSACK = 0
+BACKPACK_RESCUEPACK = 1
+BACKPACK_FRAMEPACK = 2
+BACKPACK_BACKPACK = 3
+BACKPACK_GYMBAG = 4
+BACKPACK_CLOTHBAG = 5
 
 Area = {
     US: dword(0x36bbb0),
@@ -63,6 +61,11 @@ Compass = {
     US: dword(0x3FE8E0),
     EU: dword(0x4252E0),
     JP: dword(0x40A360),
+}
+Backpack = {
+    US: dword(0x3533A0),
+    EU: dword(0x37ABA0),
+    JP: dword(0x3553A0),
 }
 MapObjsLength = {
     US: dword(0x36A8C0),
@@ -108,6 +111,8 @@ function IsInGame(region)
     // Tentative
     return MapObjsLength[region] > 0
 }
+
+// RICH PRESENCE START
 
 RegionLookup = {
     REGION_US: "ᵘˢ",
@@ -255,3 +260,60 @@ for region in Regions
 }
 
 rich_presence_display("Playing Disaster Report")
+
+// RICH PRESENCE END
+
+// ACHIEVEMENTS START
+
+function BackpackTrigger(region, backpack)
+{
+    return IsRegion(region) &&
+           IsInGame(region) &&
+           prev(Backpack[region]) != backpack && 
+           Backpack[region] == backpack    
+}
+
+achievement(
+    title="And Don't Forget Your Backpack",
+    description="Obtain the Rescue Pack.",
+    points=2,
+    trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_RESCUEPACK))
+)
+
+achievement(
+    title="TODO Backpack - Knapsack",
+    description="Obtain the Knapsack.",
+    points=3,
+    trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_KNAPSACK))
+)
+
+achievement(
+    title="TODO Backpack - Backpack",
+    description="Obtain the Backpack.",
+    points=3,
+    trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_BACKPACK))
+)
+
+achievement(
+    title="TODO Backpack - Gym Bag",
+    description="Obtain the Gym Bag.",
+    points=3,
+    trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_GYMBAG))
+)
+
+achievement(
+    title="TODO Backpack - Cloth Bag",
+    description="Obtain the Cloth Bag.",
+    points=3,
+    trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_CLOTHBAG))
+)
+
+achievement(
+    title="TODO Backpack - Frame Pack",
+    description="Obtain the Frame Pack.",
+    points=5,
+    trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_FRAMEPACK))
+)
+
+
+// ACHIEVEMENTS END
