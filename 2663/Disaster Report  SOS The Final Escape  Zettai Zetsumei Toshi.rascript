@@ -19,6 +19,8 @@ IsJP = byte(0x135150)
 // NOTE: bad blur call is at 0x00158BFC for US
 // NOTE: Dialogue arrow not appearing in HW is a depth issue; arrow is at depth -0x1 and menu is at depth -0x2
 // the instruction at 0x192F88 (addiu t2, zero, -0x2) has to be changed to (addiu t2, zero, -0x81 (!!!)) for the arrow to show up. The imprecision!
+// Item menu bg depth is at 0x183B10, item tabs at 0x183DC8 -- can just be changed to -0x2F8 and -0x1F8
+// Depth for "Save game?" screen with faucet is in memory at 0x26B978 -- can be changed to 0xFFFFFF70
 
 function IsRegion(region)
 {
@@ -66,6 +68,11 @@ Backpack = {
     US: dword(0x3533A0),
     EU: dword(0x37ABA0),
     JP: dword(0x3553A0),
+}
+BackpackAttachedItemsLength = {
+    US: dword(0x3535b8),
+    EU: dword(0x37ADB8),
+    JP: dword(0x3555B8),
 }
 MapObjsLength = {
     US: dword(0x36A8C0),
@@ -327,6 +334,7 @@ function CompassMeasuredTrigger(region, new_count, old_count=-1)
     
     if (old_count != -1)
     {
+        // Only show the measurement if we've acquired enough compasses for the previous checkpoint achievement.
         when = when && current > old_count
     }
     return measured(measured_condition, when=when)
@@ -406,6 +414,27 @@ achievement(
     description="Rescue the injured woman on the Airport Island Bridge.",
     points=3,
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KAREN))
+)
+
+function CrowbarTrigger(region)
+{
+    // This checks the number of items attached to Keith's backpack model,
+    // which should only be 0 -> 1 when picking up the crowbar AFAIK.
+    // It might go back to 0, then 1, when chipping at the concrete in the subway in Karen's route,
+    // but we check the map ID anyways so we should be all good.
+    // I could see this still breaking so it might rte
+    return IsRegion(region) &&
+           IsInGame(region) &&
+           MapID(region) == 0108 &&
+           prev(BackpackAttachedItemsLength[region]) == 0 &&
+           BackpackAttachedItemsLength[region] == 1
+}
+
+achievement(
+    title="Keith Helm, in the Flesh",
+    description="Obtain the Crowbar.",
+    points=2,
+    trigger=any_of(Regions, region => CrowbarTrigger(region))
 )
 
 // ACHIEVEMENTS END
