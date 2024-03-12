@@ -92,6 +92,11 @@ QP = {
     EU: float(0x3A7108),
     JP: float(0x382408),
 }
+Flags = {
+    US: 0x36CC00,
+    EU: 0x394400,
+    JP: 0x36EC00,
+}
 
 function MapID(region)
 {
@@ -265,6 +270,11 @@ rich_presence_display("Playing Disaster Report")
 
 // ACHIEVEMENTS START
 
+FLAG_SAVED_KAREN = 0x3E9
+
+FLAG_COMPASS_START = 9800
+FLAG_COMPASS_END = 9834
+
 function BackpackTrigger(region, backpack)
 {
     return IsRegion(region) &&
@@ -272,6 +282,57 @@ function BackpackTrigger(region, backpack)
            prev(Backpack[region]) != backpack && 
            Backpack[region] == backpack    
 }
+
+function FlagGet(region, flag)
+{
+    flags = Flags[region]
+    return bit(flag % 8, flags + flag / 8)
+}
+
+function FlagSetTrigger(region, flag)
+{
+    return IsRegion(region) && 
+           IsInGame(region) && 
+           FlagGet(region, flag) == 1 && 
+           prev(FlagGet(region, flag)) == 0
+}
+
+function CompassCount(region)
+{
+    current = 0
+    delta = 0
+    
+    for flag in range(FLAG_COMPASS_START, FLAG_COMPASS_END)
+    {
+        current = current + FlagGet(region, flag)
+        delta = delta + prev(FlagGet(region, flag))
+    }
+    
+    // Compass 0 (standard) is flag 9800, but never seems to get set on.
+    // We'll add 1 (or not, using XOR, if it is on) to count it anyways.
+    current = current + (FlagGet(region, FLAG_COMPASS_START) ^ 1)
+    delta = delta + (FlagGet(region, FLAG_COMPASS_START) ^ 1)
+    
+    return [current, delta]
+}
+
+function CompassMeasuredTrigger(region, new_count, old_count=-1)
+{
+    count = CompassCount(region)
+    current = count[0]
+    delta = count[1]
+    
+    measured_condition = current == new_count
+    when = IsRegion(region) && IsInGame(region) && (current != delta) && delta < new_count
+    
+    if (old_count != -1)
+    {
+        when = when && current > old_count
+    }
+    return measured(measured_condition, when=when)
+}
+
+// Backpacks
 
 achievement(
     title="And Don't Forget Your Backpack",
@@ -315,5 +376,36 @@ achievement(
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_FRAMEPACK))
 )
 
+// Compasses
+
+achievement(
+    title="Compass Novice",
+    description="Obtain 10 compasses.",
+    points=5,
+    trigger=any_of(Regions, region => CompassMeasuredTrigger(region, 10))
+)
+
+achievement(
+    title="Compass Enthusiast",
+    description="Obtain 20 compasses.",
+    points=5,
+    trigger=any_of(Regions, region => CompassMeasuredTrigger(region, 20, 10))
+)
+
+achievement(
+    title="Compass Master",
+    description="Obtain all 35 compasses.",
+    points=25,
+    trigger=any_of(Regions, region => CompassMeasuredTrigger(region, 35, 20))
+)
+
+// Story events
+
+achievement(
+    title="TODO Rescue Karen",
+    description="Rescue the injured woman on the Airport Island Bridge.",
+    points=3,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KAREN))
+)
 
 // ACHIEVEMENTS END
