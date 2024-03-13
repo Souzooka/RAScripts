@@ -107,6 +107,11 @@ Flags = {
     EU: 0x394400,
     JP: 0x36EC00,
 }
+WaitVSyncs = {
+    US: dword(0x3DFECC),
+    EU: dword(0x40688C),
+    JP: dword(0x3EB96C),
+}
 
 // Game State
 MENU_TRANSITION = -1
@@ -140,6 +145,13 @@ function MapID(region)
     return area * 100 + subarea
 }
 
+function MapIDPrev(region)
+{
+    area = prev(Area[region])
+    subarea = prev(Subarea[region])
+    return area * 100 + subarea
+}
+
 function MapIDWithGate(region)
 {
     gate = Gate[region]
@@ -159,7 +171,8 @@ function LoadProtection(region)
     return prior(PreviousMenu[region]) != MENU_MCMENU &&
            PreviousMenu[region] != MENU_MCMENU &&
            CurrentMenu[region] != MENU_MCMENU &&
-           CurrentMenu[region] > MENU_TITLE
+           CurrentMenu[region] > MENU_TITLE &&
+           NextMenu[region] > MENU_TITLE
 }
 
 // RICH PRESENCE START
@@ -315,16 +328,33 @@ rich_presence_display("Playing Disaster Report")
 
 // ACHIEVEMENTS START
 
-FLAG_SAVED_KAREN = 0x3E9 // NOTE: Also seems to be set after FLAG_FOUND_KAREN? Gonna map-guard this one.
+FLAG_SAVED_KAREN = 0x213E
 FLAG_FOUND_KAREN = 0x57E // Overturned building
+FLAG_MET_GREG = 0x214E
+FLAG_ESCAPE_CONSTRUCTION_SITE = 0x214B
 
 FLAG_COMPASS_START = 9800
 FLAG_COMPASS_END = 9834
 
 function BackpackTrigger(region, backpack)
 {
+    // A false trigger can occur if a player picks up a new backpack, dies, and then respawns with their old backpack.
+    // Which then triggers the achievement for obtaining the backpack the player had before they died.
+    // We'll guard the achievement with a map ID check to prevent this scenario.
+    maps = {
+        BACKPACK_RESCUEPACK: 0101,
+        BACKPACK_KNAPSACK: 0110,
+        BACKPACK_BACKPACK: 0203,
+        BACKPACK_GYMBAG: 0000, // TODO
+        BACKPACK_CLOTHBAG: 0000, // TODO
+        BACKPACK_FRAMEPACK: 0505,
+    }
+    
+    map_cond = MapID(region) == maps[backpack]
+
     return IsRegion(region) &&
            LoadProtection(region) &&
+           map_cond &&
            prev(Backpack[region]) != backpack && 
            Backpack[region] == backpack    
 }
@@ -387,6 +417,14 @@ function CompassMeasuredTrigger(region, new_count, old_count=-1)
         when = when && current > old_count
     }
     return current > delta && measured(measured_condition, when=when)
+}
+
+function MapTransition(region, old_map, new_map)
+{
+    return IsRegion(region) &&
+           LoadProtection(region) &&
+           MapID(region) == new_map &&
+           MapIDPrev(region) == old_map
 }
 
 // Backpacks
@@ -462,14 +500,7 @@ achievement(
     title="TODO Rescue Karen",
     description="Rescue the injured woman on the Airport Island Bridge.",
     points=3,
-    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KAREN, map=0104))
-)
-
-achievement(
-    title="TODO Find Karen",
-    description="Find Karen in the overturned building on Girard Street.",
-    points=3,
-    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_FOUND_KAREN, map=0110))
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KAREN))
 )
 
 function CrowbarTrigger(region)
@@ -491,6 +522,43 @@ achievement(
     description="Obtain the Crowbar.",
     points=2,
     trigger=any_of(Regions, region => CrowbarTrigger(region))
+)
+
+achievement(
+    title="TODO Find Karen",
+    description="Find Karen in the overturned building on Girard Street.",
+    points=3,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_FOUND_KAREN))
+)
+
+achievement(
+    title="The Aspiring Journalist",
+    description="Meet a freelance photographer.",
+    points=3,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_MET_GREG))
+)
+
+achievement(
+    title="TODO Escape Construction Site",
+    description="Escape the construction site.",
+    points=3,
+    trigger=any_of(Regions, region => MapTransition(region, 0202, 0203))
+)
+
+function FreshMemoriesTrigger(region)
+{
+    // We're waiting for the end of the (only) "slow-mo" shot in this map
+    // by checking the wait vsyncs value.
+    return MapID(region) == 0204 &&
+           WaitVSyncs[region] <= 2 &&
+           prev(WaitVSyncs[region]) > 2
+}
+
+achievement(
+    title="Fresh Memories",
+    description="Try and save an elderly couple trapped in a destroyed building.",
+    points=3,
+    trigger=any_of(Regions, region => FreshMemoriesTrigger(region))
 )
 
 // ACHIEVEMENTS END
