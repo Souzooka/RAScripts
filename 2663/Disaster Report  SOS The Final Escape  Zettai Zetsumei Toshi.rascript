@@ -42,6 +42,8 @@ BACKPACK_BACKPACK = 3
 BACKPACK_GYMBAG = 4
 BACKPACK_CLOTHBAG = 5
 
+CHR_ACT_BICYCLE = 0x15
+
 Area = {
     US: dword(0x36bbb0),
     EU: dword(0x3933B0),
@@ -82,6 +84,11 @@ MapObjsLength = {
     EU: dword(0x3920C0),
     JP: dword(0x36C8C0),
 }
+ChrAct = {
+    US: dword(0x3808B8),
+    EU: dword(0x3A70B8),
+    JP: dword(0x3823B8),
+}
 MaxHealth = {
     US: float(0x3808F0),
     EU: float(0x3A70F0),
@@ -102,6 +109,23 @@ QP = {
     EU: float(0x3A7108),
     JP: float(0x382408),
 }
+PlayerXYZ = [
+    {   // X
+        US: float(0x380950),
+        EU: float(0x3A7150),
+        JP: float(0x382450),
+    },
+    {   // Y
+        US: float(0x380954),
+        EU: float(0x3A7154),
+        JP: float(0x382454),
+    },
+    {   // Z
+        US: float(0x380958),
+        EU: float(0x3A7158),
+        JP: float(0x382458),
+    },
+]
 Flags = {
     US: 0x36CC00,
     EU: 0x394400,
@@ -111,6 +135,16 @@ WaitVSyncs = {
     US: dword(0x3DFECC),
     EU: dword(0x40688C),
     JP: dword(0x3EB96C),
+}
+GameEnding = {
+    US: byte(0x414490),
+    EU: byte(0x43AE90),
+    JP: byte(0x41FF10),
+}
+GameEndingState = {
+    US: byte(0x414480),
+    EU: byte(0x43AE80),
+    JP: byte(0x41FF00),
 }
 
 // Game State
@@ -332,6 +366,8 @@ FLAG_SAVED_KAREN = 0x213E
 FLAG_FOUND_KAREN = 0x57E // Overturned building
 FLAG_MET_GREG = 0x214E
 FLAG_ESCAPE_CONSTRUCTION_SITE = 0x214B
+FLAG_SAVED_KELLY = 0x2322
+FLAG_GAVE_FILE = 0x5F5B // Giving John Patton Greg's File at the Santa Katrina Hospital
 
 FLAG_COMPASS_START = 9800
 FLAG_COMPASS_END = 9834
@@ -346,7 +382,7 @@ function BackpackTrigger(region, backpack)
         BACKPACK_KNAPSACK: 0110,
         BACKPACK_BACKPACK: 0203,
         BACKPACK_GYMBAG: 0000, // TODO
-        BACKPACK_CLOTHBAG: 0000, // TODO
+        BACKPACK_CLOTHBAG: 0403,
         BACKPACK_FRAMEPACK: 0505,
     }
     
@@ -425,6 +461,14 @@ function MapTransition(region, old_map, new_map)
            LoadProtection(region) &&
            MapID(region) == new_map &&
            MapIDPrev(region) == old_map
+}
+
+function EndingTrigger(region, endings)
+{
+    return IsRegion(region) &&
+           any_of(endings, ending => GameEnding[region] == ending) &&
+           GameEndingState[region] >= 3 &&
+           prev(GameEndingState[region]) < 3
 }
 
 // Backpacks
@@ -559,6 +603,91 @@ achievement(
     description="Try and save an elderly couple trapped in a destroyed building.",
     points=3,
     trigger=any_of(Regions, region => FreshMemoriesTrigger(region))
+)
+
+// Kelly Route
+
+function CyclistTrigger(region)
+{
+    return IsRegion(region) &&
+           MapID(region) == 0400 &&
+           ChrAct[region] == CHR_ACT_BICYCLE &&
+           PlayerXYZ[2][region] < 46.0 &&
+           prev(PlayerXYZ[2][region]) >= 46.0
+}
+
+achievement(
+    title="Capital City Cyclist",
+    description="Arrive at the amusement park by bicycle.",
+    points=2,
+    trigger=any_of(Regions, region => CyclistTrigger(region))
+)
+
+achievement(
+    title="I Want to Get Off Mr. Bones' Wild Ride",
+    description="Save a trapped teenage girl in the amusement park.",
+    points=3,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KELLY))
+)
+
+achievement(
+    title="Don't Forget",
+    description="Give John Patton Greg's File at the Santa Katrina Hospital.",
+    points=4,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_GAVE_FILE))
+)
+
+function RawDangerTrigger(region)
+{
+    // bit scuffed but the save screen means using a map transition is bad timing
+    return IsRegion(region) &&
+           MapID(region) == 0405 &&
+           PlayerXYZ[2][region] >= 135.0 &&
+           prev(PlayerXYZ[2][region]) < 135.0
+}
+
+achievement(
+    title="Raw Danger",
+    description="Escape the submerged area around the Santa Katrina Hospital.",
+    points=5,
+    trigger=any_of(Regions, region => RawDangerTrigger(region))
+)
+
+// Endings
+
+achievement(
+    title="TODO Ending 1/2",
+    description="Obtain Ending 1 or 2.",
+    points=10,
+    trigger=any_of(Regions, region => EndingTrigger(region, [1, 2]))
+)
+
+achievement(
+    title="TODO Ending 3",
+    description="Obtain Ending 3.",
+    points=25,
+    trigger=any_of(Regions, region => EndingTrigger(region, [3]))
+)
+
+achievement(
+    title="TODO Ending 4",
+    description="Obtain Ending 4.",
+    points=25,
+    trigger=any_of(Regions, region => EndingTrigger(region, [4]))
+)
+
+achievement(
+    title="TODO Ending 5/6",
+    description="Obtain Ending 5 or 6.",
+    points=10,
+    trigger=any_of(Regions, region => EndingTrigger(region, [5, 6]))
+)
+
+achievement(
+    title="TODO Ending 7",
+    description="Obtain Ending 7.",
+    points=10,
+    trigger=any_of(Regions, region => EndingTrigger(region, [7]))
 )
 
 // ACHIEVEMENTS END
