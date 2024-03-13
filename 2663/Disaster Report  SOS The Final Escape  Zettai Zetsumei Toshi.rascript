@@ -17,10 +17,13 @@ IsEU = byte(0x1351DA)
 IsJP = byte(0x135150)
 
 // NOTE: bad blur call is at 0x00158BFC for US
+
 // NOTE: Dialogue arrow not appearing in HW is a depth issue; arrow is at depth -0x1 and menu is at depth -0x2
 // the instruction at 0x192F88 (addiu t2, zero, -0x2) has to be changed to (addiu t2, zero, -0x81 (!!!)) for the arrow to show up. The imprecision!
 // Item menu bg depth is at 0x183B10, item tabs at 0x183DC8 -- can just be changed to -0x2F8 and -0x1F8
 // Depth for "Save game?" screen with faucet is in memory at 0x26B978 -- can be changed to 0xFFFFFF70
+// For "Exit game without saving?" backdrop depth is at memory 0x26A120 and can be changed to 0xFFFFFF70;
+// window backdrop is at code 0x199364; can be changed to -0x81
 
 function IsRegion(region)
 {
@@ -105,6 +108,31 @@ Flags = {
     JP: 0x36EC00,
 }
 
+// Game State
+MENU_TRANSITION = -1
+MENU_INITIAL = 0x1 // Also used when exiting to the title from game
+MENU_TITLE = 0x8
+MENU_MCMENU = 0xC
+MENU_GAMELOAD = 0x12
+MENU_GAMELOAD2 = 0x13
+MENU_GAME = 0x14
+
+PreviousMenu = {
+    US: dword(0x380760),
+    EU: dword(0x3A6F60),
+    JP: dword(0x382260),
+}
+CurrentMenu = {
+    US: dword(0x380768),
+    EU: dword(0x3A6F68),
+    JP: dword(0x382268),
+}
+NextMenu = {
+    US: dword(0x380770),
+    EU: dword(0x3A6F70),
+    JP: dword(0x382270),
+}
+
 function MapID(region)
 {
     area = Area[region]
@@ -122,6 +150,16 @@ function IsInGame(region)
 {
     // Tentative
     return MapObjsLength[region] > 0
+}
+
+function LoadProtection(region)
+{
+    // Gotta be really careful with this because if we put any ||s in here
+    // RA has to think too hard and will refuse to consider the condition valid
+    return prior(PreviousMenu[region]) != MENU_MCMENU &&
+           PreviousMenu[region] != MENU_MCMENU &&
+           CurrentMenu[region] != MENU_MCMENU &&
+           CurrentMenu[region] > MENU_TITLE
 }
 
 // RICH PRESENCE START
@@ -277,7 +315,8 @@ rich_presence_display("Playing Disaster Report")
 
 // ACHIEVEMENTS START
 
-FLAG_SAVED_KAREN = 0x3E9
+FLAG_SAVED_KAREN = 0x3E9 // NOTE: Also seems to be set after FLAG_FOUND_KAREN? Gonna map-guard this one.
+FLAG_FOUND_KAREN = 0x57E // Overturned building
 
 FLAG_COMPASS_START = 9800
 FLAG_COMPASS_END = 9834
@@ -285,7 +324,7 @@ FLAG_COMPASS_END = 9834
 function BackpackTrigger(region, backpack)
 {
     return IsRegion(region) &&
-           IsInGame(region) &&
+           LoadProtection(region) &&
            prev(Backpack[region]) != backpack && 
            Backpack[region] == backpack    
 }
@@ -296,10 +335,17 @@ function FlagGet(region, flag)
     return bit(flag % 8, flags + flag / 8)
 }
 
-function FlagSetTrigger(region, flag)
+function FlagSetTrigger(region, flag, map=-1)
 {
+    map_cond = always_true()
+    if (map != -1)
+    {
+        map_cond = MapID(region) == map
+    }
+
     return IsRegion(region) && 
-           IsInGame(region) && 
+           LoadProtection(region) && 
+           map_cond &&
            FlagGet(region, flag) == 1 && 
            prev(FlagGet(region, flag)) == 0
 }
@@ -308,11 +354,13 @@ function CompassCount(region)
 {
     current = 0
     delta = 0
+    prior = 0
     
     for flag in range(FLAG_COMPASS_START, FLAG_COMPASS_END)
     {
         current = current + FlagGet(region, flag)
         delta = delta + prev(FlagGet(region, flag))
+        prior = prior + prior(FlagGet(region, flag))
     }
     
     // Compass 0 (standard) is flag 9800, but never seems to get set on.
@@ -320,7 +368,7 @@ function CompassCount(region)
     current = current + (FlagGet(region, FLAG_COMPASS_START) ^ 1)
     delta = delta + (FlagGet(region, FLAG_COMPASS_START) ^ 1)
     
-    return [current, delta]
+    return [current, delta, prior]
 }
 
 function CompassMeasuredTrigger(region, new_count, old_count=-1)
@@ -328,16 +376,17 @@ function CompassMeasuredTrigger(region, new_count, old_count=-1)
     count = CompassCount(region)
     current = count[0]
     delta = count[1]
+    prior = count[2]
     
     measured_condition = current == new_count
-    when = IsRegion(region) && IsInGame(region) && (current != delta) && delta < new_count
+    when = IsRegion(region) && LoadProtection(region) && delta < new_count
     
     if (old_count != -1)
     {
         // Only show the measurement if we've acquired enough compasses for the previous checkpoint achievement.
         when = when && current > old_count
     }
-    return measured(measured_condition, when=when)
+    return current > delta && measured(measured_condition, when=when)
 }
 
 // Backpacks
@@ -413,7 +462,14 @@ achievement(
     title="TODO Rescue Karen",
     description="Rescue the injured woman on the Airport Island Bridge.",
     points=3,
-    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KAREN))
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KAREN, map=0104))
+)
+
+achievement(
+    title="TODO Find Karen",
+    description="Find Karen in the overturned building on Girard Street.",
+    points=3,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_FOUND_KAREN, map=0110))
 )
 
 function CrowbarTrigger(region)
@@ -422,9 +478,9 @@ function CrowbarTrigger(region)
     // which should only be 0 -> 1 when picking up the crowbar AFAIK.
     // It might go back to 0, then 1, when chipping at the concrete in the subway in Karen's route,
     // but we check the map ID anyways so we should be all good.
-    // I could see this still breaking so it might rte
+    // I could see this still breaking so it might require a revisit later based on testing.
     return IsRegion(region) &&
-           IsInGame(region) &&
+           LoadProtection(region) &&
            MapID(region) == 0108 &&
            prev(BackpackAttachedItemsLength[region]) == 0 &&
            BackpackAttachedItemsLength[region] == 1
