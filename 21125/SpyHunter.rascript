@@ -223,7 +223,8 @@ for level in LevelNames
         cancel=CreateLeaderboardCancel(level),
         submit=CreateLeaderboardSubmit(level),
         value=CreateLeaderboardValue(level),
-        format="MILLISECS"
+        format="MILLISECS",
+        lower_is_better=true
     )
 }
 
