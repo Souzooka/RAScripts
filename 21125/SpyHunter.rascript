@@ -3,26 +3,59 @@
 
 NULL = 0
 
-function GetRealAddress(us_address, eu_address)
+RegionByte = byte(0x101072) // Constant code byte, 0 == US, 1 == EU
+REGION_US = 0
+REGION_EU = 1
+US = 0
+EU = 1
+Regions = [US, EU]
+
+function IsRegion(region)
 {
-    return us_address
+    return RegionByte == region
 }
 
-Game = dword(GetRealAddress(0x356258, 0))
-Level = dword(GetRealAddress(0x35625C, 0))
-Cheats = GetRealAddress(0x3564D8, 0)
+Game = {
+    US: dword(0x356258),
+    EU: dword(0x35A4FC),
+}
+Level = {
+    US: dword(0x35625C),
+    EU: dword(0x35A500),
+}
+Cheats = {
+    US: 0x3564D8,
+    EU: 0x35A780,
+}
+Player = {
+    US: dword(Level[US] + 0x12304),
+    EU: dword(Level[EU] + 0x12304),
+}
+CurrentLevel = {
+    US: dword(Game[US] + 0xB24),
+    EU: dword(Game[EU] + 0xB24),
+}
+LevelComplete = {
+    US: dword(Player[US] + 0xCA8),
+    EU: dword(Player[EU] + 0xCB8),
+}
+LevelCompleteTime = {
+    US: float(Player[US] + 0xCDC),
+    EU: dword(Player[EU] + 0xCEC)
+}
 
-Player = dword(Level + 0x12304)
-PlayerInfo = dword(Game + 0x3C)
-CurrentLevel = dword(Game + 0xB24)
-LevelComplete = dword(Player + 0xCA8)
-LevelCompleteTime = float(Player + 0xCDC)
-LevelObjectives = []
+// There's a bug preventing pushing to arrays if they're dictionary values :(
+tempUS = []
+tempEU = []
 for i in range(0, 10 - 1)
 {
-    array_push(LevelObjectives, dword(Player + 0xCB0 + i * 4))
+    array_push(tempUS, dword(Player[US] + 0xCB0 + i * 4))
+    array_push(tempEU, dword(Player[EU] + 0xCC0 + i * 4))
 }
-CompletedObjectives = dword(PlayerInfo + 0x378)
+LevelObjectives = {
+    US: tempUS,
+    EU: tempEU,
+}
 
 LevelNames = {
     1: "Test Track License",
@@ -58,13 +91,6 @@ LevelNumObjectives = {
     14: 4,
 }
 
-TOTAL_OBJECTIVES = 0
-for level in LevelNumObjectives
-{
-    // Should end up being 65
-    TOTAL_OBJECTIVES = TOTAL_OBJECTIVES + LevelNumObjectives[level]
-}
-
 LevelCheatTimes = {
     1: 221,
     2: 216,
@@ -87,56 +113,46 @@ function SecondsToMinutes(seconds)
     return [seconds / 60, seconds % 60]
 }
 
-function IsSinglePlayer()
+function IsSinglePlayer(region)
 {
     OFFSET_NUM_PLAYERS = 0x34
-    return dword(Game + OFFSET_NUM_PLAYERS) == 1
+    return dword(Game[region] + OFFSET_NUM_PLAYERS) == 1
 }
 
-function IsInLevel(level=-1)
+function IsInLevel(region, level=-1)
 {
     if (level == -1)
     {
-        return Level != NULL
+        return Level[region] != NULL
     }
-    return Level != NULL && CurrentLevel == level
+    return Level[region] != NULL && CurrentLevel[region] == level
 }
 
-function GetPlayer()
+function LevelComplete(region, level)
 {
-    OFFSET_PLAYER = 0x12304
-    return dword(Level + OFFSET_PLAYER)
+    return IsInLevel(region, level) &&
+           LevelComplete[region] == 1 &&
+           prev(LevelComplete[region]) == 0
 }
 
-function LevelComplete(level)
+function LevelSuccess(region, level)
 {
-    OFFSET_LEVEL_COMPLETE = 0xCA8
-    player = GetPlayer()
-    level_complete = dword(player + OFFSET_LEVEL_COMPLETE)
-    
-    return IsInLevel(level) &&
-           level_complete == 1 &&
-           prev(level_complete) == 0
-}
-
-function LevelSuccess(level)
-{
-    return LevelComplete(level) && LevelObjectives[0] == 1
+    return LevelComplete(region, level) && LevelObjectives[region][0] == 1
 }
 
 function LevelFailure(level)
 {
-    return LevelComplete(level) && LevelObjectives[0] == 0
+    return LevelComplete(region, level) && LevelObjectives[region][0] == 0
 }
 
-function AllLevelObjectives(level)
+function AllLevelObjectives(region, level)
 {
     num_objectives = LevelNumObjectives[level]
     
     condition = always_true()
     for i in range(0, num_objectives - 1)
     {
-        condition = condition && LevelObjectives[i] == 1
+        condition = condition && LevelObjectives[region][i] == 1
     }
     return condition
 }
@@ -158,7 +174,7 @@ CHEAT_TINY_SPY = 13
 CHEAT_HOVER_SPY = 14
 CHEAT_GOD_MODE = 15
 
-function AntiCheat()
+function AntiCheat(region)
 {
     banned_cheats = [
         CHEAT_NIGHT_VISION,
@@ -175,34 +191,37 @@ function AntiCheat()
     // Map the provided cheats to a dword read of the correct address
     banned_cheats = array_map(
         banned_cheats,
-        i => dword(Cheats + i * 4)
+        i => dword(Cheats[region] + i * 4)
     )
     
-    return IsSinglePlayer() && none_of(banned_cheats, cheat => cheat != 0)
+    return IsSinglePlayer(region) && none_of(banned_cheats, cheat => cheat != 0)
 }
 
 // LEADERBOARDS START
 
-function CreateLeaderboardStart(level)
+function CreateLeaderboardStart(region, level)
 {
-    return AntiCheat() &&
-           LevelComplete(level) &&
-           AllLevelObjectives(level)
+    return AntiCheat(region) &&
+           LevelComplete(region, level) &&
+           AllLevelObjectives(region, level)
 }
 
-function CreateLeaderboardCancel(level)
+function CreateLeaderboardCancel(region, level)
 {
     return always_false()
 }
 
-function CreateLeaderboardSubmit(level)
+function CreateLeaderboardSubmit(region, level)
 {
     return always_true()
 }
 
 function CreateLeaderboardValue(level)
 {
-    return LevelCompleteTime * 100.0
+    return max_of(
+        measured(LevelCompleteTime[US] * 100.0, when=IsRegion(US)),
+        measured(LevelCompleteTime[EU] * 100.0, when=IsRegion(EU))
+    )
 }
 
 LEADERBOARD_ID_START = 92139
@@ -219,9 +238,9 @@ for level in LevelNames
             "Finish the mission \"{0}\" while having all objectives completed within the fastest time!",
             LevelNames[level]
         ),
-        start=CreateLeaderboardStart(level),
-        cancel=CreateLeaderboardCancel(level),
-        submit=CreateLeaderboardSubmit(level),
+        start=any_of(Regions, region => IsRegion(region) && CreateLeaderboardStart(region, level)),
+        cancel=any_of(Regions, region => IsRegion(region) && CreateLeaderboardCancel(region, level)),
+        submit=any_of(Regions, region => IsRegion(region) && CreateLeaderboardSubmit(region, level)),
         value=CreateLeaderboardValue(level),
         format="MILLISECS",
         lower_is_better=true
@@ -229,3 +248,65 @@ for level in LevelNames
 }
 
 // LEADERBOARDS END
+
+// ACHIEVEMENTS START
+
+function PartialLevelTrigger(region, level)
+{
+    return AntiCheat(region) &&
+           LevelSuccess(region, level)
+}
+
+function FullLevelTrigger(region, level)
+{
+    time_limit = LevelCheatTimes[level]
+    
+    return AntiCheat(region) &&
+           LevelComplete(region, level) &&
+           AllLevelObjectives(region, level) &&
+           LevelCompleteTime[region] < time_limit
+}
+
+PARTIAL_ACHIEVEMENT_ID_START = 408813
+FULL_ACHIEVEMENT_ID_START = 408827
+
+for level in LevelNames
+{
+    partial_points = 5
+    full_points = 10
+    if (level == 14)
+    {
+        // Give more points for the last level
+        partial_points = 10
+        full_points = 25
+    }
+    
+    // Partial level completion
+    achievement(
+        id=PARTIAL_ACHIEVEMENT_ID_START+level-1,
+        title=format("{0}", LevelNames[level]),
+        description=format("Complete the mission \"{0}\".", LevelNames[level]),
+        points=partial_points,
+        trigger=any_of(Regions, region => IsRegion(region) && PartialLevelTrigger(region, level))
+    )
+    
+    // Full level completion (+ dev-set time to unlock a cheat)
+    temp = SecondsToMinutes(LevelCheatTimes[level])
+    minutes = temp[0]
+    seconds = temp[1]
+    achievement(
+        id=FULL_ACHIEVEMENT_ID_START+level-1,
+        title=format("{0} - Super Spy", LevelNames[level]),
+        description=format(
+            "Complete the mission \"{0}\" with all objectives completed " +
+            "in under {1} minutes and {2} seconds.",
+            LevelNames[level],
+            minutes,
+            seconds
+        ),
+        points=full_points,
+        trigger=any_of(Regions, region => IsRegion(region) && FullLevelTrigger(region, level))
+    )
+}
+
+// ACHIEVEMENTS END
