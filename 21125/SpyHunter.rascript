@@ -2,6 +2,8 @@
 // #ID = 21125
 
 NULL = 0
+True = 1
+False = 0
 
 RegionByte = byte(0x101072) // Constant code byte, 0 == US, 1 == EU
 REGION_US = 0
@@ -31,6 +33,10 @@ Player = {
     US: dword(Level[US] + 0x12304),
     EU: dword(Level[EU] + 0x12304),
 }
+Health = {
+    US: float(Player[US] + 0x38),
+    EU: float(Player[EU] + 0x38),
+}
 CurrentLevel = {
     US: dword(Game[US] + 0xB24),
     EU: dword(Game[EU] + 0xB24),
@@ -41,8 +47,16 @@ LevelComplete = {
 }
 LevelCompleteTime = {
     US: float(Player[US] + 0xCDC),
-    EU: dword(Player[EU] + 0xCEC)
+    EU: float(Player[EU] + 0xCEC),
 }
+LevelCompleteState = { // 1 = success, 2 or 3 = dead/out of time
+    US: dword(Player[US] + 0xCAC),
+    EU: dword(Player[EU] + 0xCBC),
+}
+
+LCS_SUCCESS = 1
+LCS_DEAD = 2
+LCS_OUT_OF_TIME = 3
 
 // There's a bug preventing pushing to arrays if they're dictionary values :(
 tempUS = []
@@ -131,18 +145,10 @@ function IsInLevel(region, level=-1)
 function LevelComplete(region, level)
 {
     return IsInLevel(region, level) &&
-           LevelComplete[region] == 1 &&
-           prev(LevelComplete[region]) == 0
-}
-
-function LevelSuccess(region, level)
-{
-    return LevelComplete(region, level) && LevelObjectives[region][0] == 1
-}
-
-function LevelFailure(level)
-{
-    return LevelComplete(region, level) && LevelObjectives[region][0] == 0
+           LevelComplete[region] == True &&
+           prev(LevelComplete[region]) == False && 
+           LevelCompleteState[region] == LCS_SUCCESS && // We haven't died/run out of time
+           LevelObjectives[region][0] == True // We completed the first objective
 }
 
 function AllLevelObjectives(region, level)
@@ -152,7 +158,7 @@ function AllLevelObjectives(region, level)
     condition = always_true()
     for i in range(0, num_objectives - 1)
     {
-        condition = condition && LevelObjectives[region][i] == 1
+        condition = condition && LevelObjectives[region][i] == True
     }
     return condition
 }
@@ -194,7 +200,7 @@ function AntiCheat(region)
         i => dword(Cheats[region] + i * 4)
     )
     
-    return IsSinglePlayer(region) && none_of(banned_cheats, cheat => cheat != 0)
+    return IsSinglePlayer(region) && none_of(banned_cheats, cheat => cheat != False)
 }
 
 // LEADERBOARDS START
@@ -254,15 +260,14 @@ for level in LevelNames
 function PartialLevelTrigger(region, level)
 {
     return AntiCheat(region) &&
-           LevelSuccess(region, level)
+           LevelComplete(region, level)
 }
 
 function FullLevelTrigger(region, level)
 {
     time_limit = LevelCheatTimes[level]
     
-    return AntiCheat(region) &&
-           LevelComplete(region, level) &&
+    return PartialLevelTrigger(region, level) &&
            AllLevelObjectives(region, level) &&
            LevelCompleteTime[region] < time_limit
 }
