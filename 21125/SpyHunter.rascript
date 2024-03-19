@@ -88,6 +88,23 @@ LevelNames = {
     14: "Eye of the Storm",
 }
 
+LevelLocationNames = {
+    1: "Texas, USA",
+    2: "Frankfurt, Germany",
+    3: "Venice, Italy",
+    4: "Florida Keys, USA",
+    5: "the French Riveria",
+    6: "the Panama Canal",
+    7: "Texas, USA",
+    8: "Dover, England",
+    9: "Frankfurt, Germany",
+    10: "the Panama Canal",
+    11: "Monte Carlo, France",
+    12: "Florida Keys, USA",
+    13: "Venice, Italy",
+    14: "Petra, Jordan"
+}
+
 LevelNumObjectives = {
     1: 7,
     2: 4,
@@ -315,3 +332,29 @@ for level in LevelNames
 }
 
 // ACHIEVEMENTS END
+
+// RICH PRESENCE START
+
+RegionLookup = {
+    REGION_US: "ᵘˢ",
+    REGION_EU: "ᵉᵘ",
+}
+
+for region in Regions
+{
+    rich_presence_conditional_display(
+        IsRegion(region) && !IsInLevel(region),
+        "{0} In the opening menu or loading screen.",
+        rich_presence_lookup("Region", region, RegionLookup)
+    )
+    rich_presence_conditional_display(
+        IsRegion(region) && IsInLevel(region),
+        "{0} Undergoing mission \"{1}\" in {2}.",
+        rich_presence_lookup("Region", region, RegionLookup),
+        rich_presence_lookup("LevelName", CurrentLevel[region], LevelNames),
+        rich_presence_lookup("LocationName", CurrentLevel[region], LevelLocationNames)
+    )
+}
+rich_presence_display("Playing SpyHunter")
+
+// RICH PRESENCE END
