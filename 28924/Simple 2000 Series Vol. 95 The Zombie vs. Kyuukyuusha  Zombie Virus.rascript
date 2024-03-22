@@ -25,6 +25,21 @@ function GetRealAddress(eu_address, jp_address)
     return eu_address + (jp_offset * RegionByte)
 }
 
+ACC_MIRROR = 0
+ACC_PREV = 1
+ACC_PRIOR = 2
+
+_mirror = v => v
+function GetAccessor(acc)
+{
+    table = {
+        ACC_MIRROR: _mirror,
+        ACC_PREV: prev,
+        ACC_PRIOR: prior,
+    }
+    return table[acc]
+}
+
 CurrGameState = dword(GetRealAddress(0x206D18, 0x204918))
 
 // NOTE: Subtract 1 from each of these values for JP version (and VideoModeSelect does not exist)
@@ -45,6 +60,36 @@ function GetGameState()
 
 pComboCount = GetRealAddress(0x401270, 0x3F44E0)
 ComboCount = dword(dword(pComboCount) + 0x9C)
+KillCount = dword(GetRealAddress(0x20BCE0, 0x206FA0))
+Survivors = []
+for i in range(0, 5)
+{
+    array_push(Survivors, dword(GetRealAddress(0x20BC00 + i * 4, 0x206EC0 + i * 4)))
+}
+
+function GetNumSurvivors(acc=ACC_MIRROR)
+{
+    accessor = GetAccessor(acc)
+    return sum_of(Survivors, accessor)
+}
+
+function _IsWalkLoad()
+{
+    // Checks Walk's substate?
+    // This value is 4 when in the load menu in the hospital basement.
+    pointer = dword(GetRealAddress(0x20C28C, 0x20754C))
+    val = dword(pointer + 0x474)
+    return pointer != NULL && val == 4
+}
+
+function LoadProtection()
+{
+    // There's two ways you can load a save file.
+    // 1. Load the save file from the title menu. Easy to check for.
+    // 2. Load the save file from the NPC in the hospital basement; a bit more complicated.
+    return GetGameState() > EGameState_Load &&
+           (GetGameState() != EGameState_Walk || !_IsWalkLoad())
+}
 
 // RICH PRESENCE START
 
@@ -110,6 +155,7 @@ function ComboValue()
 }
 
 leaderboard(
+    id=92357,
     title="Highest Kill Combo",
     description="Obtain the highest kill combo (minimum 100)!",
     start=ComboStart(),
@@ -163,6 +209,24 @@ achievement(
     description="Obtain a combo kill count of 100.",
     points=10,
     trigger=ComboTrigger(50, 100)
+)
+
+achievement(
+    title="Zombie Decimator",
+    description="Kill 535.94 zombies.",
+    points=5,
+    trigger=LoadProtection() && 
+            prev(KillCount) < 536 && 
+            KillCount >= 536
+)
+
+achievement(
+    title="A Light in the Darkness",
+    description="Locate and rescue your first survivor.",
+    points=1,
+    trigger=LoadProtection() &&
+            GetNumSurvivors(ACC_PREV) == 0 &&
+            GetNumSurvivors() > 0
 )
 
 // ACHIEVEMENTS END
