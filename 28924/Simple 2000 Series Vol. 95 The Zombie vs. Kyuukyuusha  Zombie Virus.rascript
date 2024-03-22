@@ -43,6 +43,9 @@ function GetGameState()
     return CurrGameState + RegionByte
 }
 
+pComboCount = GetRealAddress(0x401270, 0x3F44E0)
+ComboCount = dword(dword(pComboCount) + 0x9C)
+
 // RICH PRESENCE START
 
 TitleLookup = {
@@ -80,3 +83,87 @@ rich_presence_conditional_display(
 rich_presence_display("Playing Simple 2000 Series Vol. 95: The Zombie vs. Kyuukyuusha | Zombie Virus")
 
 // RICH PRESENCE END
+
+// LEADERBOARDS START
+
+function ComboStart()
+{
+    return pComboCount != NULL && 
+           ComboCount >= 100 &&
+           prev(ComboCount) < 100
+}
+
+function ComboCancel()
+{
+    // 999 is the highest legitimate value!
+    return pComboCount == NULL || ComboCount > 999
+}
+
+function ComboSubmit()
+{
+    return ComboCount == 0 && prev(ComboCount) != 0
+}
+
+function ComboValue()
+{
+    return prev(ComboCount)   
+}
+
+leaderboard(
+    title="Highest Kill Combo",
+    description="Obtain the highest kill combo (minimum 100)!",
+    start=ComboStart(),
+    cancel=ComboCancel(),
+    submit=ComboSubmit(),
+    value=ComboValue(),
+    format="VALUE"
+)
+
+// LEADERBOARDS END
+
+// ACHIEVEMENTS START
+
+function ComboTrigger(start, end)
+{
+    return pComboCount != NULL &&
+           ComboCount >= start &&
+           trigger_when(ComboCount >= end && prev(ComboCount) < end)
+}
+
+achievement(
+    title="Good!! Zombie Killer!",
+    description="Obtain a combo kill count of 5.",
+    points=1,
+    trigger=ComboTrigger(1, 5)
+)
+
+achievement(
+    title="Great!! Zombie Hunter!",
+    description="Obtain a combo kill count of 10.",
+    points=2,
+    trigger=ComboTrigger(5, 10)
+)
+
+achievement(
+    title="Excellent!! Zombie Assassin!",
+    description="Obtain a combo kill count of 20.",
+    points=3,
+    trigger=ComboTrigger(10, 20)
+)
+
+achievement(
+    title="Fantastic!! Zombie Genocider!",
+    description="Obtain a combo kill count of 50.",
+    points=5,
+    trigger=ComboTrigger(20, 50)
+)
+
+achievement(
+    title="It's Crazy!! Zombie's Demise!",
+    description="Obtain a combo kill count of 100.",
+    points=10,
+    trigger=ComboTrigger(50, 100)
+)
+
+// ACHIEVEMENTS END
+
