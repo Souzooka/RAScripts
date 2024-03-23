@@ -58,14 +58,67 @@ function GetGameState()
     return CurrGameState + RegionByte
 }
 
-pComboCount = GetRealAddress(0x401270, 0x3F44E0)
-ComboCount = dword(dword(pComboCount) + 0x9C)
+LastWalkMenu = dword(GetRealAddress(0x20C0FC, 0x2073BC))
+
+EWalkMenu_Advice = 0
+EWalkMenu_Status = 1
+EWalkMenu_Develop = 2
+EWalkMenu_Custom = 3
+EWalkMenu_System = 4
+
+WalkStateData = dword(GetRealAddress(0x20C28C, 0x20754C))
+DriveStateData = dword(GetRealAddress(0x401270, 0x3F44E0))
+
+ComboCount = dword(DriveStateData + 0x9C)
 KillCount = dword(GetRealAddress(0x20BCE0, 0x206FA0))
 Survivors = []
 for i in range(0, 5)
 {
     array_push(Survivors, dword(GetRealAddress(0x20BC00 + i * 4, 0x206EC0 + i * 4)))
 }
+
+ESurvivor_MaleCitizen = 0
+ESurvivor_FemaleCitizen = 1
+ESurvivor_Soldier = 2
+ESurvivor_PoliceOfficer = 3
+ESurvivor_Mechanic = 4
+ESurvivor_Politician = 5
+
+AreaID = dword(GetRealAddress(0x20BF24, 0x2071E4))
+
+function GetVehicleParts()
+{
+    vehicle = dword(GetRealAddress(0x20BD00, 0x206FC0))
+    parts = [vehicle]
+    offsets = [
+        0x390, // Engine
+        0x38C, // Tire
+        0x3A4, // Bumper
+        0x39C, // Lights
+    ]
+    
+    for offset in offsets
+    {
+        part = dword(DriveStateData + 0x4)
+        part = dword(part + offset)
+        part = dword(part + 0x2E0)
+        array_push(parts, part)
+    }
+    
+    return parts
+}
+_parts = GetVehicleParts()
+VehicleType = _parts[0]
+EngineType = _parts[1]
+TireType = _parts[2]
+BumperType = _parts[3]
+LightType = _parts[4]
+
+EPartCategory_Vehicle = 0
+EPartCategory_Engine = 1
+EPartCategory_Tire = 2
+EPartCategory_Bumper = 3
+EPartCategory_Light = 4
 
 function GetNumSurvivors(acc=ACC_MIRROR)
 {
@@ -75,11 +128,9 @@ function GetNumSurvivors(acc=ACC_MIRROR)
 
 function _IsWalkLoad()
 {
-    // Checks Walk's substate?
     // This value is 4 when in the load menu in the hospital basement.
-    pointer = dword(GetRealAddress(0x20C28C, 0x20754C))
-    val = dword(pointer + 0x474)
-    return pointer != NULL && val == 4
+    SystemMenuState = dword(WalkStateData + 0x474)
+    return LastWalkMenu == EWalkMenu_System && SystemMenuState == 4
 }
 
 function LoadProtection()
@@ -96,6 +147,52 @@ function LoadProtection()
 TitleLookup = {
     EU: "Zombie Virus",
     JP: "THE ゾンビ V.S. 救急車",
+}
+AreaLookup = {
+    0: "Central Town",
+    1: "East Building",
+    2: "West Forest",
+    3: "South Desert",
+    4: "North Field"
+}
+VehicleLookup = {
+    0: "🚑 S",
+    1: "🚑 M",
+    2: "🚑 L",
+    3: "🚓",
+    4: "Tank" // No Emoji :(
+}
+EngineLookup = {
+    -1: "Normal Engine",
+    0: "Normal Engine",
+    1: "Rocket Engine",
+    2: "Tank Engine",
+    3: "Guard Engine",
+    4: "Big-Bang Engine",
+}
+TireLookup = {
+    -1: "Normal Tyres",
+    0: "Normal Tyres",
+    1: "Bare-Bones Tyres",
+    2: "Highway Tyres",
+    3: "Grip Tyres",
+    4: "Scream Tyres",
+}
+BumperLookup = {
+    -1: "Normal Bumper",
+    0: "Normal Bumper",
+    1: "Broad Bumper",
+    2: "Protection Bumper",
+    3: "Wing Bumper",
+    4: "Evil-Killing Bumper",
+}
+LightLookup = {
+    -1: "Normal Lights",
+    0: "Normal Lights",
+    1: "Home Lights",
+    2: "Industrial Lights",
+    3: "Medical Lights",
+    4: "Exploration Lights",
 }
 
 rich_presence_conditional_display(
@@ -117,8 +214,14 @@ rich_presence_conditional_display(
 // TODO: Very basic -- add stats like chosen car, area, and parts
 rich_presence_conditional_display(
     GetGameState() == EGameState_Drive,
-    "{0} | Driving around Sunlight City and seeking out survivors",
-    rich_presence_lookup("Title", RegionByte, TitleLookup)
+    "{0} | Driving around {1} and seeking out survivors | {2} | {3} | {4} | {5} | {6}",
+    rich_presence_lookup("Title", RegionByte, TitleLookup),
+    rich_presence_lookup("Area", AreaID, AreaLookup),
+    rich_presence_lookup("Vehicle", VehicleType, VehicleLookup),
+    rich_presence_lookup("Engine", EngineType, EngineLookup),
+    rich_presence_lookup("Tire", TireType, TireLookup),
+    rich_presence_lookup("Bumper", BumperType, BumperLookup),
+    rich_presence_lookup("Lights", LightType, LightLookup)
 )
 rich_presence_conditional_display(
     any_of(Regions, region => IsRegion(region)),
@@ -133,7 +236,7 @@ rich_presence_display("Playing Simple 2000 Series Vol. 95: The Zombie vs. Kyuuky
 
 function ComboStart()
 {
-    return pComboCount != NULL && 
+    return DriveStateData != NULL && 
            ComboCount >= 100 &&
            prev(ComboCount) < 100
 }
@@ -141,7 +244,7 @@ function ComboStart()
 function ComboCancel()
 {
     // 999 is the highest legitimate value!
-    return pComboCount == NULL || ComboCount > 999
+    return DriveStateData == NULL || ComboCount > 999
 }
 
 function ComboSubmit()
@@ -171,7 +274,7 @@ leaderboard(
 
 function ComboTrigger(start, end)
 {
-    return pComboCount != NULL &&
+    return DriveStateData != NULL &&
            ComboCount >= start &&
            trigger_when(ComboCount >= end && prev(ComboCount) < end)
 }
@@ -228,6 +331,112 @@ achievement(
             GetNumSurvivors(ACC_PREV) == 0 &&
             GetNumSurvivors() > 0
 )
+
+// RESEARCH LEVELS:
+// 0 Mechanics = 0
+// 1 = 1
+// 3 = 2
+// 6 = 3
+// 10 = 4
+// 15 = 5
+// 20 = 6
+// 25 = 7
+// 30 = 8
+// 50 = 9 (INFO: Obtaining this instantly completes research on all parts)
+// 100 = 10 (INFO: Obtaining this instantly complets research on all cars (except Tank))
+
+// REQUIRED RESEARCH LEVELS:
+// Ambulance S = DEFAULT
+// Ambulance M = 2
+// Ambulance L = 5
+// Police Car = 8
+// Tank = 0 (??? - Only possible outside of main campaign??)
+
+// Normal Engine = DEFAULT
+// Rocket Engine = 2
+// Tank Engine = 3
+// Guard Engine = 5
+// Big-Bang Engine = 7
+
+// Normal Tyres = DEFAULT
+// Bare-Bones Tyres = 1
+// Highway Tyres = 2
+// Grip Tyres = 4
+// Scream Tyres = 5
+
+// Normal Bumper = DEFAULT
+// Broad Bumper = 1
+// Protection Bumper = 2
+// Wing Bumper = 4
+// Evil-Killing Bumper = 7
+
+// Normal Lights = DEFAULT
+// Home Lights = 2
+// Industrial Lights = 3
+// Medical Lights = 4
+// Exploration Lights = 5
+
+function ResearchDone(part_category, part_index)
+{
+    PartsArray = GetRealAddress(0x20BD12, 0x206FD2)
+    part = byte(PartsArray + part_category * 5 + part_index)
+
+    return LoadProtection() &&
+           part == True &&
+           prev(part) == False
+}
+
+function CountPartsResearch(acc=ACC_MIRROR)
+{
+    accessor = GetAccessor(acc)
+    // Starting at 0x20BD17 to skip over cars
+    PartsArray = GetRealAddress(0x20BD17, 0x206FD7)
+    
+    sum = 0
+    for i in range(0, 20 - 1)
+    {
+        sum = sum + accessor(byte(PartsArray + i))
+    }
+    
+    return sum
+}
+
+achievement(
+    title="Kyuukyuusha UP!",
+    description="Research the Ambulance M.",
+    points=5,
+    trigger=ResearchDone(EPartCategory_Vehicle, 1)
+)
+
+achievement(
+    title="Health at Any Size",
+    description="Research the Ambulance L.",
+    points=5,
+    trigger=ResearchDone(EPartCategory_Vehicle, 2)
+)
+
+achievement(
+    title="Code Blue",
+    description="Research the Police Car.",
+    points=10,
+    trigger=ResearchDone(EPartCategory_Vehicle, 3)
+)
+
+// TODO: How??
+achievement(
+    title="Tanks for Playing",
+    description="Obtain the Tank in Endless Mode by defeating 1000 zombies.",
+    points=25,
+    trigger=ResearchDone(EPartCategory_Vehicle, 4)
+)
+
+achievement(
+    title="Mechanically Inclined",
+    description="Develop all vehicle parts or rescue 50 mechanics.",
+    points=25,
+    trigger=LoadProtection() &&
+           ((CountPartsResearch() == 20 && CountPartsResearch(ACC_PREV) != 20) || 
+            (Survivors[ESurvivor_Mechanic] >= 50 && prev(Survivors[ESurvivor_Mechanic]) < 50)))
 
 // ACHIEVEMENTS END
 
