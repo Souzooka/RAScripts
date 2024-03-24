@@ -51,11 +51,14 @@ EGameState_Load = 5
 EGameState_Drive = 6
 EGameState_Walk = 8
 EGameState_Cutscene = 9
+EGameState_AttackModeResult = 0xA
 
-function GetGameState()
+function GetGameState(acc=ACC_MIRROR)
 {
+    accessor = GetAccessor(acc)
+
     // Adds 1 to the game state if this is the JP version, to align with the values above.
-    return CurrGameState + RegionByte
+    return accessor(CurrGameState) + RegionByte
 }
 
 LastWalkMenu = dword(GetRealAddress(0x20C0FC, 0x2073BC))
@@ -119,6 +122,13 @@ EPartCategory_Engine = 1
 EPartCategory_Tire = 2
 EPartCategory_Bumper = 3
 EPartCategory_Light = 4
+
+AttackMode = dword(GetRealAddress(0x20BF20, 0x2071E0))
+AttackScore = dword(GetRealAddress(0x40129C, 0x3F450C))
+
+EAttackMode_Zombie = 0
+EAttackMode_Survivor = 1
+EAttackMode_Endless = 2
 
 function GetNumSurvivors(acc=ACC_MIRROR)
 {
@@ -208,20 +218,27 @@ rich_presence_conditional_display(
 // TODO: Very basic -- maybe add some stats like total zombies killed or playtime?
 rich_presence_conditional_display(
     GetGameState() == EGameState_Walk,
-    "{0} | Walking around the basement of the Sunlight Medical Center",
-    rich_presence_lookup("Title", RegionByte, TitleLookup)
+    "{0} | Walking around the basement of the Sunlight Medical Center | {1} rescued",
+    rich_presence_lookup("Title", RegionByte, TitleLookup),
+    rich_presence_value("Survivors", GetNumSurvivors())
 )
 // TODO: Very basic -- add stats like chosen car, area, and parts
 rich_presence_conditional_display(
     GetGameState() == EGameState_Drive,
-    "{0} | Driving around {1} and seeking out survivors | {2} | {3} | {4} | {5} | {6}",
+    "{0} | Driving around {1} and seeking out survivors | {2} | {3} | {4} | {5} | {6} | {7} rescued",
     rich_presence_lookup("Title", RegionByte, TitleLookup),
     rich_presence_lookup("Area", AreaID, AreaLookup),
     rich_presence_lookup("Vehicle", VehicleType, VehicleLookup),
     rich_presence_lookup("Engine", EngineType, EngineLookup),
     rich_presence_lookup("Tire", TireType, TireLookup),
     rich_presence_lookup("Bumper", BumperType, BumperLookup),
-    rich_presence_lookup("Lights", LightType, LightLookup)
+    rich_presence_lookup("Lights", LightType, LightLookup),
+    rich_presence_value("Survivors", GetNumSurvivors())
+)
+rich_presence_conditional_display(
+    GetGameState() == EGameState_AttackModeResult,
+    "{0} | Looking at Attack Mode high scores",
+    rich_presence_lookup("Title", RegionByte, TitleLookup)
 )
 rich_presence_conditional_display(
     any_of(Regions, region => IsRegion(region)),
@@ -268,6 +285,59 @@ leaderboard(
     format="VALUE"
 )
 
+function AttackStart(attack_mode)
+{
+    return GetGameState() == EGameState_Drive &&
+           GetGameState(ACC_PREV) != EGameState_Drive &&
+           AttackMode == attack_mode
+}
+
+function AttackCancel(attack_mode)
+{
+    return GetGameState() == EGameState_Title
+}
+
+function AttackSubmit(attack_mode)
+{
+    return GetGameState() == EGameState_AttackModeResult &&
+           GetGameState(ACC_PREV) != EGameState_AttackModeResult
+}
+
+function AttackValue(attack_mode)
+{
+    return AttackScore
+}
+
+leaderboard(
+    id=92489,
+    title="Zombie Attack - Most Zombie Kills",
+    description="Kill the most zombies within the time limit in Zombie Attack!",
+    start=AttackStart(EAttackMode_Zombie),
+    cancel=AttackCancel(EAttackMode_Zombie),
+    submit=AttackSubmit(EAttackMode_Zombie),
+    value=AttackValue(EAttackMode_Zombie)
+)
+
+leaderboard(
+    id=92490,
+    title="Survivor Attack - Most Survivors Rescued",
+    description="Rescue the most survivors within the time limit in Survivor Attack!",
+    start=AttackStart(EAttackMode_Survivor),
+    cancel=AttackCancel(EAttackMode_Survivor),
+    submit=AttackSubmit(EAttackMode_Survivor),
+    value=AttackValue(EAttackMode_Survivor)
+)
+
+leaderboard(
+    id=92491,
+    title="Endless Attack - Most Points",
+    description="Obtain the most points in Endless Attack!",
+    start=AttackStart(EAttackMode_Endless),
+    cancel=AttackCancel(EAttackMode_Endless),
+    submit=AttackSubmit(EAttackMode_Endless),
+    value=AttackValue(EAttackMode_Endless)
+)
+
 // LEADERBOARDS END
 
 // ACHIEVEMENTS START
@@ -280,6 +350,7 @@ function ComboTrigger(start, end)
 }
 
 achievement(
+    id=411027,
     title="Good!! Zombie Killer!",
     description="Obtain a combo kill count of 5.",
     points=1,
@@ -287,6 +358,7 @@ achievement(
 )
 
 achievement(
+    id=411028,
     title="Great!! Zombie Hunter!",
     description="Obtain a combo kill count of 10.",
     points=2,
@@ -294,6 +366,7 @@ achievement(
 )
 
 achievement(
+    id=411029,
     title="Excellent!! Zombie Assassin!",
     description="Obtain a combo kill count of 20.",
     points=3,
@@ -301,6 +374,7 @@ achievement(
 )
 
 achievement(
+    id=411030,
     title="Fantastic!! Zombie Genocider!",
     description="Obtain a combo kill count of 50.",
     points=5,
@@ -308,6 +382,7 @@ achievement(
 )
 
 achievement(
+    id=411031,
     title="It's Crazy!! Zombie's Demise!",
     description="Obtain a combo kill count of 100.",
     points=10,
@@ -315,6 +390,7 @@ achievement(
 )
 
 achievement(
+    id=411032,
     title="Zombie Decimator",
     description="Kill 535.94 zombies.",
     points=5,
@@ -324,6 +400,7 @@ achievement(
 )
 
 achievement(
+    id=411033,
     title="A Light in the Darkness",
     description="Locate and rescue your first survivor.",
     points=1,
@@ -402,6 +479,7 @@ function CountPartsResearch(acc=ACC_MIRROR)
 }
 
 achievement(
+    id=411034,
     title="Kyuukyuusha UP!",
     description="Research the Ambulance M.",
     points=5,
@@ -409,6 +487,7 @@ achievement(
 )
 
 achievement(
+    id=411035,
     title="Health at Any Size",
     description="Research the Ambulance L.",
     points=5,
@@ -416,27 +495,122 @@ achievement(
 )
 
 achievement(
+    id=411036,
     title="Code Blue",
     description="Research the Police Car.",
     points=10,
     trigger=ResearchDone(EPartCategory_Vehicle, 3)
 )
 
-// TODO: How??
+function AttackScoreTrigger(mode, score)
+{
+    //TankUnlocked = dword(GetRealAddress(0x20BB74, 0x206E34))
+    // Use the attack mode + score to not lock people out of this one
+    
+    return GetGameState() == EGameState_AttackModeResult &&
+           GetGameState(ACC_PREV) != EGameState_AttackModeResult &&
+           AttackMode == mode &&
+           AttackScore >= score
+}
+
 achievement(
+    id=411037,
     title="Tanks for Playing",
-    description="Obtain the Tank in Endless Mode by defeating 1000 zombies.",
-    points=25,
-    trigger=ResearchDone(EPartCategory_Vehicle, 4)
+    description="Obtain the Tank by obtaining at least 1000 points in Endless Attack.",
+    points=10,
+    trigger=AttackScoreTrigger(EAttackMode_Endless, 1000)
 )
 
 achievement(
+    id=411043,
+    title="Monster Masher",
+    description="Kill at least 100 zombies in Zombie Attack.",
+    points=5,
+    trigger=AttackScoreTrigger(EAttackMode_Zombie, 100)
+)
+
+achievement(
+    id=411046,
+    title="Survivor Savior",
+    description="Rescue at least 10 survivors in Survivor Attack.",
+    points=5,
+    trigger=AttackScoreTrigger(EAttackMode_Survivor, 10)
+)
+
+// Rescuing 50 mechanics causes all parts to be instantly researched when talking to the mechanic
+// hence the dual-condition here
+achievement(
+    id=411038,
     title="Mechanically Inclined",
     description="Develop all vehicle parts or rescue 50 mechanics.",
     points=25,
     trigger=LoadProtection() &&
            ((CountPartsResearch() == 20 && CountPartsResearch(ACC_PREV) != 20) || 
-            (Survivors[ESurvivor_Mechanic] >= 50 && prev(Survivors[ESurvivor_Mechanic]) < 50)))
+            (Survivors[ESurvivor_Mechanic] >= 50 && prev(Survivors[ESurvivor_Mechanic]) < 50))
+)
+
+// Bosses
+
+function BossTrigger(boss_id)
+{
+    CutsceneID = dword(GetRealAddress(0x206C08, 0x2048B4))
+    boss_end_cutscene_start = 0xE
+    return GetGameState() == EGameState_Cutscene &&
+           GetGameState(ACC_PREV) != EGameState_Cutscene &&
+           CutsceneID == boss_end_cutscene_start + boss_id
+}
+
+BossAchievementTitles = [
+    "A Worm Feeling",
+    "Battle of Attrition",
+    "Worth a Thousand Worms",
+    "What a Tough Bastard",
+    "Army of Two",
+    "Rapid Evolution",
+]
+
+BossAchievementDescriptions = [
+    "Defeat the Mutant Caterpillar guarding East Building.",
+    "Defeat the Veteran Zombie guarding West Forest.",
+    "Defeat the Mutant Caterpillar guarding South Desert.",
+    "Defeat the Mutant Butterfly guarding North Field.",
+    "Defeat the Veteran Zombies attacking the hospital.",
+    "Defeat the origin of the zombie virus. Thank you for playing!",
+]
+
+BossAchievementPoints = [
+    10,
+    10,
+    10,
+    10,
+    10,
+    25,
+]
+
+BossAchievementIDs = [
+    411039,
+    411040,
+    411041,
+    411044,
+    411042,
+    411045,
+]
+
+for i in range(0, length(BossAchievementTitles) - 1)
+{
+    title = BossAchievementTitles[i]
+    description = BossAchievementDescriptions[i]
+    points = BossAchievementPoints[i]
+    id = BossAchievementIDs[i]
+    
+    achievement(
+        id=id,
+        title=title,
+        description=description,
+        points=points,
+        trigger=BossTrigger(i)
+    )
+}
 
 // ACHIEVEMENTS END
 
