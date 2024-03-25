@@ -298,6 +298,7 @@ MapNameLookup = {
     0402: "Keith and Kelly are looking for Kelly's younger brother in the Residential District.",
     0403: "Keith and Kelly are looking for Kelly's younger brother in her neighborhood.",
     0404: "Keith and Kelly are awaiting rescue at the Santa Katrina Hospital.",
+    0405: "Keith and Kelly are attempting to escape the submerged area around the Santa Katrina Hospital.",
     0500: "Keith and Karen are near the Town Crier News building.",
     0510: "Keith and Kelly are near the Town Crier News building.",
     0501: "Keith and Karen are inside the Town Crier News building.",
@@ -343,7 +344,7 @@ for region in Regions
         IsRegion(region) && IsInGame(region),
         "{0} | {1} | {2} 🧭 | {3} Difficulty | {4}% HP | {5}% QT",
         rich_presence_lookup("GameName", RegionByte, GameNameLookup),
-        rich_presence_lookup("MapName", MapID(region), MapNameLookup),
+        rich_presence_lookup("MapName", MapID(region), MapNameLookup, "⚠️ Unknown Map ⚠"),
         rich_presence_lookup("Compass", Compass[region], CompassLookup),
         rich_presence_lookup("Difficulty", Difficulty[region], DifficultyLookup),
         rich_presence_value("Health", Health[region], format="FLOAT1"),
@@ -368,6 +369,8 @@ FLAG_MET_GREG = 0x214E
 FLAG_ESCAPE_CONSTRUCTION_SITE = 0x214B
 FLAG_SAVED_KELLY = 0x2322
 FLAG_GAVE_FILE = 0x5F5B // Giving John Patton Greg's File at the Santa Katrina Hospital
+FLAG_BOAT_RIDE_DONE = 0x2452 // Finished sailing down Dmitri Canal on Karen's route
+FLAG_KAREN_HOME_CONVERSATION = 0x24B2 // Eavesdrop on Karen while she's in her home
 
 FLAG_COMPASS_START = 9800
 FLAG_COMPASS_END = 9834
@@ -651,6 +654,22 @@ achievement(
     description="Escape the submerged area around the Santa Katrina Hospital.",
     points=5,
     trigger=any_of(Regions, region => RawDangerTrigger(region))
+)
+
+// Karen route
+
+achievement(
+    title="Adventures of Keith Helm",
+    description="Sail down the Dmitri Canal on a makeshift raft.",
+    points=3,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_BOAT_RIDE_DONE))
+)
+
+achievement(
+    title="Peeping Keith",
+    description="Eavesdrop on Karen talking to herself while she is in her room.",
+    points=2,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_KAREN_HOME_CONVERSATION))
 )
 
 // Endings
