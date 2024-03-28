@@ -13,7 +13,7 @@ Regions = [EU, JP]
 
 function GetRegion()
 {
-    return EU
+    return byte(0x10019C)
 }
 
 function IsRegion(region)
@@ -23,14 +23,22 @@ function IsRegion(region)
 
 function GetRealAddress(eu_address, jp_address)
 {
-    return eu_address
+    jp_offset = jp_address - eu_address
+    return eu_address + (jp_offset * GetRegion())
 }
 
-GameState = byte(GetRealAddress(0x237738, 0))
-CurrentMissionID = word(GetRealAddress(0x237760, 0))
-ResultState = dword(GetRealAddress(0x2373B8, 0))
-ResultMedal = dword(GetRealAddress(0x1EB5F58, 0))
-StarCoins = GetRealAddress(0x1EC4E94, 0)
+GameState = byte(GetRealAddress(0x237738, 0x233DA8))
+CurrentMissionID = word(GetRealAddress(0x237760, 0x233970))
+ResultState = dword(GetRealAddress(0x2373B8, 0x233B58))
+ResultMedal = dword(GetRealAddress(0x1EB5F58, 0x1EBA268))
+ResultTime = dword(GetRealAddress(0x1EB5F34, 0x1EBA244))
+StarCoins = GetRealAddress(0x1EC4E94, 0x01E4D904)
+// Set to 1 as soon as the mission is completed and control is taken from the player (followed by
+// "MISSION COMPLETE" showing up on screen, then fade to result). We need to use this because we need
+// to actually unfortunately trigger leaderboard submissions a bit early, as the game converts frames
+// in ResultTime to seconds when the mission completes, and then trashes the prior by adding 1 a few frames
+// later.
+MissionComplete = byte(GetRealAddress(0x237434, 0x233EE4))
 
 EGameState_Game = 0xF
 EResultState_SuccessMedalAnim = 4
@@ -41,7 +49,7 @@ EResultMedal_Platinum = 0
 
 TitleLookup = {
     EU: "Air Ranger: Rescue Helicopter",
-    JP: "レスキューヘリエアレンジャー",
+    JP: "レスキューヘリ エアレンジャー",
 }
 
 MissionLookup = {
@@ -96,43 +104,43 @@ MissionNames = [
 ]
 
 MissionCompleteTitles = [
-    "Mission 1-1",
-    "Mission 1-2",
-    "Mission 2-1",
-    "Mission 2-2",
-    "Mission 3-1",
-    "Mission 3-2",
-    "Mission 4-1",
-    "Mission 4-2",
+    "Stretching Out a Helping Hand",
+    "Quick Reaction",
+    "Working Ferry Efficiently",
+    "I Haven't Mist Anyone",
+    "Ledge Get You Out of Here",
+    "A Coordinated Rescue Mission",
+    "I've Been Trained for This",
+    "De-lightful Job",
 ]
 
-MissionCompleteIDs = []
+MissionCompleteIDs = [411897, 411898, 411899, 411900, 411901, 411902, 411903, 411904]
 
 MissionPerfectTitles = [
-    "Mission 1-1 - Platinum",
-    "Mission 1-2 - Platinum",
-    "Mission 2-1 - Platinum",
-    "Mission 2-2 - Platinum",
-    "Mission 3-1 - Platinum",
-    "Mission 3-2 - Platinum",
-    "Mission 4-1 - Platinum",
-    "Mission 4-2 - Platinum",
+    "Flawless Flight",
+    "Excellent Ecologist",
+    "Shipwreck Savior",
+    "Superb Sea Scanner",
+    "Talented Transporter",
+    "Skillful Seeker",
+    "Risky Rail Rescuer",
+    "First-Class Firefighter",
 ]
 
-MissionPerfectIDs = []
+MissionPerfectIDs = [411905, 411906, 411908, 411909, 411910, 411911, 411912, 411913]
 
 MissionStarCoinTitles = [
-    "Mission 1-1 - Star Coins",
-    "Mission 1-2 - Star Coins",
-    "Mission 2-1 - Star Coins",
-    "Mission 2-2 - Star Coins",
-    "Mission 3-1 - Star Coins",
-    "Mission 3-2 - Star Coins",
-    "Mission 4-1 - Star Coins",
-    "Mission 4-2 - Star Coins",
+    "Starry Skyline",
+    "Starry Overpass",
+    "Starry Coast",
+    "Starry Ocean",
+    "Starry Mountain",
+    "Starry Ravine",
+    "Starry Tracks",
+    "Starry Ocean",
 ]
 
-MissionStarCoinIDs = []
+MissionStarCoinIDs = [411914, 411915, 411916, 411917, 411918, 411919, 411920, 411921]
 
 function MissionCompleteTrigger(mission_id)
 {
@@ -167,7 +175,7 @@ function MissionStarCoinsTrigger(mission_id)
     return prev(_CountNumCoins(mission_id)) == NUM_COINS_PER_MISSION - 1 &&
            measured(
              _CountNumCoins(mission_id) == NUM_COINS_PER_MISSION, 
-             when=GameState == EGameState_Game && CurrentMissionID == mission_id
+             when=GameState == EGameState_Game // && CurrentMissionID == mission_id // probably not necessary
            )
 }
 
@@ -184,6 +192,7 @@ for i in range(0, length(MissionNames) - 1)
     
     // Completion achievements
     achievement(
+        id=MissionCompleteIDs[i],
         title=MissionCompleteTitles[i],
         description=format("Complete {0}.", MissionNames[i]),
         points=partialPoints,
@@ -192,6 +201,7 @@ for i in range(0, length(MissionNames) - 1)
     
     // Platinum medal achievements
     achievement(
+        id=MissionPerfectIDs[i],
         title=MissionPerfectTitles[i],
         description=format("Complete {0} and obtain a platinum medal.", MissionNames[i]),
         points=fullPoints,
@@ -200,6 +210,7 @@ for i in range(0, length(MissionNames) - 1)
     
     // Star Coin achievements
     achievement(
+        id=MissionStarCoinIDs[i],
         title=MissionStarCoinTitles[i],
         description=format("Locate and pick up all Star Coins in {0}.", MissionNames[i]),
         points=5,
@@ -208,4 +219,39 @@ for i in range(0, length(MissionNames) - 1)
 }
 
 // ACHIEVEMENTS END
+
+// LEADERBOARDS START
+
+function LeaderboardStart(mission_id)
+{
+    // This triggers as soon as player control is turned off when landing in-game,
+    // a bit earlier than I would have liked but this is the latest possible point for frame-based precision
+    return CurrentMissionID == mission_id &&
+           prev(MissionComplete) == 0 &&
+           MissionComplete == 1
+}
+
+function LeaderboardValue()
+{
+    return ResultTime / 60.0 * 100.0
+}
+
+LEADERBOARD_START_ID = 92674
+
+for i in range(0, length(MissionNames) -1)
+{
+    leaderboard(
+        id=LEADERBOARD_START_ID + i,
+        title=format("{0} - Best Time", MissionNames[i]),
+        description=format("Complete {0} as fast as possible!", MissionNames[i]),
+        start=LeaderboardStart(i),
+        cancel=always_false(),
+        submit=always_true(),
+        value=LeaderboardValue(),
+        lower_is_better=true,
+        format="MILLISECS"
+    )
+}
+
+// LEADERBOARDS END
 
