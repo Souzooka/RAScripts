@@ -30,6 +30,14 @@ RotorPart = word(0x269734)
 BatteryPart = word(0x269738)
 OptionalPart = word(0x26973C)
 
+Stage1EventFunc = dword(dword(0x26A238) + 0x4)
+S1_mouse_help_success = 0x995350
+S2MouseHelpFlag = word(0x9DD624)
+Stage6EventFunc = dword(dword(0x26B014) + 0x4)
+S5_mouse_help_success = 0x9BBB60
+Stage6OctopusHits = word(0x9D47C8)
+Stage6Combo = word(dword(0x26AF94) + 0x11362)
+
 function IsStage(stage)
 {
     // For Adventure Stages, they can either be signified by an overlay ID of
@@ -486,9 +494,7 @@ INVERTED_GRACE_PERIOD = 15
 
 function Stage1InversionTrigger()
 {
-    // TODO: Probably should put check in start if the heli has safety bar,
-    // since this is impossible with it anyways so we shouldn't show the icon
-    start = once(StageStart(0x4))
+    start = once(StageStart(0x4) && OptionalPart == 0)
     reset = never(
         StageReset(0x4) ||
         tally(INVERTED_GRACE_PERIOD * FRAMES_PER_SECOND,
@@ -501,7 +507,7 @@ function Stage1InversionTrigger()
 }
 
 achievement(
-    title="Take Off the Safety Bar",
+    title="Confused Conductor",
     description=format(
         "Complete Stage 1 with solely inverted flight. An allowance of {0} seconds is given for non-inverted flight.",
         INVERTED_GRACE_PERIOD
@@ -524,10 +530,30 @@ function Stage2NoDamageTrigger()
 }
 
 achievement(
-    title="Castle Dungeons Toughen Up a Guy",
+    title="Damageless Dungeon Diver",
     description="Complete Stage 2 without receiving any damage to your helicopter. Use of a Safety Bar is disallowed.",
     points=25,
     trigger=Stage2NoDamageTrigger()
+)
+
+// Stage 3 - Speedrun
+
+function Stage3SpeedrunTrigger()
+{
+    start = once(StageStart(0x6))
+    reset = never(
+        StageReset(0x6) ||
+        StageTime >= (3 * 60 + 45) * FRAMES_PER_SECOND
+    )
+    complete = trigger_when(StageOver())
+    return start && reset && complete
+}
+
+achievement(
+    title="Skyline Speeder",
+    description="Complete Stage 3 in under 3 minutes and 45 seconds.",
+    points=10,
+    trigger=Stage3SpeedrunTrigger()
 )
 
 // Stage 4 - No Upgrades
@@ -555,6 +581,115 @@ achievement(
     "EP Concept SR, EPCSR-A, EPR-α, EPM-α, BTTRY-α. The Safety Bar can be removed.",
     points=10,
     trigger=Stage4NoUpgradesTrigger()
+)
+
+// Stage 5 - Inversion 2
+
+INVERTED_GRACE_PERIOD2 = 35
+
+function Stage5InversionTrigger()
+{
+    start = once(StageStart(0x8) && OptionalPart == 0)
+    reset = never(
+        StageReset(0x8) ||
+        tally(INVERTED_GRACE_PERIOD2 * FRAMES_PER_SECOND,
+            Upright >= 0.0 &&
+            StageTime != prev(StageTime) // Prevents hits ticking up during pause
+        )
+    )
+    complete = trigger_when(StageOver())
+    return start && reset && complete
+}
+
+achievement(
+    title="Confused Conductor II",
+    description=format(
+        "Complete Stage 5 with solely inverted flight. An allowance of {0} seconds is given for non-inverted flight.",
+        INVERTED_GRACE_PERIOD2
+    ),
+    points=25,
+    trigger=Stage5InversionTrigger()
+)
+
+// Stage 6 - Combo
+
+function Stage6ComboTrigger()
+{
+    // NOTE: Combo is offset by 1
+    return IsStage(0x9) &&
+           prev(Stage6Combo) == 21 - 1 &&
+           Stage6Combo == 22 - 1
+}
+
+achievement(
+    title="Ace Acrobat",
+    description="Obtain a 22 Combo in Stage 6.",
+    points=5,
+    trigger=Stage6ComboTrigger()
+)
+
+// Stage 1/5 -- Save drowning mouse
+
+function Stage5MouseSaviorTrigger()
+{
+    return any_of([0x4, 0x8], stage => IsStage(stage)) &&
+           prev(Stage1EventFunc) != S1_mouse_help_success &&
+           Stage1EventFunc == S1_mouse_help_success
+}
+
+achievement(
+    title="Stage 5 Mouse Savior",
+    description="Save the drowning mouse in Stage 1 or 5.",
+    points=2,
+    trigger=Stage5MouseSaviorTrigger()
+)
+
+// Stage 2 -- Help mouse get back home
+
+function Stage2MouseSaviorTrigger()
+{
+    return IsStage(0x5) &&
+           prev(S2MouseHelpFlag) < 2 &&
+           S2MouseHelpFlag == 2
+}
+
+achievement(
+    title="Stage 2 Mouse Savior",
+    description="Help the mouse across the moat in Stage 2.",
+    points=2,
+    trigger=Stage2MouseSaviorTrigger()
+)
+
+// Stage 6 -- Save drowning mouse
+
+function Stage6MouseSaviorTrigger()
+{
+    return IsStage(0x9) &&
+           prev(Stage6EventFunc) != S5_mouse_help_success &&
+           Stage6EventFunc == S5_mouse_help_success
+}
+
+achievement(
+    title="Stage 6 Mouse Savior",
+    description="Save the drowning mouse in Stage 6.",
+    points=2,
+    trigger=Stage6MouseSaviorTrigger()
+)
+
+// Stage 6 -- Kill Octopus
+
+function Stage6OctopusDeadTrigger()
+{
+    return IsStage(0x9) &&
+           prev(Stage6OctopusHits) != 3 &&
+           Stage6OctopusHits == 3
+}
+
+achievement(
+    title="Stage 6 Octopus Killer",
+    description="Defeat the Octopus in Stage 6",
+    points=3,
+    trigger=Stage6OctopusDeadTrigger()
 )
 
 // ACHIEVEMENTS END
