@@ -117,13 +117,16 @@ function IsAnyAdventureStage()
     return OverlayID & 0xF >= 0x4 && OverlayID & 0xF <= 0x9
 }
 
-function StageOver()
+function StageOver(stage)
 {
     // return GameStatus == EGameStatus_Goal && prev(GameStatus) == EGameStatus_PreGoal
     // This'll allow us to get the score for score attack -- when finishing an adventure stage,
     // there is a flat "Goal Bonus" given, so it should be impossible to get a score of 0.
     // NOTE: FinalScore is a running total when in Adventure Mode
-    return GameStatus == EGameStatus_Goal && prev(FinalScore) != FinalScore
+    // NOTE: Added this once/never because this was falsely firing on starting new stages for some reason
+    return once(OverlayID == stage && prev(GameStatus) == EGameStatus_PreGoal && GameStatus == EGameStatus_Goal) &&
+           never(StageReset(stage)) &&
+           GameStatus == EGameStatus_Goal && prev(FinalScore) != FinalScore
 }
 
 function StageStart(stage)
@@ -480,7 +483,7 @@ FreeFlightLookup = {
 for heli in HeliLookups
 {
     rich_presence_conditional_display(
-        IsAnyAdventureStage() && GameStatus != EGameStatus_Load && HelicopterType == heli,
+        HeliExists() && IsAnyAdventureStage() && GameStatus != EGameStatus_Load && HelicopterType == heli,
         "Flying through {0} | 🕒 {1} | 🚁 {2} | {3} | {4} | {5} | {6} | {7}",
         rich_presence_lookup("Stage", OverlayID, StageLookup),
         rich_presence_value("Time", StageTime / (FRAMES_PER_SECOND / 100.0), "MILLISECS"),
@@ -494,7 +497,7 @@ for heli in HeliLookups
 }
 // Special (non-customizable) helicopters
 rich_presence_conditional_display(
-    IsAnyAdventureStage() && GameStatus != EGameStatus_Load,
+    HeliExists() && IsAnyAdventureStage() && GameStatus != EGameStatus_Load,
     "Flying through {0} | 🕒 {1} | 🚁 {2}",
     rich_presence_lookup("Stage", OverlayID, StageLookup),
     rich_presence_value("Time", StageTime / (FRAMES_PER_SECOND / 100.0), "MILLISECS"),
@@ -505,7 +508,7 @@ rich_presence_conditional_display(
 for heli in HeliLookups
 {
     rich_presence_conditional_display(
-        IsAnyLicense() && GameStatus != EGameStatus_Load && HelicopterType == heli,
+        HeliExists() && IsAnyLicense() && GameStatus != EGameStatus_Load && HelicopterType == heli,
         "{0} ({1}) | 🚁 {2} | {3} | {4} | {5} | {6} | {7}",
         rich_presence_lookup("License", LicenseID, LicenseLookup),
         rich_presence_lookup("Difficulty", LicenseDifficulty, LicenseDifficultyLookup),
@@ -519,7 +522,7 @@ for heli in HeliLookups
 }
 // Special (non-customizable) helicopters
 rich_presence_conditional_display(
-    IsAnyLicense() && GameStatus != EGameStatus_Load,
+    HeliExists() && IsAnyLicense() && GameStatus != EGameStatus_Load,
     "{0} ({1}) | 🚁 {2}",
     rich_presence_lookup("License", LicenseID, LicenseLookup),
     rich_presence_lookup("Difficulty", LicenseDifficulty, LicenseDifficultyLookup),
@@ -601,7 +604,7 @@ function StageLeaderboardSubmit(overlay_id, include_adventure=true)
         mode_cond = IsChallenge()
     }
 
-    return IsStage(overlay_id) && StageOver() && mode_cond
+    return IsStage(overlay_id) && StageOver(overlay_id) && mode_cond
 }
 
 function StageLeaderboardTimeValue(overlay_id)
@@ -781,7 +784,7 @@ StageIDs = {
 
 function StageOverTrigger(overlay_id)
 {
-    return IsStage(overlay_id) && StageOver()
+    return IsStage(overlay_id) && StageOver(overlay_id)
 }
 
 for stage in StageNames
@@ -824,7 +827,7 @@ function StageEcoTrigger(stage)
         StageReset(stage) ||
         Energy > prev(Energy)
     )
-    complete = trigger_when(StageOver())
+    complete = trigger_when(StageOver(stage))
     return start && reset && complete
 }
 
@@ -852,7 +855,7 @@ function Stage1InversionTrigger()
             StageTime != prev(StageTime) // Prevents hits ticking up during pause
         )
     )
-    complete = trigger_when(StageOver())
+    complete = trigger_when(StageOver(0x4))
     return start && reset && complete
 }
 
@@ -877,7 +880,7 @@ function Stage2NoDamageTrigger()
         StageReset(0x5) ||
         Defense < InitialDefense
     )
-    complete = trigger_when(StageOver())
+    complete = trigger_when(StageOver(0x5))
     return start && reset && complete
 }
 
@@ -898,7 +901,7 @@ function Stage3SpeedrunTrigger()
         StageReset(0x6) ||
         StageTime >= TimeToFrames(3, 20)
     )
-    complete = trigger_when(StageOver())
+    complete = trigger_when(StageOver(0x6))
     return start && reset && complete
 }
 
@@ -925,7 +928,7 @@ function Stage4NoUpgradesTrigger()
     cancel = never(
         StageReset(0x7)
     )
-    complete = trigger_when(StageOver())
+    complete = trigger_when(StageOver(0x7))
     return start && cancel && complete
 }
 
@@ -952,7 +955,7 @@ function Stage5InversionTrigger()
             StageTime != prev(StageTime) // Prevents hits ticking up during pause
         )
     )
-    complete = trigger_when(StageOver())
+    complete = trigger_when(StageOver(0x8))
     return start && reset && complete
 }
 
