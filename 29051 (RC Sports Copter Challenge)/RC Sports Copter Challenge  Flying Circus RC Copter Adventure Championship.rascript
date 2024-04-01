@@ -26,6 +26,11 @@ function ResolvePointer(base, offsets, accessor=dword)
     return val
 }
 
+function TimeToFrames(minutes, seconds)
+{
+    return (minutes * 60 * FRAMES_PER_SECOND) + (seconds * FRAMES_PER_SECOND)
+}
+
 G_INFO = dword(0x269048)
 GameStatus = word(G_INFO + 0x0)
 
@@ -182,14 +187,12 @@ function GetLicenseScore(license)
     
     score_screen = checks[license]
     points = dword(score_screen + 0xB74)
+    state = word(score_screen + 0x6D0)
     
-    // I use a hit here because prior with add address seems unreliable;
-    // we can't check the value at +0xB74 against 0 because it's uninitialized until
-    // it's actually used :(
-    cond = score_screen != NULL &&
-           once(points > prev(points) && prev(score_screen) != NULL) &&
-           never(!IsLicense(license)) &&
-           points == prev(points)
+    cond = score_screen != NULL && 
+           prev(score_screen) != NULL &&
+           state == 0x1E &&
+           prev(state) != 0x1E
            
     return [scores[license], cond]
 }
@@ -822,7 +825,7 @@ function Stage3SpeedrunTrigger()
     start = once(StageStart(0x6))
     reset = never(
         StageReset(0x6) ||
-        StageTime >= (60 * 3 + 20) * FRAMES_PER_SECOND
+        StageTime >= TimeToFrames(3, 20)
     )
     complete = trigger_when(StageOver())
     return start && reset && complete
@@ -1039,5 +1042,168 @@ achievement(
     points=3,
     trigger=Stage6OctopusDeadTrigger()
 )
+
+// Licenses
+
+function AchievementLicenseScore(license)
+{
+    _ = GetLicenseScore(license)
+    
+    pred0 = v => v[0]
+    pred1 = v => v[1]
+    
+    transform = {
+        CATCH: pred1,
+        CARRY: pred1,
+        CRASH: pred1,
+        SPOON_RACE: pred0,
+        HOOP: pred0,
+        HOVERING: pred0,
+        LANDING: pred0,
+    }
+    
+    fn = transform[license]
+    return fn(_[0])
+}
+
+LicenseScores = {
+    CATCH: [10, 15, 25],
+    CARRY: [3, 5, 15],
+    CRASH: [30, 50, 85],
+    SPOON_RACE: [[1, 30], [1, 0], [0, 40]],
+    HOOP: [2000, 4000, 10000],
+    HOVERING: [1000, 1500, 4500],
+    LANDING: [1500, 3000, 5500],
+}
+
+LicenseIDs = {
+    CATCH: [
+        
+    ],
+    CARRY: [
+        
+    ],
+    CRASH: [
+        
+    ],
+    SPOON_RACE: [
+        
+    ],
+    HOOP: [
+        
+    ],
+    HOVERING: [
+        
+    ],
+    LANDING: [
+        
+    ],
+}
+
+LicenseTitles = {
+    // TODO
+    CATCH: [
+        "Catch Beginner",
+        "Catch Intermediate",
+        "Catch Advanced",
+    ],
+    CARRY: [
+        "Carry Beginner",
+        "Carry Intermediate",
+        "Carry Advanced",
+    ],
+    CRASH: [
+        "Crash Beginner",
+        "Crash Intermediate",
+        "Crash Advanced",
+    ],
+    SPOON_RACE: [
+        "Spoon Race Beginner",
+        "Spoon Race Intermediate",
+        "Spoon Race Advanced",
+    ],
+    HOOP: [
+        "Hoop Beginner",
+        "Hoop Intermediate",
+        "Hoop Advanced",
+    ],
+    HOVERING: [
+        "Hovering Beginner",
+        "Hovering Intermediate",
+        "Hovering Advanced",
+    ],
+    LANDING: [
+        "Landing Beginner",
+        "Landing Intermediate",
+        "Landing Advanced",
+    ],
+}
+
+LicenseDescriptions = {
+    CATCH: "Complete the Catch License on {0} difficulty and catch at least {1} items.",
+    CARRY: "Complete the Carry License on {0} difficulty and carry at least {1} items.",
+    CRASH: "Complete the Crash License on {0} difficulty and crash through at least {1} walls.",
+    SPOON_RACE: [
+        "Complete the Spoon Race License on {0} difficulty in under {1} minutes and {2} seconds.",
+        "Complete the Spoon Race License on {0} difficulty in under {1} minute.",
+        "Complete the Spoon Race License on {0} difficulty in under {1} seconds.",
+    ],
+    HOOP: "Complete the Hoop License on {0} difficulty and obtain at least {1} points.",
+    HOVERING: "Complete the Hovering License on {0} difficulty and obtain at least {1} points.",
+    LANDING: "Complete the Landing License on {0} difficulty and obtain at least {1} points.",
+}
+
+LicensePoints = {
+    CATCH: [3, 4, 10],
+    CARRY: [3, 4, 10],
+    CRASH: [3, 4, 10],
+    SPOON_RACE: [3, 4, 10],
+    HOOP: [3, 4, 10],
+    HOVERING: [3, 4, 10],
+    LANDING: [3, 4, 10],
+}
+
+for license in LicenseNames
+{
+    for difficulty in range(0, 3 - 1)
+    {
+        score = AchievementLicenseScore(license)
+        target = LicenseScores[license][difficulty]
+        if license == SPOON_RACE
+        {
+            minutes = target[0]
+            seconds = target[1]
+            if minutes != 0 && seconds == 0
+            {
+                description = format(LicenseDescriptions[license][1], LicenseDifficultyLookup[difficulty], minutes)
+            }
+            else if minutes != 0
+            {
+                description = format(LicenseDescriptions[license][0], LicenseDifficultyLookup[difficulty], minutes, seconds)
+            }
+            else
+            {
+                description = format(LicenseDescriptions[license][2], LicenseDifficultyLookup[difficulty], seconds)
+            }
+            target = TimeToFrames(minutes, seconds)
+            score_cond = score < target
+        }
+        else
+        {
+            description = format(LicenseDescriptions[license], LicenseDifficultyLookup[difficulty], target)
+            score_cond = score >= target
+        }
+        
+        _ = GetLicenseScore(license)
+        trigger_cond = _[1]
+        
+        achievement(
+            title=LicenseTitles[license][difficulty],
+            description=description,
+            points=LicensePoints[license][difficulty],
+            trigger=LicenseDifficulty == difficulty && trigger_cond && score_cond
+        )
+    }
+}
 
 // ACHIEVEMENTS END
