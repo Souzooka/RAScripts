@@ -80,6 +80,8 @@ LicenseCurrentPoints = dword(L_INFO + 0x5C)
 LicenseID = dword(0x2698C0)
 LicenseDifficulty = dword(0x2698C4)
 
+FreeFlightID = dword(0x25F81C)
+
 CATCH = 0
 CARRY = 1
 CRASH = 2
@@ -200,6 +202,11 @@ function GetLicenseScore(license)
 function IsSpecialMachine()
 {
     return HelicopterType >= 0xA
+}
+
+function HeliExists()
+{
+    return dword(G_INFO + 0x4A8) != NULL
 }
 
 
@@ -460,6 +467,14 @@ LicenseDifficultyLookup = {
     2: "Advanced",
 }
 
+FreeFlightLookup = {
+    0: "Garden",
+    1: "Wasteland",
+    2: "House",
+    3: "High Land",
+    4: "Stadium",
+}
+
 // Adventure/Challenge
 // Store-bought helicopters
 for heli in HeliLookups
@@ -510,7 +525,29 @@ rich_presence_conditional_display(
     rich_presence_lookup("Difficulty", LicenseDifficulty, LicenseDifficultyLookup),
     rich_presence_lookup("Helicopter", HelicopterType, HelicopterLookup)
 )
-rich_presence_display("Playing R/C Sports Copter Challenge")
+// Free Flight
+for heli in HeliLookups
+{
+    rich_presence_conditional_display(
+        HeliExists() && OverlayID == 0x11 && GameStatus != EGameStatus_Load && HelicopterType == heli,
+        "Free-flying through {0} | 🚁 {1} | {2} | {3} | {4} | {5} | {6}",
+        rich_presence_lookup("FreeFlight", FreeFlightID, FreeFlightLookup),
+        rich_presence_lookup("Helicopter", heli, HelicopterLookup),
+        rich_presence_lookup(format("Body{0}", heli), BodyPart, HeliLookups[heli][BODY]),
+        rich_presence_lookup(format("Rotor{0}", heli), RotorPart, HeliLookups[heli][ROTOR]),
+        rich_presence_lookup(format("Motor{0}", heli), MotorPart, HeliLookups[heli][MOTOR]),
+        rich_presence_lookup(format("Battery{0}", heli), BatteryPart, HeliLookups[heli][BATTERY]),
+        rich_presence_lookup("Optional", OptionalPart, OptionalPartLookup)
+    )
+}
+// Special (non-customizable) helicopters
+rich_presence_conditional_display(
+    HeliExists() && OverlayID == 0x11 && GameStatus != EGameStatus_Load,
+    "Free-flying through {0} | 🚁 {1}",
+    rich_presence_lookup("FreeFlight", FreeFlightID, FreeFlightLookup),
+    rich_presence_lookup("Helicopter", HelicopterType, HelicopterLookup)
+)
+rich_presence_display("In a menu or loading screen.")
 
 // RICH PRESENCE END
 
@@ -580,9 +617,19 @@ function StageLeaderboardScoreValue(overlay_id)
     )
 }
 
+StageLeaderboardIDs = {
+    0x4: [94054, 94057],
+    0x5: [94071, 94074],
+    0x6: [94055, 94058],
+    0x7: [94072, 94075],
+    0x8: [94056, 94059],
+    0x9: [94073, 94076],
+}
+
 for stage in StageNames
 {
     leaderboard(
+        id=StageLeaderboardIDs[stage][0],
         title=format("{0} - Time Attack", StageNames[stage]),
         description=format(
             "Play through {0} in Adventure or Challenge Mode and reach the goal as fast as possible!",
@@ -596,6 +643,7 @@ for stage in StageNames
         lower_is_better=true
     )
     leaderboard(
+        id=StageLeaderboardIDs[stage][1],
         title=format("{0} - Point Attack", StageNames[stage]),
         // you keep a running score in Adventure Mode -- wow that's really fair for the rankings devs
         description=format(
@@ -622,30 +670,30 @@ LicenseNames = {
     LANDING: "Landing",
 }
 
-function LeaderboardLicenseStart(license, difficulty)
+function LicenseLeaderboardStart(license, difficulty)
 {
     _ = GetLicenseScore(license)
     submit = _[1] && LicenseDifficulty == difficulty
     return submit
 }
 
-function LeaderboardLicenseCancel(license)
+function LicenseLeaderboardCancel(license)
 {
     return always_false()
 }
 
-function LeaderboardLicenseSubmit(license)
+function LicenseLeaderboardSubmit(license)
 {
     return always_true()
 }
 
-function LeaderboardDefaultLicenseValue(license)
+function LicenseLeaderboardDefaultValue(license)
 {
     _ = GetLicenseScore(license)
     return _[0][0]
 }
 
-function LeaderboardSpoonRaceValue(license=0)
+function LicenseLeaderboardSpoonRaceValue(license=0)
 {
     _ = GetLicenseScore(SPOON_RACE)
     time = _[0][0]
@@ -653,17 +701,27 @@ function LeaderboardSpoonRaceValue(license=0)
     return time / (FRAMES_PER_SECOND / 100.0)
 }
 
+LicenseLeaderboardIDs = {
+    CATCH: [94060, 94082, 94061],
+    CARRY: [94077, 94062, 94083],
+    CRASH: [94063, 94078, 94064],
+    SPOON_RACE: [94084, 94065, 94079],
+    HOOP: [94066, 94085, 94067],
+    HOVERING: [94080, 94070, 94068],
+    LANDING: [94086, 94069, 94081],
+}
+
 for license in LicenseNames
 {
     // Leaderboard config
-    value = LeaderboardDefaultLicenseValue
+    value = LicenseLeaderboardDefaultValue
     format = "VALUE"
     lower_is_better = false
     name = "Point Attack"
     goal = "obtain as many points as possible"
     if (license == SPOON_RACE)
     {
-        value = LeaderboardSpoonRaceValue
+        value = LicenseLeaderboardSpoonRaceValue
         format = "MILLISECS"
         lower_is_better = true
         name = "Time Attack"
@@ -676,11 +734,12 @@ for license in LicenseNames
     for difficulty in range(0, 3 - 1)
     {
         leaderboard(
+            id=LicenseLeaderboardIDs[license][difficulty],
             title=format("{0} {1} - {2}", LicenseNames[license], LicenseDifficultyLookup[difficulty], name),
             description=format("Play {0} License on the {1} Difficulty and {2}!", LicenseNames[license], LicenseDifficultyLookup[difficulty], goal),
-            start=LeaderboardLicenseStart(license, difficulty),
-            cancel=LeaderboardLicenseCancel(license),
-            submit=LeaderboardLicenseSubmit(license),
+            start=LicenseLeaderboardStart(license, difficulty),
+            cancel=LicenseLeaderboardCancel(license),
+            submit=LicenseLeaderboardSubmit(license),
             value=value(license),
             format=format,
             lower_is_better=lower_is_better
@@ -711,6 +770,15 @@ StagePoints = {
     0x9: 25,
 }
 
+StageIDs = {
+    0x4: 414868,
+    0x5: 414869,
+    0x6: 414870,
+    0x7: 414871,
+    0x8: 414872,
+    0x9: 414873,
+}
+
 function StageOverTrigger(overlay_id)
 {
     return IsStage(overlay_id) && StageOver()
@@ -719,6 +787,7 @@ function StageOverTrigger(overlay_id)
 for stage in StageNames
 {
     achievement(
+        id=StageIDs[stage],
         title=StageTitles[stage],
         description=format("Complete {0}.", StageNames[stage]),
         points=StagePoints[stage],
@@ -788,6 +857,7 @@ function Stage1InversionTrigger()
 }
 
 achievement(
+    id=414874,
     title="Confused Conductor",
     description=format(
         "Complete Stage 1 with solely inverted flight. An allowance of {0} seconds is given for non-inverted flight." +
@@ -812,6 +882,7 @@ function Stage2NoDamageTrigger()
 }
 
 achievement(
+    id=414875,
     title="Damageless Dungeon Diver",
     description="Complete Stage 2 without receiving any damage to your helicopter. Use of a Safety Bar is disallowed.",
     points=25,
@@ -832,6 +903,7 @@ function Stage3SpeedrunTrigger()
 }
 
 achievement(
+    id=414878,
     title="Skyline Speeder",
     description="Complete Stage 3 in under 3 minutes and 20 seconds.",
     points=25,
@@ -858,6 +930,7 @@ function Stage4NoUpgradesTrigger()
 }
 
 achievement(
+    id=414876,
     title="Frugal Flier",
     description="Complete Stage 4 using the starting helicopter and parts: " + 
     "EP Concept SR, EPCSR-A, EPR-α, EPM-α, BTTRY-α. The Safety Bar can be removed.",
@@ -884,6 +957,7 @@ function Stage5InversionTrigger()
 }
 
 achievement(
+    id=414879,
     title="Confused Conductor II",
     description=format(
         "Complete Stage 5 with solely inverted flight. An allowance of {0} seconds is given for non-inverted flight.",
@@ -904,6 +978,7 @@ function Stage6ComboTrigger()
 }
 
 achievement(
+    id=414880,
     title="Ace Acrobat",
     description="Obtain a 22 Combo in Stage 6.",
     points=5,
@@ -920,6 +995,7 @@ function Stage5MouseSaviorTrigger()
 }
 
 achievement(
+    id=414877,
     title="Stage 5 Mouse Savior",
     description="Save the drowning mouse in Stage 1 or 5.",
     points=2,
@@ -936,6 +1012,7 @@ function Stage2MouseSaviorTrigger()
 }
 
 achievement(
+    id=414881,
     title="Stage 2 Mouse Savior",
     description="Help the mouse across the moat in Stage 2.",
     points=2,
@@ -973,6 +1050,7 @@ function Stage2SecretPassageTrigger()
 }
 
 achievement(
+    id=414885,
     title="What's Down There?",
     description="Discover a secret passage to the castle dungeon in Stage 2.",
     points=5,
@@ -989,6 +1067,7 @@ function Stage3BillboardBreakTrigger()
 }
 
 achievement(
+    id=414884,
     title="Come On",
     description="Bust through a billboard and discover a shortcut in Stage 3.",
     points=3,
@@ -1005,6 +1084,7 @@ function Stage4TemplePuzzleTrigger()
 }
 
 achievement(
+    id=414897,
     title="Stage 4 Temple Puzzle",
     description="Solve the puzzle inside the temple in Stage 4.",
     points=4,
@@ -1021,6 +1101,7 @@ function Stage6MouseSaviorTrigger()
 }
 
 achievement(
+    id=414882,
     title="Stage 6 Mouse Savior",
     description="Save the drowning mouse in Stage 6.",
     points=2,
@@ -1037,6 +1118,7 @@ function Stage6OctopusDeadTrigger()
 }
 
 achievement(
+    id=414883,
     title="Stage 6 Octopus Killer",
     description="Defeat the Octopus in Stage 6",
     points=3,
@@ -1077,27 +1159,13 @@ LicenseScores = {
 }
 
 LicenseIDs = {
-    CATCH: [
-        
-    ],
-    CARRY: [
-        
-    ],
-    CRASH: [
-        
-    ],
-    SPOON_RACE: [
-        
-    ],
-    HOOP: [
-        
-    ],
-    HOVERING: [
-        
-    ],
-    LANDING: [
-        
-    ],
+    CATCH: [414895, 414906, 414898],
+    CARRY: [414896, 414907, 414886],
+    CRASH: [414899, 414887, 414900],
+    SPOON_RACE: [414888, 414901, 414889],
+    HOOP: [414890, 414902, 414891],
+    HOVERING: [414903, 414892, 414904],
+    LANDING: [414893, 414905, 414894],
 }
 
 LicenseTitles = {
@@ -1198,6 +1266,7 @@ for license in LicenseNames
         trigger_cond = _[1]
         
         achievement(
+            id=LicenseIDs[license][difficulty],
             title=LicenseTitles[license][difficulty],
             description=description,
             points=LicensePoints[license][difficulty],
