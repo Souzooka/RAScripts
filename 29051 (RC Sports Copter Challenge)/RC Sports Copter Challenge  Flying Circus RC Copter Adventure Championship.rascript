@@ -68,6 +68,22 @@ S5_mouse_help_success = 0x9BBB60
 Stage6OctopusHits = word(0x9D47C8)
 Stage6Combo = word(dword(0x26AF94) + 0x11362)
 
+L_INFO = dword(0x2698B0)
+LicenseTime = dword(L_INFO + 0x10)
+LicenseTimeLimit = dword(L_INFO + 0x18)
+LicenseCurrentPoints = dword(L_INFO + 0x5C)
+LicenseID = dword(0x2698C0)
+LicenseDifficulty = dword(0x2698C4)
+
+CATCH = 0
+CARRY = 1
+CRASH = 2
+SPOON_RACE = 3
+// 4 is unused
+HOOP = 5
+HOVERING = 6
+LANDING = 7
+
 function IsStage(stage)
 {
     // For Adventure Stages, they can either be signified by an overlay ID of
@@ -106,16 +122,76 @@ function StageOver()
 function StageStart(stage)
 {
     return IsStage(stage) &&
-           StageTime != 0.0 &&
-           prev(StageTime) == 0.0
+           StageTime != 0 &&
+           prev(StageTime) == 0
 }
 
 function StageReset(stage)
 {
     return !IsStage(stage) ||
            GameStatus == EGameStatus_TryAgain ||
-           StageTime == 0.0 &&
-           prev(StageTime) != 0.0
+           StageTime == 0 &&
+           prev(StageTime) != 0
+}
+
+function IsAnyLicense()
+{
+    return L_INFO != NULL
+}
+
+function IsLicense(license)
+{
+    return L_INFO != NULL && LicenseID == license
+}
+
+function LicenseStart(license)
+{
+    return IsLicense(license) &&
+           LicenseTime != 0 &&
+           prev(LicenseTime) == 0
+}
+
+function LicenseReset(license)
+{
+    return !IsLicense(license) ||
+           GameStatus == EGameStatus_TryAgain ||
+           LicenseTime == 0 &&
+           prev(LicenseTime) != 0
+}
+
+function GetLicenseScore(license)
+{
+    checks = {
+        CATCH: dword(0x269F18),
+        CARRY: dword(0x269F9C),
+        CRASH: dword(0x26A100),
+        SPOON_RACE: dword(0x26A0D0),
+        HOOP: dword(0x26A178),
+        HOVERING: dword(0x269F68),
+        LANDING: dword(0x269F40),
+    }
+    scores = {
+        CATCH: [dword(checks[CATCH] + 0xB74), word(dword(0x269F1C) + 0xE)], // Total Score, Caught Items
+        CARRY: [dword(checks[CARRY] + 0xB74), word(dword(0x269FA0) + 0xF4)], // Total Score, Carried Items
+        CRASH: [dword(checks[CRASH] + 0xB74), word(dword(0x26A104) + 0xC)], // Total Score, Walls
+        SPOON_RACE: [LicenseTime],
+        HOOP: [dword(checks[HOOP] + 0xB74)],
+        HOVERING: [dword(checks[HOVERING] + 0xB74)],
+        LANDING: [dword(checks[LANDING] + 0xB74)],
+    }
+    
+    score_screen = checks[license]
+    points = dword(score_screen + 0xB74)
+    
+    // I use a hit here because prior with add address seems unreliable;
+    // we can't check the value at +0xB74 against 0 because it's uninitialized until
+    // it's actually used :(
+    cond = score_screen != NULL &&
+           once(points > prev(points) && prev(score_screen) != NULL) &&
+           never(!IsLicense(license)) &&
+           points == prev(points)
+           
+    return [scores[license], cond]
 }
 
 function IsSpecialMachine()
@@ -364,6 +440,24 @@ OptionalPartLookup = {
     1: "Safety Bar",
 }
 
+LicenseLookup = {
+    0: "Catching Items in the Catch License",
+    1: "Carrying Items in the Carry License",
+    2: "Crashing through walls in the Crash License",
+    3: "Precariously racing around a track in the Spoon Race License",
+    4: "NONE",
+    5: "Flying through hoops in the Hoop License",
+    6: "Hovering over lights in the Hovering License",
+    7: "Landing on targets in the Landing License",
+}
+
+LicenseDifficultyLookup = {
+    0: "Beginner",
+    1: "Intermediate",
+    2: "Advanced",
+}
+
+// Adventure/Challenge
 // Store-bought helicopters
 for heli in HeliLookups
 {
@@ -371,7 +465,7 @@ for heli in HeliLookups
         IsAnyAdventureStage() && GameStatus != EGameStatus_Load && HelicopterType == heli,
         "Flying through {0} | 🕒 {1} | 🚁 {2} | {3} | {4} | {5} | {6} | {7}",
         rich_presence_lookup("Stage", OverlayID, StageLookup),
-        rich_presence_value("Time", StageTime / (50.0 / 100.0), "MILLISECS"),
+        rich_presence_value("Time", StageTime / (FRAMES_PER_SECOND / 100.0), "MILLISECS"),
         rich_presence_lookup("Helicopter", heli, HelicopterLookup),
         rich_presence_lookup(format("Body{0}", heli), BodyPart, HeliLookups[heli][BODY]),
         rich_presence_lookup(format("Rotor{0}", heli), RotorPart, HeliLookups[heli][ROTOR]),
@@ -385,7 +479,32 @@ rich_presence_conditional_display(
     IsAnyAdventureStage() && GameStatus != EGameStatus_Load,
     "Flying through {0} | 🕒 {1} | 🚁 {2}",
     rich_presence_lookup("Stage", OverlayID, StageLookup),
-    rich_presence_value("Time", StageTime / (50.0 / 100.0), "MILLISECS"),
+    rich_presence_value("Time", StageTime / (FRAMES_PER_SECOND / 100.0), "MILLISECS"),
+    rich_presence_lookup("Helicopter", HelicopterType, HelicopterLookup)
+)
+// License
+// Store-bought helicopters
+for heli in HeliLookups
+{
+    rich_presence_conditional_display(
+        IsAnyLicense() && GameStatus != EGameStatus_Load && HelicopterType == heli,
+        "{0} ({1}) | 🚁 {2} | {3} | {4} | {5} | {6} | {7}",
+        rich_presence_lookup("License", LicenseID, LicenseLookup),
+        rich_presence_lookup("Difficulty", LicenseDifficulty, LicenseDifficultyLookup),
+        rich_presence_lookup("Helicopter", heli, HelicopterLookup),
+        rich_presence_lookup(format("Body{0}", heli), BodyPart, HeliLookups[heli][BODY]),
+        rich_presence_lookup(format("Rotor{0}", heli), RotorPart, HeliLookups[heli][ROTOR]),
+        rich_presence_lookup(format("Motor{0}", heli), MotorPart, HeliLookups[heli][MOTOR]),
+        rich_presence_lookup(format("Battery{0}", heli), BatteryPart, HeliLookups[heli][BATTERY]),
+        rich_presence_lookup("Optional", OptionalPart, OptionalPartLookup)
+    )
+}
+// Special (non-customizable) helicopters
+rich_presence_conditional_display(
+    IsAnyLicense() && GameStatus != EGameStatus_Load,
+    "{0} ({1}) | 🚁 {2}",
+    rich_presence_lookup("License", LicenseID, LicenseLookup),
+    rich_presence_lookup("Difficulty", LicenseDifficulty, LicenseDifficultyLookup),
     rich_presence_lookup("Helicopter", HelicopterType, HelicopterLookup)
 )
 rich_presence_display("Playing R/C Sports Copter Challenge")
@@ -396,6 +515,8 @@ rich_presence_display("Playing R/C Sports Copter Challenge")
 
 // probably don't need active leaderboards since time and score are shown in-game anyways
 WANT_REALTIME_LEADERBOARD = False
+
+// Adventure/Challenge Mode
 
 StageNames = {
     0x4: "Stage 1",
@@ -484,6 +605,84 @@ for stage in StageNames
         value=StageLeaderboardScoreValue(stage),
         format="VALUE"
     )
+}
+
+// License Mode
+
+LicenseNames = {
+    CATCH: "Catch",
+    CARRY: "Carry",
+    CRASH: "Crash",
+    SPOON_RACE: "Spoon Race",
+    HOOP: "Hoop",
+    HOVERING: "Hovering",
+    LANDING: "Landing",
+}
+
+function LeaderboardLicenseStart(license, difficulty)
+{
+    _ = GetLicenseScore(license)
+    submit = _[1] && LicenseDifficulty == difficulty
+    return submit
+}
+
+function LeaderboardLicenseCancel(license)
+{
+    return always_false()
+}
+
+function LeaderboardLicenseSubmit(license)
+{
+    return always_true()
+}
+
+function LeaderboardDefaultLicenseValue(license)
+{
+    _ = GetLicenseScore(license)
+    return _[0][0]
+}
+
+function LeaderboardSpoonRaceValue(license=0)
+{
+    _ = GetLicenseScore(SPOON_RACE)
+    time = _[0][0]
+    
+    return time / (FRAMES_PER_SECOND / 100.0)
+}
+
+for license in LicenseNames
+{
+    // Leaderboard config
+    value = LeaderboardDefaultLicenseValue
+    format = "VALUE"
+    lower_is_better = false
+    name = "Point Attack"
+    goal = "obtain as many points as possible"
+    if (license == SPOON_RACE)
+    {
+        value = LeaderboardSpoonRaceValue
+        format = "MILLISECS"
+        lower_is_better = true
+        name = "Time Attack"
+        goal = "reach the finish line as fast as possible"
+    }
+    
+    _ = GetLicenseScore(license)
+    submit = _[1]
+    
+    for difficulty in range(0, 3 - 1)
+    {
+        leaderboard(
+            title=format("{0} {1} - {2}", LicenseNames[license], LicenseDifficultyLookup[difficulty], name),
+            description=format("Play {0} License on the {1} Difficulty and {2}!", LicenseNames[license], LicenseDifficultyLookup[difficulty], goal),
+            start=LeaderboardLicenseStart(license, difficulty),
+            cancel=LeaderboardLicenseCancel(license),
+            submit=LeaderboardLicenseSubmit(license),
+            value=value(license),
+            format=format,
+            lower_is_better=lower_is_better
+        )
+    }
 }
 
 // LEADERBOARDS END
