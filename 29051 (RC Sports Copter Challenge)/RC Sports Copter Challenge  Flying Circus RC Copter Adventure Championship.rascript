@@ -1215,7 +1215,7 @@ LicenseDescriptions = {
     CARRY: "Complete the Carry License on {0} difficulty and carry at least {1} items.",
     CRASH: "Complete the Crash License on {0} difficulty and crash through at least {1} walls.",
     SPOON_RACE: [
-        "Complete the Spoon Race License on {0} difficulty in under {1} minutes and {2} seconds.",
+        "Complete the Spoon Race License on {0} difficulty in under {1} minute and {2} seconds.",
         "Complete the Spoon Race License on {0} difficulty in under {1} minute.",
         "Complete the Spoon Race License on {0} difficulty in under {1} seconds.",
     ],
@@ -1226,7 +1226,7 @@ LicenseDescriptions = {
 
 LicensePoints = {
     CATCH: [3, 4, 10],
-    CARRY: [3, 4, 10],
+    CARRY: [3, 4, 25],
     CRASH: [3, 4, 10],
     SPOON_RACE: [3, 4, 10],
     HOOP: [3, 4, 10],
