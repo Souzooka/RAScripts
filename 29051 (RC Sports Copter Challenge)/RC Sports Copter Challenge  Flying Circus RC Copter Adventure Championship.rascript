@@ -756,11 +756,11 @@ for license in LicenseNames
 
 StageTitles = {
     // TODO
-    0x4: "Complete Stage 1",
-    0x5: "Complete Stage 2",
-    0x6: "Complete Stage 3",
-    0x7: "Complete Stage 4",
-    0x8: "Complete Stage 5",
+    0x4: "A Flight in the Park",
+    0x5: "King for a Day",
+    0x6: "City Skies",
+    0x7: "King of the Jungle",
+    0x8: "The Secret of the Waterfall",
     0x9: "You Are the King of Topflyer!",
 }
 
@@ -999,7 +999,7 @@ function Stage5MouseSaviorTrigger()
 
 achievement(
     id=414877,
-    title="Stage 5 Mouse Savior",
+    title="Gasp-P",
     description="Save the drowning mouse in Stage 1 or 5.",
     points=2,
     trigger=Stage5MouseSaviorTrigger()
@@ -1016,7 +1016,7 @@ function Stage2MouseSaviorTrigger()
 
 achievement(
     id=414881,
-    title="Stage 2 Mouse Savior",
+    title="Thank-Q",
     description="Help the mouse across the moat in Stage 2.",
     points=2,
     trigger=Stage2MouseSaviorTrigger()
@@ -1088,7 +1088,7 @@ function Stage4TemplePuzzleTrigger()
 
 achievement(
     id=414897,
-    title="Stage 4 Temple Puzzle",
+    title="Legend of the Hidden Temple",
     description="Solve the puzzle inside the temple in Stage 4.",
     points=4,
     trigger=Stage4TemplePuzzleTrigger()
@@ -1105,7 +1105,7 @@ function Stage6MouseSaviorTrigger()
 
 achievement(
     id=414882,
-    title="Stage 6 Mouse Savior",
+    title="Soak-Q",
     description="Save the drowning mouse in Stage 6.",
     points=2,
     trigger=Stage6MouseSaviorTrigger()
@@ -1122,8 +1122,8 @@ function Stage6OctopusDeadTrigger()
 
 achievement(
     id=414883,
-    title="Stage 6 Octopus Killer",
-    description="Defeat the Octopus in Stage 6",
+    title="Hamteam",
+    description="Defeat the octopus in Stage 6",
     points=3,
     trigger=Stage6OctopusDeadTrigger()
 )
@@ -1174,39 +1174,39 @@ LicenseIDs = {
 LicenseTitles = {
     // TODO
     CATCH: [
-        "Catch Beginner",
-        "Catch Intermediate",
-        "Catch Advanced",
+        "If You Can Catch a Ball",
+        "Balls Fall Like Raindrops",
+        "Balloons Bubble Up Like Soda Pop",
     ],
     CARRY: [
-        "Carry Beginner",
-        "Carry Intermediate",
-        "Carry Advanced",
+        "Wide Load",
+        "Turtle Transport",
+        "Huffpuff",
     ],
     CRASH: [
-        "Crash Beginner",
-        "Crash Intermediate",
-        "Crash Advanced",
+        "Blue Belt",
+        "Red Belt",
+        "Black Belt",
     ],
     SPOON_RACE: [
-        "Spoon Race Beginner",
-        "Spoon Race Intermediate",
-        "Spoon Race Advanced",
+        "Slow and Steady",
+        "Perfectly Balanced",
+        "Soft-Boiled Sprinter",
     ],
     HOOP: [
-        "Hoop Beginner",
-        "Hoop Intermediate",
-        "Hoop Advanced",
+        "Freerunner",
+        "Gymnast",
+        "Superman",
     ],
     HOVERING: [
-        "Hovering Beginner",
-        "Hovering Intermediate",
-        "Hovering Advanced",
+        "Turbulent Flight",
+        "Smooth Flight",
+        "Serene Flight",
     ],
     LANDING: [
-        "Landing Beginner",
-        "Landing Intermediate",
-        "Landing Advanced",
+        "Still Target",
+        "Moving Target",
+        "Speeding Target",
     ],
 }
 
