@@ -485,7 +485,7 @@ for heli in HeliLookups
     rich_presence_conditional_display(
         HeliExists() && IsAnyAdventureStage() && GameStatus != EGameStatus_Load && HelicopterType == heli,
         "Flying through {0} | 🕒 {1} | 🚁 {2} | {3} | {4} | {5} | {6} | {7}",
-        rich_presence_lookup("Stage", OverlayID, StageLookup),
+        rich_presence_lookup("Stage", OverlayID & 0xF, StageLookup),
         rich_presence_value("Time", StageTime / (FRAMES_PER_SECOND / 100.0), "MILLISECS"),
         rich_presence_lookup("Helicopter", heli, HelicopterLookup),
         rich_presence_lookup(format("Body{0}", heli), BodyPart, HeliLookups[heli][BODY]),
@@ -499,7 +499,7 @@ for heli in HeliLookups
 rich_presence_conditional_display(
     HeliExists() && IsAnyAdventureStage() && GameStatus != EGameStatus_Load,
     "Flying through {0} | 🕒 {1} | 🚁 {2}",
-    rich_presence_lookup("Stage", OverlayID, StageLookup),
+    rich_presence_lookup("Stage", OverlayID & 0xF, StageLookup),
     rich_presence_value("Time", StageTime / (FRAMES_PER_SECOND / 100.0), "MILLISECS"),
     rich_presence_lookup("Helicopter", HelicopterType, HelicopterLookup)
 )
