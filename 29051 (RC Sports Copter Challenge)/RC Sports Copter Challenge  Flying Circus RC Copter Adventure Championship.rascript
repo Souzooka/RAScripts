@@ -124,7 +124,7 @@ function StageOver(stage)
     // there is a flat "Goal Bonus" given, so it should be impossible to get a score of 0.
     // NOTE: FinalScore is a running total when in Adventure Mode
     // NOTE: Added this once/never because this was falsely firing on starting new stages for some reason
-    return once(OverlayID == stage && prev(GameStatus) == EGameStatus_PreGoal && GameStatus == EGameStatus_Goal) &&
+    return once(IsStage(stage) && prev(GameStatus) == EGameStatus_PreGoal && GameStatus == EGameStatus_Goal) &&
            never(StageReset(stage)) &&
            GameStatus == EGameStatus_Goal && prev(FinalScore) != FinalScore
 }
