@@ -1174,13 +1174,13 @@ LicenseIDs = {
 LicenseTitles = {
     // TODO
     CATCH: [
-        "If You Can Catch a Ball",
-        "Balls Fall Like Raindrops",
+        "Cloudy With a Chance of Red Balls",
+        "Balls Fall Down Like Raindrops",
         "Balloons Bubble Up Like Soda Pop",
     ],
     CARRY: [
         "Wide Load",
-        "Turtle Transport",
+        "Shellicopter Transport",
         "Huffpuff",
     ],
     CRASH: [
@@ -1194,9 +1194,9 @@ LicenseTitles = {
         "Soft-Boiled Sprinter",
     ],
     HOOP: [
-        "Freerunner",
-        "Gymnast",
-        "Superman",
+        "Hooper",
+        "Trapeze Artist",
+        "Ringmaster",
     ],
     HOVERING: [
         "Turbulent Flight",
