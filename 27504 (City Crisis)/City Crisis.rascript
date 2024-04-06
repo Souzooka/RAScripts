@@ -5,6 +5,8 @@ NULL = 0
 True = 1
 False = 0
 
+FRAMES_PER_SECOND = 30.0
+
 RegionByte = byte(0x100000) // TODO
 REGION_US = 0
 REGION_EU = 1
@@ -68,13 +70,8 @@ ScoreMenuRank = {
     EU: byte(0xFFFFFF),
     JP: byte(0xFFFFFF),
 }
-MissionTimeLeft = {
-    US: dword(0x3BA890),
-    EU: dword(0xFFFFFF),
-    JP: dword(0xFFFFFF),
-}
-MissionTimeLimit = {
-    US: dword(0x3BA8A0),
+MissionTimeFrames = {
+    US: dword(0x3BA8A8),
     EU: dword(0xFFFFFF),
     JP: dword(0xFFFFFF),
 }
@@ -161,7 +158,7 @@ function GetMissionScore(region)
 
 function GetMissionCentiseconds(region)
 {
-    return (MissionTimeLimit[region] - MissionTimeLeft[region]) / 10
+    return MissionTimeFrames[region] * (1 / FRAMES_PER_SECOND) * 100.0
 }
 
 DefaultLeaderboardStart = (mission) => 
