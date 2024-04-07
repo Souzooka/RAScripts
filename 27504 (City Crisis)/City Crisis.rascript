@@ -314,7 +314,7 @@ MissionTitles = {
     0x3: ["We Need to Cook", "The Science of Change"],
     0x4: ["Sleep All Day", "Party All Night"],
     0x5: ["Flames Make It Go Faster", "Through the Fire and Flames"],
-    0x6: ["Outrun", "Hot Pursuit"],
+    0x6: ["OutRun", "Hot Pursuit"],
     0x7: ["Disaster Report", "Air Ranger"],
     0xF: "Fire Whirl",
     0x10: "Northern Light",
@@ -356,14 +356,14 @@ for mission in MainMissionNames
         title=MissionTitles[mission][0],
         description=format("Complete {0}.", MainMissionNames[mission]),
         points=MissionPoints[mission][0],
-        trigger=any_of(Regions, region => MissionTrigger(region, mission))
+        trigger=any_of(Regions, region => IsRegion(region) && MissionTrigger(region, mission))
     )
     achievement(
         id=MissionIDs[mission][1],
         title=MissionTitles[mission][1],
         description=format("Obtain an S rank in {0} by achieving a score of {1} points or more.", MainMissionNames[mission], MissionScoreRequirements[mission]),
         points=MissionPoints[mission][1],
-        trigger=any_of(Regions, region => MissionTrigger(region, mission, s_rank=True))
+        trigger=any_of(Regions, region => IsRegion(region) && MissionTrigger(region, mission, s_rank=True))
     )
 }
 
@@ -376,7 +376,7 @@ for mission in TimeTrialNames
         title=MissionTitles[mission],
         description=format("Obtain an S rank in {0} by achieving a time under {1} seconds.", TimeTrialNames[mission], MissionScoreRequirements[mission]),
         points=MissionPoints[mission],
-        trigger=any_of(Regions, region => MissionTrigger(region, mission, s_rank=True))
+        trigger=any_of(Regions, region => IsRegion(region) && MissionTrigger(region, mission, s_rank=True))
     )
 }
 
