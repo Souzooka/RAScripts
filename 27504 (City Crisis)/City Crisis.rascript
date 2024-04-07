@@ -5,9 +5,10 @@ NULL = 0
 True = 1
 False = 0
 
-FRAMES_PER_SECOND = 30.0
+FRAMES_PER_SECOND_NTSC = 30.0
+FRAMES_PER_SECOND_PAL = 25.0
 
-RegionByte = byte(0x100000) // TODO
+RegionByte = byte(0x236F4A)
 REGION_US = 0
 REGION_EU = 1
 REGION_JP = 2
@@ -37,50 +38,54 @@ function ord(char)
 
 GameMode = {
     US: dword(0x3BA800),
-    EU: dword(0xFFFFFF),
-    JP: dword(0xFFFFFF),
+    EU: dword(0x3C4180),
+    JP: dword(0x3A8D00),
 }
 DemoMode = {
     US: dword(0x3BA878),
-    EU: dword(0xFFFFFF),
-    JP: dword(0xFFFFFF),
+    EU: dword(0x3C41F8),
+    JP: dword(0x3A8D74),
 }
 MissionID = {
     US: dword(0x3BA900),
-    EU: dword(0xFFFFFF),
-    JP: dword(0xFFFFFF),
+    EU: dword(0x3C4280),
+    JP: dword(0x3A8DF8),
 }
 HelicopterID = {
     US: dword(0x3BA954),
-    EU: dword(0xFFFFFF),
-    JP: dword(0xFFFFFF),
+    EU: dword(0x3C42D4),
+    JP: dword(0x3A8E4C),
 }
 ScoreMenuBitset = {
     US: byte(0x599DA4),
-    EU: byte(0xFFFFFF),
-    JP: byte(0xFFFFFF),
+    EU: byte(0x57F164),
+    JP: byte(0x586C24),
 }
 ScoreMenuScore = {
     US: dword(0x59AAC4),
-    EU: dword(0xFFFFFF),
-    JP: dword(0xFFFFFF),
+    EU: dword(0x57FE84),
+    JP: dword(0x587924),
 }
 ScoreMenuRank = {
     US: byte(0x5A2042),
-    EU: byte(0xFFFFFF),
-    JP: byte(0xFFFFFF),
+    EU: byte(0x587402),
+    JP: byte(0x58EEA2),
 }
 MissionTimeFrames = {
     US: dword(0x3BA8A8),
-    EU: dword(0xFFFFFF),
-    JP: dword(0xFFFFFF),
+    EU: dword(0x3C4228),
+    JP: dword(0x3A8DA0),
 }
 
-EGameMode_Game = 0x13
+EGameMode_Game = {
+    US: 0x13,
+    EU: 0x13,
+    JP: 0x12,
+}
 
 function IsInGame(region)
 {
-    return GameMode[region] == EGameMode_Game && DemoMode[region] == 0
+    return GameMode[region] == EGameMode_Game[region] && DemoMode[region] == 0
 }
 
 function IsOnResult(region)
@@ -97,7 +102,7 @@ function MissionOver(region)
 
 function GotSRank(region)
 {
-    return MissionOver(region) && ScoreMenuRank == ord("S")
+    return MissionOver(region) && ScoreMenuRank[region] == ord("S")
 }
 
 // RICH PRESENCE START
@@ -158,7 +163,13 @@ function GetMissionScore(region)
 
 function GetMissionCentiseconds(region)
 {
-    return MissionTimeFrames[region] * (1 / FRAMES_PER_SECOND) * 100.0
+    divisor = FRAMES_PER_SECOND_NTSC
+    if region == EU
+    {
+        divisor = FRAMES_PER_SECOND_PAL
+    }
+
+    return MissionTimeFrames[region] * (1 / divisor) * 100.0
 }
 
 DefaultLeaderboardStart = (mission) => 
@@ -187,7 +198,7 @@ MainMissionNames = {
     0x4: "Fire At Night",
     0x5: "Accident Flight",
     0x6: "Run Away Sports Car",
-    0x7: "Disaster Flight",
+    0x7: "Disaster Rescue",
 }
 
 TimeTrialNames = {
@@ -253,4 +264,104 @@ for mission in TimeTrialNames
 }
 
 // LEADERBOARDS END
+
+// ACHIEVEMENTS START
+
+MissionIDs = {
+    0x1: [416102, 416103], // "Fire In The Building",
+    0x2: [416104, 416105], // "Hijacked Bus",
+    0x3: [416106, 416107], // "Burning School Building",
+    0x4: [416108, 416109], // "Fire At Night",
+    0x5: [416110, 416111], // "Accident Flight",
+    0x6: [416112, 416113], // "Run Away Sports Car",
+    0x7: [416114, 416115], // "Disaster Rescue",
+    0x8: 416116,      // "Day Time Trial"
+    0x9: 416117,      // "Night Time Trial"
+    0xA: 416118,      // "Disaster Time Trial"
+}
+MissionPoints = {
+    0x1: [5, 5],
+    0x2: [5, 5],
+    0x3: [5, 5],
+    0x4: [5, 5],
+    0x5: [5, 5],
+    0x6: [5, 5],
+    0x7: [5, 5],
+    0x8: 10,
+    0x9: 10,
+    0xA: 10,
+}
+MissionTitles = {
+    0x1: ["Somebody Call 911", "Fire Gonna Bring This Roof to Floor"],
+    0x2: ["I Saw This in a Movie", "The Bus That Couldn't Slow Down"],
+    0x3: ["M3", "M3 S"],
+    0x4: ["Sleep All Day", "Party All Night"],
+    0x5: ["M5", "M5 S"],
+    0x6: ["Outrun", "Hot Pursuit"],
+    0x7: ["Disaster Report", "Air Ranger"],
+    0x8: "TT1",
+    0x9: "TT2",
+    0xA: "TT3",
+}
+// Requirements for S rank pulled from the game data; these are just to give hints in the description.
+// NOTE: While PAL seems to give you more time for mission 1 for some reason, these appear to be the same in PAL.
+// Same scores in JP
+MissionScoreRequirements = {
+    0x1: 500000,
+    0x2: 600000,
+    0x3: 620000,
+    0x4: 500000,
+    0x5: 320000,
+    0x6: 600000,
+    0x7: 700000,
+    0x8: 85,
+    0x9: 105,
+    0xA: 75,
+}
+
+function MissionTrigger(region, mission, s_rank=False)
+{
+    cond = MissionOver(region) && MissionID[region] == mission
+    if s_rank == True
+    {
+        cond = cond && GotSRank(region)
+    }
+    
+    return cond
+}
+
+// Main Missions
+
+for mission in MainMissionNames
+{
+    achievement(
+        id=MissionIDs[mission][0],
+        title=MissionTitles[mission][0],
+        description=format("Complete {0}.", MainMissionNames[mission]),
+        points=MissionPoints[mission][0],
+        trigger=any_of(Regions, region => MissionTrigger(region, mission))
+    )    
+    achievement(
+        id=MissionIDs[mission][1],
+        title=MissionTitles[mission][1],
+        description=format("Obtain an S rank in {0} by achieving a score of {1} points or more.", MainMissionNames[mission], MissionScoreRequirements[mission]),
+        points=MissionPoints[mission][1],
+        trigger=any_of(Regions, region => MissionTrigger(region, mission, s_rank=True))
+    )
+}
+
+// Time Trials
+
+for mission in TimeTrialNames
+{
+    achievement(
+        id=MissionIDs[mission],
+        title=MissionTitles[mission],
+        description=format("Obtain an S rank in {0} by achieving a time under {1} seconds.", TimeTrialNames[mission], MissionScoreRequirements[mission]),
+        points=MissionPoints[mission],
+        trigger=any_of(Regions, region => MissionTrigger(region, mission, s_rank=True))
+    )
+}
+
+// ACHIEVEMENTS END
 
