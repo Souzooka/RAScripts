@@ -124,7 +124,7 @@ MissionLookup = {
     0x4: "👨‍🚒 Putting out a Fire At Night",
     0x5: "👨‍🚒 Putting out fires midair in Accident Flight",
     0x6: "👮 Chasing down a Run Away Sports Car",
-    0x7: "👨‍🚒 Rescuing the entire city in Disaster Flight",
+    0x7: "👨‍🚒 Rescuing the entire city in Disaster Rescue",
     0xF: "🏁 Racing through the city in Day Time Trial",
     0x10: "🏁 Racing through the city in Night Time Trial",
     0x11: "🏁 Racing through the city in Disaster Time Trial",
