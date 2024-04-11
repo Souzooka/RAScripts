@@ -98,11 +98,17 @@ function HalfHoursToMidnight(region)
     return InGameCountdownMinutes(region) / 30
 }
 
+function CampaignID(region)
+{
+    // Returns campaign character ID
+    return byte(0x1F9D840)
+}
+
 function CharacterID(region)
 {
-    // Returns campaign character ID (?)
-    // Have to check for where the controlled character ID is stored
-    return byte(0x1F9D840)
+    base = dword(0x00430EB0)
+    
+    return ResolvePointer(base, [0xC, 0x38, 0x380])
 }
 
 DOUGLAS = 0
@@ -143,7 +149,7 @@ function AttackLevel(region, character=-1)
     return byte(0x01f9d898 + character)
 }
 
-function EnergyLevel(region, character=-1)
+function SpeedLevel(region, character=-1)
 {
     // Returns a character's Speed level (refer to status screen)
     // Value returned is 0-based (so 2 stars would return a value of 1, for example)
@@ -392,7 +398,7 @@ for region in Regions
         rich_presence_lookup("TITLE", region, TitleLookup),
         rich_presence_lookup("CHARACTER", CharacterID(region), CharacterLookup),
         rich_presence_lookup("AREA", AreaID(region), AreaLookup),
-        rich_presence_lookup("PROLOGUE", CharacterID(region), PrologueLookup),
+        rich_presence_lookup("PROLOGUE", CampaignID(region), PrologueLookup),
         rich_presence_lookup("DIFFICULTY", Difficulty(region), DifficultyLookup),
         rich_presence_value("CURRENT_HP", CurrentHP(region)),
         rich_presence_value("MAX_HP", 100 + (EnergyLevel(region) * 25))
