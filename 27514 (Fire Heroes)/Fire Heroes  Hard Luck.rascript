@@ -405,7 +405,7 @@ for region in Regions
     )
     rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region) && IsNormalEpisode(region),
-        "{0} | {1} is in {2} | {3} | {4} difficulty | {5}/{6} HP | {7} {8} until the building burns down!",
+        "{0} | {1} is in {2} | {3} | {4} difficulty | {5}/{6} HP | {7} {8}m until the building burns down!",
         rich_presence_lookup("TITLE", region, TitleLookup),
         rich_presence_lookup("CHARACTER", CharacterID(region), CharacterLookup),
         rich_presence_lookup("AREA", AreaID(region), AreaLookup),
