@@ -23,6 +23,15 @@ function IsNULL(val)
     return val <= 0x16A43
 }
 
+function if_else(cond, v1, v2)
+{
+    if cond == true
+    {
+        return v1
+    }
+    return v2
+}
+
 function ResolvePointer(base, offsets, accessor=dword)
 {
     val = base
@@ -166,6 +175,17 @@ function CurrentHP(region)
     base = dword(0x432B74)
     
     return ResolvePointer(base, [0xC8], float)
+}
+
+function ResultScreenState(region)
+{
+    // Returns an int representing the state of the episode results screen. Note this value persists when the screen is exited.
+    
+    // 0x0= Screen never entered.
+    // 0x1= Animations finished. Waiting for X button to be pressed.
+    // 0x2= X button pressed; results screen fading out. Persists after leaving screen.
+    // 0x5= Items are animating into frame
+    return dword(0x432ABC)
 }
 
 // RICH PRESENCE START
@@ -434,3 +454,142 @@ for region in Regions
 }
 
 // RICH PRESENCE END
+
+// Leaderboards not applicable for this game?
+
+// ACHIEVEMENTS START
+
+EpisodeNames = {
+    0: {
+        DOUGLAS: "Prologue: \"FDSA Dispatched\"",
+        MAX: "Prologue: \"Evidence of a Crime\"",
+        SCOTT: "Prologue: \"The Tragedy Begins\"",
+    },
+    1: "Episode 1: \"The Ideal and the Real\"",
+    2: "Episode 2: \"Hot Down Below\"",
+    3: "Episode 3: \"A Young Life\"",
+    4: "Episode 4: \"Greed\"",
+    5: "Episode 5: \"The Scales of Life\"",
+    6: "Episode 6: \"Time Bomb\"",
+    7: "Episode 7: \"Crooked Love\"",
+    8: "Episode 8: \"A Desperate Escape\"",
+    9: "Episode 9: \"Saving a Hero\"", 
+}
+// This is for just completing the episode -- not saving all survivors, if applicable
+EpisodePoints = {
+    DOUGLAS: {
+        0: 2,
+        1: 2,
+        2: 2,
+        3: 2,
+        4: 2,
+        5: 2,
+        6: 2,
+        7: 2,
+        8: 5,
+        9: 25,
+    },
+    MAX: {
+        0: 2,
+        1: 2,
+        2: 2,
+        3: 2,
+        4: 2,
+        5: 2,
+        6: 2,
+        7: 2,
+        8: 5,
+        9: 25,
+    },
+    SCOTT: {
+        0: 2,
+        1: 2,
+        2: 2,
+        3: 2,
+        4: 2,
+        5: 2,
+        6: 2,
+        7: 2,
+        8: 5,
+        9: 25,
+    },
+}
+EpisodeTitles = {
+    DOUGLAS: {
+        0: "Douglas - Complete Prologue",
+        1: "Douglas - Complete Episode 1",
+        2: "Douglas - Complete Episode 2",
+        3: "Douglas - Complete Episode 3",
+        4: "Douglas - Complete Episode 4",
+        5: "Douglas - Complete Episode 5",
+        6: "Douglas - Complete Episode 6",
+        7: "Douglas - Complete Episode 7",
+        8: "Douglas - Complete Episode 8",
+        9: "Douglas - Complete Episode 9",
+    },
+    MAX: {
+        0: "Max - Complete Prologue",
+        1: "Max - Complete Episode 1",
+        2: "Max - Complete Episode 2",
+        3: "Max - Complete Episode 3",
+        4: "Max - Complete Episode 4",
+        5: "Max - Complete Episode 5",
+        6: "Max - Complete Episode 6",
+        7: "Max - Complete Episode 7",
+        8: "Max - Complete Episode 8",
+        9: "Max - Complete Episode 9",
+    },
+    SCOTT: {
+        0: "Scott - Complete Prologue",
+        1: "Scott - Complete Episode 1",
+        2: "Scott - Complete Episode 2",
+        3: "Scott - Complete Episode 3",
+        4: "Scott - Complete Episode 4",
+        5: "Scott - Complete Episode 5",
+        6: "Scott - Complete Episode 6",
+        7: "Scott - Complete Episode 7",
+        8: "Scott - Complete Episode 8",
+        9: "Scott - Complete Episode 9",
+    },
+}
+
+// Progression
+for character in [DOUGLAS, MAX, SCOTT]
+{
+    for episode in EpisodeNames
+    {    
+        title = EpisodeTitles[character][episode]
+        description = format(
+            "As {0}, complete {1}.",
+            CharacterLookup[character],
+            if_else(episode == 0, EpisodeNames[0][character], EpisodeNames[episode])
+        )
+        points = EpisodePoints[character][episode]
+        trigger=any_of(Regions, region => (
+            // Correct region
+            IsRegion(region) &&
+            // Correct campaign
+            CampaignID(region) == character &&
+            // Correct episode
+            EpisodeID(region) == episode &&
+            // Listen for an episode result screen transition
+            prev(ResultScreenState(region)) == 5 &&
+            ResultScreenState(region) == 1
+        ))
+    }
+}
+
+// For saving all survivors -- have to figure out how survivors should be represented first though
+EpisodeSurvivors = {
+    DOUGLAS: {
+        
+    },
+    MAX: {
+        
+    },
+    SCOTT: {
+        
+    },
+}
+
+// ACHIEVEMENTS END
