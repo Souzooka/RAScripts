@@ -188,6 +188,37 @@ function ResultScreenState(region)
     return dword(0x432ABC)
 }
 
+function GetVictimStatus(region, victim)
+{
+    return byte(0x01F9D864 + victim)
+}
+
+UNKNOWN = 0
+NOT_RESCUED = 1 // Turns to DEAD when going to results screen, if they were a part of that episode
+RESCUED = 2
+DEAD = 3
+
+VICTIM_A = 0x0
+VICTIM_B = 0x1
+FIREMAN = 0x2
+SEAN = 0x3
+JACOB = 0x4
+ROSE = 0x6
+VICTIM_C = 0x7
+AMANDA = 0x8
+TABBY = 0x9 // The most important victim
+DONNA = 0xA
+KEVIN = 0xB
+NICHOLAS = 0xC
+STEVE = 0xD
+SARAH = 0xE
+SAMANTHA = 0xF
+MORGAN = 0x10
+KATE = 0x11
+VINCENT = 0x12
+PAUL = 0x13
+YUU = 0x14
+
 // RICH PRESENCE START
 
 TitleLookup = {
@@ -253,8 +284,8 @@ AreaLookup = {
     0x2: "B2 Hallway",
     0x3: "B1 Parking",
     0x4: "1F - 2F Entrance",
-    0x5: "1F Goods Room A",
-    0x6: "1F Goods Room B",
+    0x5: "1F - 2F Goods Storage A",
+    0x6: "1F - 2F Goods Storage B",
     0x7: "B1 - 1F Hallway",
     0x8: "UNKNOWN AREA 0x8",
     0x9: "3F - 4F Emergency Stairs",
@@ -262,8 +293,8 @@ AreaLookup = {
     0xB: "3F Shop Under Construction A",
     0xC: "3F Shop Hallway",
     0xD: "UNKNOWN AREA 0xD",
-    0xE: "UNKNOWN AREA 0xE",
-    0xF: "UNKNOWN AREA 0xF",
+    0xE: "4F Bookstore",
+    0xF: "4F CD Shop",
     0x10: "UNKNOWN AREA 0x10",
     0x11: "4F Shop Hallway",
     0x12: "UNKNOWN AREA 0x12",
@@ -433,7 +464,8 @@ for region in Regions
         rich_presence_lookup("DIFFICULTY", Difficulty(region), DifficultyLookup),
         rich_presence_value("CURRENT_HP", CurrentHP(region)),
         rich_presence_value("MAX_HP", 100 + (EnergyLevel(region) * 25)),
-        rich_presence_lookup("HALFHOURS", HalfHoursToMidnight(region), HalfHoursLookup),
+        // Easy Mode gives you a 7 hour limit, so we'll just have a default string here for 7 PM if the time extends past 5 hours
+        rich_presence_lookup("HALFHOURS", HalfHoursToMidnight(region), HalfHoursLookup, "🕖"),
         rich_presence_value("COUNTDOWN", InGameCountdownMinutes(region), format="MINUTES")
     )
     rich_presence_conditional_display(
@@ -459,6 +491,12 @@ for region in Regions
 
 // ACHIEVEMENTS START
 
+CharacterNames = {
+    DOUGLAS: "Douglas Brantley",
+    MAX: "Max Broderick",
+    SCOTT: "Scott Winkler",
+    
+}
 EpisodeNames = {
     0: {
         DOUGLAS: "Prologue: \"FDSA Dispatched\"",
@@ -516,80 +554,226 @@ EpisodePoints = {
 }
 EpisodeTitles = {
     DOUGLAS: {
-        0: "Douglas - Complete Prologue",
-        1: "Douglas - Complete Episode 1",
-        2: "Douglas - Complete Episode 2",
-        3: "Douglas - Complete Episode 3",
-        4: "Douglas - Complete Episode 4",
-        5: "Douglas - Complete Episode 5",
-        6: "Douglas - Complete Episode 6",
-        7: "Douglas - Complete Episode 7",
-        8: "Douglas - Complete Episode 8",
-        9: "Douglas - Complete Episode 9",
+        0: "FDSA Dispatched",
+        1: "Basic Training",
+        2: "Won't Crack Under Pressure",
+        3: "Fire Exhibit",
+        4: "Money to Burn",
+        5: "House Call",
+        6: "The Hot-Headed Reporter",
+        7: "Fire Burning in the Party Hall",
+        8: "Fiery Dash",
+        9: "Firefighter's Duty",
     },
     MAX: {
-        0: "Max - Complete Prologue",
-        1: "Max - Complete Episode 1",
-        2: "Max - Complete Episode 2",
-        3: "Max - Complete Episode 3",
-        4: "Max - Complete Episode 4",
-        5: "Max - Complete Episode 5",
-        6: "Max - Complete Episode 6",
-        7: "Max - Complete Episode 7",
-        8: "Max - Complete Episode 8",
-        9: "Max - Complete Episode 9",
+        0: "Evidence of a Crime",
+        1: "Search & Rescue",
+        2: "Parking Violation",
+        3: "Community Outreach",
+        4: "White-Hot Collar Crime",
+        5: "Code Blue",
+        6: "Pursuing the Truth",
+        7: "Crowd Control",
+        8: "Flatfoot Flight",
+        9: "Police Officer's Duty",
     },
     SCOTT: {
-        0: "Scott - Complete Prologue",
-        1: "Scott - Complete Episode 1",
-        2: "Scott - Complete Episode 2",
-        3: "Scott - Complete Episode 3",
-        4: "Scott - Complete Episode 4",
-        5: "Scott - Complete Episode 5",
-        6: "Scott - Complete Episode 6",
-        7: "Scott - Complete Episode 7",
-        8: "Scott - Complete Episode 8",
-        9: "Scott - Complete Episode 9",
+        0: "The Tragedy Begins",
+        1: "The Ideal and the Real",
+        2: "Hot Down Below",
+        3: "A Young Life",
+        4: "Greed",
+        5: "The Scales of Life",
+        6: "Time Bomb",
+        7: "Crooked Love",
+        8: "A Desparate Escape",
+        9: "Architect's Duty",
     },
+}
+
+function EpisodeTrigger(region, character, episode)
+{
+           // Correct campaign
+    return CampaignID(region) == character &&
+           // Correct episode
+           EpisodeID(region) == episode &&
+           // Listen for an episode result screen transition
+           prev(ResultScreenState(region)) == 5 &&
+           ResultScreenState(region) == 1
 }
 
 // Progression
 for character in [DOUGLAS, MAX, SCOTT]
 {
     for episode in EpisodeNames
-    {    
-        title = EpisodeTitles[character][episode]
-        description = format(
-            "As {0}, complete {1}.",
-            CharacterLookup[character],
-            if_else(episode == 0, EpisodeNames[0][character], EpisodeNames[episode])
+    {   
+        achievement(
+            title=EpisodeTitles[character][episode],
+            description=format(
+                "As {0}, complete {1}.",
+                CharacterNames[character],
+                if_else(episode == 0, EpisodeNames[0][character], EpisodeNames[episode])
+            ),
+            points=EpisodePoints[character][episode],
+            trigger=any_of(Regions, region => (
+                // Correct region
+                IsRegion(region) &&
+                EpisodeTrigger(region, character, episode)
+            ))
         )
-        points = EpisodePoints[character][episode]
-        trigger=any_of(Regions, region => (
-            // Correct region
-            IsRegion(region) &&
-            // Correct campaign
-            CampaignID(region) == character &&
-            // Correct episode
-            EpisodeID(region) == episode &&
-            // Listen for an episode result screen transition
-            prev(ResultScreenState(region)) == 5 &&
-            ResultScreenState(region) == 1
-        ))
     }
 }
 
-// For saving all survivors -- have to figure out how survivors should be represented first though
-EpisodeSurvivors = {
+EpisodeHeroParams = {
     DOUGLAS: {
-        
+        0: {
+            "title": "The FDSA Bursts Onto the Scene!",
+            "points": 5,
+            "victims": [VICTIM_A, VICTIM_B, FIREMAN],
+        },
+        1: {
+            "title": "Rookie Under Your Wings",
+            "points": 5,
+            "victims": [SEAN, JACOB],
+        },
+        2: {
+            "title": "Red Rose",
+            "points": 5,
+            "victims": [FIREMAN, VICTIM_C, ROSE],
+        },
+        3: {
+            "title": "Cat Lover",
+            "points": 5,
+            "victims": [AMANDA, TABBY, DONNA, KEVIN],
+        },
+        4: {
+            "title": "Dragged From the Brink",
+            "points": 5,
+            "victims": [NICHOLAS, STEVE],
+        },
+        5: {
+            "title": "Life-Saving Couple",
+            "points": 5,
+            "victims": [SARAH, SAMANTHA],
+        },
+        6: {
+            "title": "Kept Your Cool",
+            "points": 5,
+            "victims": [MORGAN, KATE, VINCENT],
+        },
+        7: {
+            "title": "Cooled-Off Passion",
+            "points": 5,
+            "victims": [YUU, PAUL],
+        },
     },
     MAX: {
-        
+        1: {
+            "title": "A Show of Courage",
+            "points": 5,
+            "victims": [SEAN, JACOB],
+        },
+        2: {
+            "title": "Boiler Burn",
+            "points": 5,
+            "victims": [FIREMAN, VICTIM_C, ROSE],
+        },
+        3: {
+            "title": "Huh, I Wonder Who That Timer's For",
+            "points": 5,
+            "victims": [AMANDA, TABBY, DONNA, KEVIN],
+        },
+        4: {
+            "title": "Tossed in the Drunk Tank",
+            "points": 5,
+            "victims": [NICHOLAS, STEVE],
+        },
+        5: {
+            "title": "CPR-Certified",
+            "points": 5,
+            "victims": [SARAH, SAMANTHA],
+        },
+        6: {
+            "title": "There's No Such Thing as a Blue Rose",
+            "points": 5,
+            "victims": [MORGAN, KATE, VINCENT],
+        },
+        7: {
+            "title": "Hostage Situation",
+            "points": 5,
+            "victims": [YUU, PAUL],
+        },
     },
     SCOTT: {
-        
+        1: {
+            "title": "Everyone Wants to Save Their Boss",
+            "points": 5,
+            "victims": [SEAN, JACOB],
+        },
+        2: {
+            "title": "You Aren't Yuu",
+            "points": 5,
+            "victims": [FIREMAN, VICTIM_C, ROSE],
+        },
+        3: {
+            "title": "Cool Cat",
+            "points": 5,
+            "victims": [AMANDA, TABBY, DONNA, KEVIN],
+        },
+        4: {
+            "title": "Money Isn't Everything",
+            "points": 5,
+            "victims": [NICHOLAS, STEVE],
+        },
+        5: {
+            "title": "Won't Put My Next Hospital on 17F",
+            "points": 5,
+            "victims": [SARAH, SAMANTHA],
+        },
+        6: {
+            "title": "Suspicious Security Savior",
+            "points": 5,
+            "victims": [MORGAN, KATE, VINCENT],
+        },
+        7: {
+            "title": "Music to Fire Fights to",
+            "points": 5,
+            "victims": [YUU, PAUL],
+        },
     },
 }
+
+function EpisodeHeroTrigger(region, character, episode)
+{
+    victims = EpisodeHeroParams[character][episode]["victims"]
+           // Normal episode completion
+    return EpisodeTrigger(region, character, episode) &&
+           // All victims rescued in the episode
+           all_of(victims, victim => GetVictimStatus(region, victim) == RESCUED)
+}
+
+// Saving every survivor in applicable episodes
+for character in EpisodeHeroParams
+{
+    for episode in EpisodeHeroParams[character]
+    {
+        params = EpisodeHeroParams[character][episode]
+        achievement(
+            title=params["title"],
+            description=format(
+                "As {0}, complete {1} while rescuing every possible victim.",
+                CharacterNames[character],
+                if_else(episode == 0, EpisodeNames[0][character], EpisodeNames[episode])
+            ),
+            points=params["points"],
+            trigger=any_of(Regions, region => (
+                // Correct region
+                IsRegion(region) &&
+                EpisodeHeroTrigger(region, character, episode)
+            ))
+        )
+    }
+}
+
 
 // ACHIEVEMENTS END
