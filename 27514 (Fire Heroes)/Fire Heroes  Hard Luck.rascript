@@ -126,13 +126,14 @@ SCOTT = 2
 
 function Difficulty(region)
 {
-    // Float that we compare like an integer -- this is the only known affected var by difficulty that I know of at this time.
-    return dword(0x1F9D834)
+    base = dword(0x00430EB0)
+    
+    return ResolvePointer(base, [0xC, 0xE4])
 }
 
-EASY = 0x3F000000 // 0.5f
-NORMAL = 0x3F800000 // 1.0f
-HARD = 0x40000000 // 2.0f
+EASY = 0
+NORMAL = 1
+HARD = 2
 
 function EnergyLevel(region, character=-1)
 {
@@ -172,9 +173,22 @@ function SpeedLevel(region, character=-1)
 
 function CurrentHP(region)
 {
+    // Returns the player's current HP
     base = dword(0x432B74)
     
     return ResolvePointer(base, [0xC8], float)
+}
+
+function EpisodeSelectScreenState(region)
+{
+    // Returns an int representing the state of the episode select screen. Note this value persists when the screen is exited.
+    
+    // 0= Init/elements animating in
+    // 1= Elements done animating; idle
+    // 2= Level selected; should also be the value which persists into episodes
+    // 3= Exiting to Main Menu
+    
+    return dword(0x432A88)
 }
 
 function ResultScreenState(region)
@@ -188,8 +202,61 @@ function ResultScreenState(region)
     return dword(0x432ABC)
 }
 
+function GameScoreScreenState(region)
+{
+    // Returns an int representing the state of the game score screen (i.e. after campaign end).
+    // Note this value persists after leaving the menu.
+    
+    // 0= Init
+    // 1= Survivors Screen idle
+    // 2= Game Score being tallied
+    // 3= Save game prompt
+    // 4= Transition to Game Score Screen
+    // 5= Game Score Screen coming into view
+    // 6= Game Score screen tally finished; cross button prompt sliding into view (transitions from 2 IF next points goal not met; else from 8)
+    // 7= Score finished being tallied; wait a sec (transitions from 2 IF points goal met)
+    // 8= Flash after score tally (from 7)
+    
+    return dword(0x432A48)
+}
+
+function GameScoreScreenRank(region)
+{
+    // Returns an int representing the rank in the game score screen
+    
+    // 0=S
+    // 1=A
+    // 2=B
+    // 3=C
+    // 4=D
+    // 5=E
+    
+    return dword(0x432A5C)
+}
+
+function NumTimesPointsGoalMet(region)
+{
+    // Returns the number of times the points game in the GAME SCORE menu has been met
+    // (the goal increments by 500 each time)
+
+    // 1= Hard Mode unlocked
+    // 2= Character Color Type A unlocked
+    // 3= Character Color Type B unlocked
+    // 4= Ultimate Weapon Masamune appears in game
+    // 5= Fire-extinguisher gun with unlimited ammo appears in game
+    
+    return dword(0x1F9D8B8)
+}
+
 function GetVictimStatus(region, victim)
 {
+    // Returns the status of a victim, given their ID
+    
+    // 0= Unknown?
+    // 1= Not Rescued
+    // 2= Rescued
+    // 3= Dead
+
     return byte(0x01F9D864 + victim)
 }
 
@@ -218,6 +285,23 @@ KATE = 0x11
 VINCENT = 0x12
 PAUL = 0x13
 YUU = 0x14
+
+function GetEpisodeStatus(region, episode)
+{
+    // Returns the status of an episode on the episode select screen
+    
+    // 0= Open
+    // 1= Cleared
+    // 2= Failed
+    // 0xFF= Unknown
+    
+    return byte(0x1F9D858 + episode)
+}
+
+EPISODE_OPEN = 0
+EPISODE_CLEARED = 1
+EPISODE_FAILED = 2
+EPISODE_UNKNOWN = 0xFF
 
 // RICH PRESENCE START
 
@@ -279,34 +363,35 @@ EpisodeLookup = {
 }
 
 AreaLookup = {
-    0x0: "UNKNOWN AREA 0x0",
+    0x0: "UNKNOWN AREA 0x0", // Appears to possibly just be a debug/dummy room, loaded in a debug episode?
     0x1: "B2 Boiler Room",
-    0x2: "B2 Hallway",
+    0x2: "B2 Hallway", // Interesting note: Loaded in Max Episode 4
     0x3: "B1 Parking",
     0x4: "1F - 2F Entrance",
     0x5: "1F - 2F Goods Storage A",
     0x6: "1F - 2F Goods Storage B",
     0x7: "B1 - 1F Hallway",
-    0x8: "UNKNOWN AREA 0x8",
+    0x8: "UNKNOWN AREA 0x8", // NOT LOADED ??
     0x9: "3F - 4F Emergency Stairs",
     0xA: "3F Shop Under Construction B",
     0xB: "3F Shop Under Construction A",
     0xC: "3F Shop Hallway",
-    0xD: "UNKNOWN AREA 0xD",
+    0xD: "UNKNOWN AREA 0xD", // NOT LOADED ??
     0xE: "4F Bookstore",
     0xF: "4F CD Shop",
-    0x10: "UNKNOWN AREA 0x10",
+    0x10: "UNKNOWN AREA 0x10", // Loaded in Douglas/Max/Scott Episode 6
     0x11: "4F Shop Hallway",
-    0x12: "UNKNOWN AREA 0x12",
+    0x12: "UNKNOWN AREA 0x12", // NOT LOADED ??
     0x13: "5F Boutique",
     0x14: "5F - 6F Emergency Stairs",
     0x15: "5F Shop Hallway",
     0x16: "5F Sports Shop",
-    0x17: "UNKNOWN AREA 0x17",
-    0x18: "UNKNOWN AREA 0x18",
+    0x17: "UNKNOWN AREA 0x17", // Loaded in Douglas/Max/Scott Episode 6
+    0x18: "UNKNOWN AREA 0x18", // Loaded in Douglas/Max/Scott Episode 6
     0x19: "6F Monorail Platform",
     0x1A: "6F Station Lobby",
     0x1B: "7F - 8F Emergency Stairs",
+    0x1C: "7F Dinosaur Mueseum",
     0x1D: "7F Pool",
     0x1E: "7F Pool Lobby",
     0x1F: "7F Museum Hallway",
@@ -322,7 +407,7 @@ AreaLookup = {
     0x29: "9F - 10F Office Room B",
     0x2A: "10F Office Room C",
     0x2B: "10F Office Room D",
-    0x2C: "UNKNOWN AREA 0x2C",
+    0x2C: "UNKNOWN AREA 0x2C", // Loaded in Douglas/Max/Scott Episode 4
     0x2D: "11F Office Room B",
     0x2E: "11F Office Room C",
     0x2F: "11F Office Room D",
@@ -349,20 +434,20 @@ AreaLookup = {
     0x44: "16F Office Room B",
     0x45: "16F Office Room C",
     0x46: "16F Office Room D",
-    0x47: "UNKNOWN AREA 0x47",
+    0x47: "UNKNOWN AREA 0x47", // NOT LOADED ??
     0x48: "17F Examining Room A",
     0x49: "17F Examining Room B",
     0x4A: "17F Operating Room",
     0x4B: "17F Large Examining Room",
     0x4C: "17F Hospital Hallway",
     0x4D: "18F Freight Elevator Hallway",
-    0x4E: "UNKNOWN AREA 0x4E",
+    0x4E: "UNKNOWN AREA 0x4E", // Loaded in Douglas/Max/Scott Episode 7
     0x4F: "18F - 19F Emergency Stairs",
     0x50: "18F Italian Restaurant 1F",
     0x51: "18F Restaurant Hallway",
     0x52: "19F Base",
     0x53: "19F Freight Elevator Hallway",
-    0x54: "UNKNOWN AREA 0x54",
+    0x54: "UNKNOWN AREA 0x54", // Loaded in Douglas/Max/Scott Episode 5
     0x55: "19F Italian Restaurant 2F",
     0x56: "19F Restaurant Hallway",
     0x57: "20F Emergency Stairs",
@@ -370,7 +455,7 @@ AreaLookup = {
     0x59: "20F Laundry Room",
     0x5A: "20F Security Room",
     0x5B: "20F Storage Room",
-    0x5C: "UNKNOWN AREA 0x5C",
+    0x5C: "UNKNOWN AREA 0x5C", // NOT LOADED ??
     0x5D: "21F Emergency Stairs",
     0x5E: "21F Guest Room 211",
     0x5F: "21F Guest Room 212",
@@ -383,7 +468,7 @@ AreaLookup = {
     0x66: "22F Guest Room 223",
     0x67: "22F Guestroom Hallway",
     0x68: "23F Freight Elevator Hallway",
-    0x69: "UNKNOWN AREA 0x69",
+    0x69: "UNKNOWN AREA 0x69", // Loaded in Douglas/Max/Scott Episode 1
     0x6A: "23F Guest Room 231",
     0x6B: "23F Guest Room 232",
     0x6C: "23F Guest Room 233",
@@ -403,6 +488,7 @@ AreaLookup = {
     0x7A: "25F Guestroom 258",
     0x7B: "25F Guestroom 259",
     0x7C: "25F Guestroom Hallway",
+    0x7D: "UNKNOWN AREA 0x7D", // NOT LOADED ??
     0x7E: "26F Emergency Stairs",
     0x7F: "26F Guestroom 261",
     0x80: "26F Guestroom 262",
@@ -414,7 +500,7 @@ AreaLookup = {
     0x86: "26F Guestroom 268",
     0x87: "26F Guestroom 269",
     0x88: "26F Guestroom Hallway",
-    0x89: "UNKNOWN AREA 0x89",
+    0x89: "UNKNOWN AREA 0x89", // NOT LOADED ??
     0x8A: "27F Emergency Stairs",
     0x8B: "27F Guestroom 271",
     0x8C: "27F Guestroom 272",
@@ -431,7 +517,7 @@ AreaLookup = {
     0x97: "28F Heating - Freight Elevator",
     0x98: "28F Party Hall",
     0x99: "28F Party Hall Lobby",
-    0x9A: "UNKNOWN AREA 0x9A",
+    0x9A: "UNKNOWN AREA 0x9A", // Loaded in Douglas/Max/Scott Episode 5, Douglas/Max/Scott Episode 9
     0x9B: "29F Panorama House",
     0x9C: "29F Storage Room - Freight Elevator",
     0x9D: "29F - 30F Emergency Stairs - Machine Room",
@@ -521,7 +607,7 @@ EpisodePoints = {
         2: 2,
         3: 2,
         4: 2,
-        5: 2,
+        5: 3,
         6: 2,
         7: 2,
         8: 5,
@@ -534,7 +620,7 @@ EpisodePoints = {
         3: 2,
         4: 2,
         5: 2,
-        6: 2,
+        6: 3,
         7: 2,
         8: 5,
         9: 25,
@@ -547,7 +633,7 @@ EpisodePoints = {
         4: 2,
         5: 2,
         6: 2,
-        7: 2,
+        7: 3,
         8: 5,
         9: 25,
     },
@@ -586,15 +672,17 @@ EpisodeTitles = {
         5: "The Scales of Life",
         6: "Time Bomb",
         7: "Crooked Love",
-        8: "A Desparate Escape",
+        8: "A Desperate Escape",
         9: "Architect's Duty",
     },
 }
 
 function EpisodeTrigger(region, character, episode)
 {
+           // Correct region
+    return IsRegion(region) &&
            // Correct campaign
-    return CampaignID(region) == character &&
+           CampaignID(region) == character &&
            // Correct episode
            EpisodeID(region) == episode &&
            // Listen for an episode result screen transition
@@ -602,24 +690,131 @@ function EpisodeTrigger(region, character, episode)
            ResultScreenState(region) == 1
 }
 
+function EndingTrigger(region, character=-1, episode=-1)
+{
+    character_check = if_else(character != -1, CampaignID(region) == character, always_true())
+    episode_check = if_else(episode != -1, EpisodeID(region) == episode, always_true())
+
+           // Correct region
+    return IsRegion(region) &&
+           // Correct character
+           character_check &&
+           // Correct episode
+           episode_check &&
+           // Ending screen state (we've started tallying game score)
+           prev(GameScoreScreenState(region)) != 2 &&
+           GameScoreScreenState(region) == 2
+}
+
+function EndingScoreDoneTrigger(region)
+{
+           // Correct region
+    return IsRegion(region) &&
+           // Ending screen state (we've finished tallying game score)
+           prev(GameScoreScreenState(region)) == 2 &&
+           GameScoreScreenState(region) != 2
+}
+
+function Episode8Trigger(region, character)
+{
+    // UGHHHHHHHHHHHHHH the game does not make this easy to check
+    // I've spent several hours down this rabbit hole
+    // (Ending isn't stored anywhere besides a once-off "you got it at some point" bool :()
+    event_time_ptr = dword(0x43285C)
+    event_time = ResolvePointer(event_time_ptr, [0xAC], float)
+    event_time_paused = ResolvePointer(event_time_ptr, [0x80]) == 8
+    
+    no_ending_6_check = (
+        disable_when(
+            // Correct region
+            IsRegion(region) &&
+            // We're on episode 8
+            EpisodeID(region) == 8 &&
+            // The event timer expired (you didn't reach the heli :()
+            !IsNULL(event_time_ptr) &&
+            // bruh they zero event_time out right *BEFORE* deallocating the pointer! Why???
+            tally(2, event_time_paused && event_time == 0.0),
+            
+                  // Correct region
+            until=IsRegion(region) &&
+                  // We're so back (on episode 8!)
+                  EpisodeID(region) == 8 &&
+                  // You're giving us more time? How gracious, game
+                  !IsNULL(event_time_ptr) &&
+                  event_time > 0.0
+        )
+    )
+    
+                   // They got an ending (i.e. not 100% rescue rate or didn't reach heli)
+    ending_check = EndingTrigger(region, character=character, episode=8) &&
+                   // But you gotta get to the choppa my dude
+                   no_ending_6_check
+
+    episode_clear_check = (
+        // This kind of relies on an assumption that the episode select state will be
+        // stuck at 2 when in-game, so this may end up being too voliatile and we
+        // may have to do some hit check where the player was in game and now they
+        // got to the episode select without being in the title screen or something
+        prev(EpisodeSelectScreenState(region)) == 2 &&
+        EpisodeSelectScreenState(region) == 0 &&
+        // Episode 8 should be cleared
+        GetEpisodeStatus(region, 8) == EPISODE_CLEARED &&
+        // Check that Episode 9 is also open as a sanity check
+        GetEpisodeStatus(region, 9) == EPISODE_OPEN &&
+        // Lastly, check for character match
+        CampaignID(region) == character
+    )
+
+           // Correct region
+    return IsRegion(region) &&
+           (
+               // Either we get an ending (not 100% rescue rate or we didn't escape)
+               ending_check ||
+               // We didn't get an ending (100% rescue rate and we made it to the chopper)
+               episode_clear_check
+           )
+}
+
+function Episode9Trigger(region, character)
+{
+    ending_check = EndingTrigger(region, character=character, episode=9)
+
+           // Correct region
+    return IsRegion(region) &&
+           // Check that we entered game score screen
+           ending_check
+}
+
 // Progression
 for character in [DOUGLAS, MAX, SCOTT]
 {
     for episode in EpisodeNames
     {   
+        // Prologue, episodes 1-7 -- happy case, we just check for the episode result screen
+        trigger = any_of(Regions, region => EpisodeTrigger(region, character, episode))
+        // Want an ending or detect fade out (100% rescue rate) for episode 8
+        trigger = if_else(
+            episode == 8, 
+            any_of(Regions, region => Episode8Trigger(region, character)), 
+            trigger
+        )
+        // Want an ending for episode 9
+        trigger = if_else(
+            episode == 9, 
+            any_of(Regions, region => Episode9Trigger(region, character)), 
+            trigger
+        )
+    
         achievement(
             title=EpisodeTitles[character][episode],
             description=format(
-                "As {0}, complete {1}.",
+                "As {0}, complete {1}{2}.",
                 CharacterNames[character],
-                if_else(episode == 0, EpisodeNames[0][character], EpisodeNames[episode])
+                if_else(episode == 0, EpisodeNames[0][character], EpisodeNames[episode]),
+                if_else(episode == 8, " without running out of time", "")
             ),
             points=EpisodePoints[character][episode],
-            trigger=any_of(Regions, region => (
-                // Correct region
-                IsRegion(region) &&
-                EpisodeTrigger(region, character, episode)
-            ))
+            trigger=trigger
         )
     }
 }
@@ -659,7 +854,8 @@ EpisodeHeroParams = {
         6: {
             "title": "Kept Your Cool",
             "points": 5,
-            "victims": [MORGAN, KATE, VINCENT],
+            "victims"
+            : [MORGAN, KATE, VINCENT],
         },
         7: {
             "title": "Cooled-Off Passion",
@@ -746,8 +942,11 @@ EpisodeHeroParams = {
 function EpisodeHeroTrigger(region, character, episode)
 {
     victims = EpisodeHeroParams[character][episode]["victims"]
+    
+           // Correct region
+    return IsRegion(region) &&
            // Normal episode completion
-    return EpisodeTrigger(region, character, episode) &&
+           EpisodeTrigger(region, character, episode) &&
            // All victims rescued in the episode
            all_of(victims, victim => GetVictimStatus(region, victim) == RESCUED)
 }
@@ -766,14 +965,146 @@ for character in EpisodeHeroParams
                 if_else(episode == 0, EpisodeNames[0][character], EpisodeNames[episode])
             ),
             points=params["points"],
-            trigger=any_of(Regions, region => (
-                // Correct region
-                IsRegion(region) &&
-                EpisodeHeroTrigger(region, character, episode)
-            ))
+            trigger=any_of(Regions, region => EpisodeHeroTrigger(region, character, episode)),
+            type="missable"
         )
     }
 }
 
+// We can end the game as any character, either on episode 8 or 9
+// It doesn't really adapt to RA's progression labels well at all, but
+// for the sake of having an achievement act as the win condition here we are
+// Also it's technically 1-statement-condition disregarding the region check but I evaluated
+// its uses in code myself and it's safe
+achievement(
+    title="Fire Protagonist",
+    description="Obtain any ending with any character.",
+    points=2,
+    trigger=any_of(Regions, region => (
+        // Correct region
+        IsRegion(region) &&
+        // Game Score Tally done
+        EndingScoreDoneTrigger(region)
+    )),
+    type="win_condition"
+)
+
+// Yadayada same deal with hard
+achievement(
+    title="Fire Hero",
+    description="Obtain any ending with any character on Hard difficulty.",
+    points=25,
+    trigger=any_of(Regions, region => (
+        // Correct region
+        IsRegion(region) &&
+        // Correct difficulty
+        Difficulty(region) == HARD &&
+        // Game Score Tally done
+        EndingScoreDoneTrigger(region)
+    ))
+)
+
+// Now do it again with an 'S' rank!!!
+achievement(
+    title="Fire Saint",
+    description=
+        "Obtain any ending with any character on Hard difficulty and achieve an S Play Rank." +
+        " This can be achieved by rescuing everyone," +
+        " never fainting," +
+        " escaping before the building burns down, " +
+        " destroying 300 or more obstacles," +
+        " and extinguishing 1000 or more fires.",
+    points=25,
+    trigger=any_of(Regions, region => (
+        // Correct region
+        IsRegion(region) &&
+        // Correct difficulty
+        Difficulty(region) == HARD &&
+        // Correct rank &&
+        GameScoreScreenRank(region) == 0 &&
+        // Game Score Tally done
+        EndingScoreDoneTrigger(region)
+    ))
+)
+
+// Now do it a bunch of times for TOTAL POINTS rewards...
+
+TotalPointsTitles = {
+    // Hard Mode
+    1: "I've Trained For This",
+    // Character Color Type A
+    2: "Hot Pants",
+    // Character Color Type B
+    3: "Cool Outfit",
+    // Ultimate Weapon "Masamune" appears in game
+    4: "Extinguish With Masamune!",//"Masamune De Extinguish!", // gotta ask devcomp about this one
+    // Fire-extinguisher gun with unlimited ammo will now appear in game (Impulse has unlimited ammo?)
+    5: "Never Stop Extinguishing",
+}
+TotalPointsDescription = "Obtain {0} Total Points in the Game Score screen to unlock {1}."
+TotalPointsFormatArgs = {
+    1: ["500", "the Hard difficulty"],
+    2: ["1000", "Character Color Type A"],
+    3: ["1500", "Character Color Type B"],
+    4: ["2000", "the appearance of the ultimate weapon \"Masamune\" in game"],
+    5: ["2500", "the appearance of a fire-extinguisher gun with unlimited ammo in game"],
+}
+TotalPointsPoints = {
+    1: 10,
+    2: 10,
+    3: 25,
+    4: 25,
+    5: 25,
+}
+TotalPointsIDs = {
+    1: 0,
+    2: 0,
+    3: 0, 
+    4: 0,
+    5: 0,
+}
+
+for i in TotalPointsTitles
+{
+    achievement(
+        id=TotalPointsIDs[i],
+        title=TotalPointsTitles[i],
+        description=format(
+            TotalPointsDescription,
+            TotalPointsFormatArgs[i][0],
+            TotalPointsFormatArgs[i][1]
+        ),
+        points=TotalPointsPoints[i],
+        trigger=any_of(Regions, region => (
+            // Correct Region
+            IsRegion(region) &&
+            // Make sure we're in the right state for save protection
+            GameScoreScreenState(region) == 7 &&
+            // Hit them point goals
+            prev(NumTimesPointsGoalMet(region)) == i - 1 &&
+            NumTimesPointsGoalMet(region) == i
+        ))
+    )
+}
+
+// And lastly, the player count bait...
+achievement(
+    title="I'm From the Government and I'm Here to Help",
+    description="Rescue your first survivor.",
+    points=2,
+    trigger=any_of(Regions, region => (
+        // Correct region
+        IsRegion(region) &&
+        // Should probably make sure we're in game for save protection
+        IsInGame(region) &&
+        // Rescue that victim
+        any_of(range(VICTIM_A, YUU), i => (
+            prev(GetVictimStatus(region, i)) != RESCUED &&
+            GetVictimStatus(region, i) == RESCUED
+        ))
+    ))
+)
 
 // ACHIEVEMENTS END
+
+
