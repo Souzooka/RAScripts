@@ -1060,17 +1060,19 @@ achievement(
     type="win_condition"
 )
 
-// Yadayada same deal with hard
+// Yadayada same deal with hard (let's do Ending 1 only)
 achievement(
     id=417894,
     title="Fire Hero",
-    description="Obtain any ending with any character on Hard difficulty.",
+    description="Obtain Ending 1 with any character on Hard difficulty.",
     points=25,
     trigger=any_of(Regions, region => (
         // Correct region
         IsRegion(region) &&
         // Correct difficulty
         Difficulty[region] == HARD &&
+        // Episode 9 means they got ending 1
+        EpisodeID[region] == 9 &&
         // Game Score Tally done
         EndingScoreDoneTrigger(region)
     ))
@@ -1081,7 +1083,7 @@ achievement(
     id=417914,
     title="Fire Saint",
     description=
-        "Obtain any ending with any character on Hard difficulty and achieve an S Rank." +
+        "Obtain Ending 1 with any character on Hard difficulty and achieve an S Play Rank." +
         " This can be achieved by rescuing everyone," +
         " never fainting," +
         " escaping before the building burns down, " +
@@ -1093,6 +1095,8 @@ achievement(
         IsRegion(region) &&
         // Correct difficulty
         Difficulty[region] == HARD &&
+        // Episode 9 means they got ending 1
+        EpisodeID[region] == 9 &&
         // Correct rank &&
         GameResultScreenRank[region] == 0 &&
         // Game Score Tally done
@@ -1110,7 +1114,7 @@ TotalPointsTitles = {
     // Character Color Type B
     3: "Cool Outfit",
     // Ultimate Weapon "Masamune" appears in game
-    4: "Extinguish With Masamune!",//"Masamune De Extinguish!", // gotta ask devcomp about this one
+    4: "Forged in Fire",
     // Fire-extinguisher gun with unlimited ammo will now appear in game (Impulse has unlimited ammo?)
     5: "Never Stop Extinguishing",
 }
