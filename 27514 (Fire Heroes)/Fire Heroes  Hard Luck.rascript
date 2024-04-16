@@ -676,6 +676,44 @@ EpisodeTitles = {
         9: "Architect's Duty",
     },
 }
+EpisodeIDs = {
+    DOUGLAS: {
+        0: 417855,
+        1: 417856,
+        2: 417857,
+        3: 417858,
+        4: 417859,
+        5: 417860,
+        6: 417861,
+        7: 417862,
+        8: 417863,
+        9: 417864,
+    },
+    MAX: {
+        0: 417865,
+        1: 417866,
+        2: 417867,
+        3: 417868,
+        4: 417869,
+        5: 417870,
+        6: 417871,
+        7: 417872,
+        8: 417873,
+        9: 417898,
+    },
+    SCOTT: {
+        0: 417874,
+        1: 417899,
+        2: 417875,
+        3: 417900,
+        4: 417876,
+        5: 417877,
+        6: 417901,
+        7: 417878,
+        8: 417902,
+        9: 417879,
+    },
+}
 
 function EpisodeTrigger(region, character, episode)
 {
@@ -804,8 +842,11 @@ for character in [DOUGLAS, MAX, SCOTT]
             any_of(Regions, region => Episode9Trigger(region, character)), 
             trigger
         )
+        // Can fail episode 8 and you only get episode 9 with 100% rescue
+        type = if_else(episode >= 8, "missable", "")
     
         achievement(
+            id=EpisodeIDs[character][episode],
             title=EpisodeTitles[character][episode],
             description=format(
                 "As {0}, complete {1}{2}.",
@@ -814,7 +855,8 @@ for character in [DOUGLAS, MAX, SCOTT]
                 if_else(episode == 8, " without running out of time", "")
             ),
             points=EpisodePoints[character][episode],
-            trigger=trigger
+            trigger=trigger,
+            type=type
         )
     }
 }
@@ -822,42 +864,50 @@ for character in [DOUGLAS, MAX, SCOTT]
 EpisodeHeroParams = {
     DOUGLAS: {
         0: {
+            "id": 417903,
             "title": "The FDSA Bursts Onto the Scene!",
             "points": 5,
             "victims": [VICTIM_A, VICTIM_B, FIREMAN],
         },
         1: {
+            "id": 417880,
             "title": "Rookie Under Your Wings",
             "points": 5,
             "victims": [SEAN, JACOB],
         },
         2: {
+            "id": 417904,
             "title": "Red Rose",
             "points": 5,
             "victims": [FIREMAN, VICTIM_C, ROSE],
         },
         3: {
+            "id": 417881,
             "title": "Cat Lover",
             "points": 5,
             "victims": [AMANDA, TABBY, DONNA, KEVIN],
         },
         4: {
+            "id": 417905,
             "title": "Dragged From the Brink",
             "points": 5,
             "victims": [NICHOLAS, STEVE],
         },
         5: {
+            "id": 417882,
             "title": "Life-Saving Couple",
             "points": 5,
             "victims": [SARAH, SAMANTHA],
         },
         6: {
+            "id": 417883,
             "title": "Kept Your Cool",
             "points": 5,
             "victims"
             : [MORGAN, KATE, VINCENT],
         },
         7: {
+            "id": 417906,
             "title": "Cooled-Off Passion",
             "points": 5,
             "victims": [YUU, PAUL],
@@ -865,36 +915,43 @@ EpisodeHeroParams = {
     },
     MAX: {
         1: {
+            "id": 417884,
             "title": "A Show of Courage",
             "points": 5,
             "victims": [SEAN, JACOB],
         },
         2: {
+            "id": 417907,
             "title": "Boiler Burn",
             "points": 5,
             "victims": [FIREMAN, VICTIM_C, ROSE],
         },
         3: {
+            "id": 417885,
             "title": "Huh, I Wonder Who That Timer's For",
             "points": 5,
             "victims": [AMANDA, TABBY, DONNA, KEVIN],
         },
         4: {
+            "id": 417886,
             "title": "Tossed in the Drunk Tank",
             "points": 5,
             "victims": [NICHOLAS, STEVE],
         },
         5: {
+            "id": 417908,
             "title": "CPR-Certified",
             "points": 5,
             "victims": [SARAH, SAMANTHA],
         },
         6: {
+            "id": 417887,
             "title": "There's No Such Thing as a Blue Rose",
             "points": 5,
             "victims": [MORGAN, KATE, VINCENT],
         },
         7: {
+            "id": 417909,
             "title": "Hostage Situation",
             "points": 5,
             "victims": [YUU, PAUL],
@@ -902,37 +959,44 @@ EpisodeHeroParams = {
     },
     SCOTT: {
         1: {
+            "id": 417888,
             "title": "Everyone Wants to Save Their Boss",
             "points": 5,
             "victims": [SEAN, JACOB],
         },
         2: {
+            "id": 417889,
             "title": "You Aren't Yuu",
             "points": 5,
             "victims": [FIREMAN, VICTIM_C, ROSE],
         },
         3: {
+            "id": 417910,
             "title": "Cool Cat",
             "points": 5,
             "victims": [AMANDA, TABBY, DONNA, KEVIN],
         },
         4: {
+            "id": 417890,
             "title": "Money Isn't Everything",
             "points": 5,
             "victims": [NICHOLAS, STEVE],
         },
         5: {
+            "id": 417911,
             "title": "Won't Put My Next Hospital on 17F",
             "points": 5,
             "victims": [SARAH, SAMANTHA],
         },
         6: {
+            "id": 417891,
             "title": "Suspicious Security Savior",
             "points": 5,
             "victims": [MORGAN, KATE, VINCENT],
         },
         7: {
-            "title": "Music to Fire Fights to",
+            "id": 417912,
+            "title": "Music to Fight Fires to",
             "points": 5,
             "victims": [YUU, PAUL],
         },
@@ -958,6 +1022,7 @@ for character in EpisodeHeroParams
     {
         params = EpisodeHeroParams[character][episode]
         achievement(
+            id=params["id"],
             title=params["title"],
             description=format(
                 "As {0}, complete {1} while rescuing every possible victim.",
@@ -977,6 +1042,7 @@ for character in EpisodeHeroParams
 // Also it's technically 1-statement-condition disregarding the region check but I evaluated
 // its uses in code myself and it's safe
 achievement(
+    id=417893,
     title="Fire Protagonist",
     description="Obtain any ending with any character.",
     points=2,
@@ -991,6 +1057,7 @@ achievement(
 
 // Yadayada same deal with hard
 achievement(
+    id=417894,
     title="Fire Hero",
     description="Obtain any ending with any character on Hard difficulty.",
     points=25,
@@ -1006,9 +1073,10 @@ achievement(
 
 // Now do it again with an 'S' rank!!!
 achievement(
+    id=417914,
     title="Fire Saint",
     description=
-        "Obtain any ending with any character on Hard difficulty and achieve an S Play Rank." +
+        "Obtain any ending with any character on Hard difficulty and achieve an S Rank." +
         " This can be achieved by rescuing everyone," +
         " never fainting," +
         " escaping before the building burns down, " +
@@ -1057,11 +1125,11 @@ TotalPointsPoints = {
     5: 25,
 }
 TotalPointsIDs = {
-    1: 0,
-    2: 0,
-    3: 0, 
-    4: 0,
-    5: 0,
+    1: 417895,
+    2: 417915,
+    3: 417896, 
+    4: 417892,
+    5: 417897,
 }
 
 for i in TotalPointsTitles
@@ -1089,6 +1157,7 @@ for i in TotalPointsTitles
 
 // And lastly, the player count bait...
 achievement(
+    id=417913,
     title="I'm From the Government and I'm Here to Help",
     description="Rescue your first survivor.",
     points=2,
