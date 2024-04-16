@@ -1,11 +1,13 @@
 // Fire Heroes | Hard Luck
 // #ID = 27514
 
+// MISC. SCRIPT HELPERS
+
 NULL = 0
 True = 1
 False = 0
 
-RegionByte = byte(0x100000) // TODO
+RegionByte = byte(0x24EE8C)
 EU = 0
 JP = 1
 Regions = [EU, JP]
@@ -52,219 +54,166 @@ function ResolvePointer(base, offsets, accessor=dword)
     return val
 }
 
-function IsInGame(region)
-{
-    // Checks a pointer which is consistently NULL while not in-game/while in loading screens
-    base = dword(0x00430EB0)
-    
-    return !IsNULL(base) &&
-           !IsNULL(ResolvePointer(base, [0xC, 0x2C, 0x40]))
+// GAME VARIABLES
+
+// Base of all game logic?
+FireCore = {
+    EU: dword(0x430EB0),
+    JP: dword(0x42CEA8),
+}
+// Index for the current area
+AreaID = {
+    EU: ResolvePointer(FireCore[EU], [0xC, 0x2C, 0x40, 0x10, 0x0], word),
+    JP: ResolvePointer(FireCore[JP], [0xC, 0x2C, 0x40, 0x10, 0x0], word),
+}
+// Index for the current campaign character
+CampaignID = {
+    EU: byte(0x1F9D840),
+    JP: byte(0x1F99840),
+}
+// Index for the current episode
+EpisodeID = {
+    EU: word(0x1F9D856),
+    JP: word(0x1F99856),
+}
+// The current active character (doesn't match the campaign ID after zapping)
+CharacterID = {
+    EU: ResolvePointer(FireCore[EU], [0xC, 0x38, 0x380]),
+    JP: ResolvePointer(FireCore[JP], [0xC, 0x38, 0x380]),
+}
+// Game difficulty
+Difficulty = {
+    EU: ResolvePointer(FireCore[EU], [0xC, 0xE4]),
+    JP: ResolvePointer(FireCore[JP], [0xC, 0xE4]),
+}
+// Victim Status Array (size 0x18) of 8-bit ints
+// 0= Unknown?
+// 1= Not Rescued
+// 2= Rescued
+// 3= Dead
+VictimStatus = {
+    EU: 0x1F9D864,
+    JP: 0x1F99864,
+}
+// How many minutes until the building burns down
+InGameCountdownMinutes = {
+    EU: (ResolvePointer(FireCore[EU], [0xC, 0x108, 0xC4], float) / 60),
+    JP: (ResolvePointer(FireCore[JP], [0xC, 0x108, 0xC4], float) / 60),
+}
+// HP Guage
+SysGuage = {
+    EU: dword(0x432B74),
+    JP: dword(0x42EB74),
+}
+// Current Player HP (display value)
+CurrentHP = {
+    EU: ResolvePointer(SysGuage[EU], [0xC8], float),
+    JP: ResolvePointer(SysGuage[JP], [0xC8], float),
+}
+// Array of Energy levels for the 3 characters
+EnergyLevels = {
+    EU: 0x1F9D88C,
+    JP: 0x1F9988C,
+}
+// Array of Attack levels for the 3 characters
+AttackLevels = {
+    EU: 0x1F9D898,
+    JP: 0x1F99898,
+}
+// Array of Speed levels for the 3 characters
+SpeedLevels = {
+    EU: 0x1F9D8A4,
+    JP: 0x1F998A4,
+}
+// Array of statuses for episodes on the episode select screen
+// 0= Open
+// 1= Cleared
+// 2= Failed
+// 0xFF= Unknown
+EpisodeStatus = {
+    EU: 0x1F9D858,
+    JP: 0x1F99858,
+}
+// Int representing the state of the episode result screen. Note this value persists when the screen is exited.
+// 0x0= Screen never entered; initial
+// 0x1= Animations finished. Waiting for X button to be pressed.
+// 0x2= X button pressed; results screen fading out. Persists after leaving screen.
+// 0x5= Items are animating into frame
+EpisodeResultScreenState = {
+    EU: dword(0x432ABC),
+    JP: dword(0x42EABC),
+}
+// Int representing the state of the episode select screen. Note this value persists when the screen is exited.
+// 0= Init/elements animating in
+// 1= Elements done animating; idle
+// 2= Level selected; should also be the value which persists into episodes
+// 3= Exiting to Main Menu
+EpisodeSelectScreenState = {
+    EU: dword(0x432A88),
+    JP: dword(0x42EA88),
+}
+// Int representing the state of the game score screen (i.e. after campaign end).
+// Note this value persists after leaving the menu.
+// 0= Init
+// 1= Survivors Screen idle
+// 2= Game Score being tallied
+// 3= Save game prompt
+// 4= Transition to Game Score Screen
+// 5= Game Score Screen coming into view
+// 6= Game Score screen tally finished; cross button prompt sliding into view (transitions from 2 IF next points goal not met; else from 8)
+// 7= Score finished being tallied; wait a sec (transitions from 2 IF points goal met)
+// 8= Flash after score tally (from 7)
+GameResultScreenState = {
+    EU: dword(0x432A88),
+    JP: dword(0x42EA88),
+}
+// Int representing the rank in the game score screen
+// 0=S
+// 1=A
+// 2=B
+// 3=C
+// 4=D
+// 5=E
+GameResultScreenRank = {
+    EU: dword(0x432A5C),
+    JP: dword(0x42EA5C),
+}
+// Number of times the points game in the GAME SCORE menu has been met (the goal increments by 500 each time)
+// 1= Hard Mode unlocked
+// 2= Character Color Type A unlocked
+// 3= Character Color Type B unlocked
+// 4= Ultimate Weapon Masamune appears in game
+// 5= Fire-extinguisher gun with unlimited ammo appears in game
+NumTimesPointsGoalMet = {
+    EU: dword(0x1F9D8B8),
+    JP: dword(0x1F998B8),
 }
 
-function AreaID(region)
-{
-    // Returns the index for the current area
-    base = dword(0x00430EB0)
+// ENUEMRATIONS
 
-    return ResolvePointer(base, [0xC, 0x2C, 0x40, 0x10, 0x0], word)
-}
-
-function EpisodeID(region)
-{
-    // Returns the index for the current episode
-    return word(0x1F9D856)
-}
-
-function IsPrologue(region)
-{
-    // Returns if we're in the prologue episode
-    return EpisodeID(region) == 0
-}
-
-function IsFinalEpisode(region)
-{
-    // Returns if this is one of the finale episodes (and as such does not have the building burn-down timer)
-    return any_of([8, 9], episode => EpisodeID(region) == episode)
-}
-
-function IsNormalEpisode(region)
-{
-    // Returns if this is an episode with the building burn-down timer
-    return !IsPrologue(region) && !IsFinalEpisode(region)
-}
-
-function InGameCountdownMinutes(region)
-{
-    // Returns how many minutes until the building burns down
-    base = dword(0x00430EB0)
-    
-    return ResolvePointer(base, [0xC, 0x108, 0xC4], float) / 60
-}
-
-function HalfHoursToMidnight(region)
-{
-    // Returns how many half-hours until the building burns down, for RP purposes
-    return InGameCountdownMinutes(region) / 30
-}
-
-function CampaignID(region)
-{
-    // Returns campaign character ID
-    return byte(0x1F9D840)
-}
-
-function CharacterID(region)
-{
-    base = dword(0x00430EB0)
-    
-    return ResolvePointer(base, [0xC, 0x38, 0x380])
-}
-
+// Character ID
 DOUGLAS = 0
 MAX = 1
 SCOTT = 2
 
-function Difficulty(region)
-{
-    base = dword(0x00430EB0)
-    
-    return ResolvePointer(base, [0xC, 0xE4])
-}
-
+// Difficulty
 EASY = 0
 NORMAL = 1
 HARD = 2
 
-function EnergyLevel(region, character=-1)
-{
-    // Returns a character's Energy level (refer to status screen)
-    // Value returned is 0-based (so 2 stars would return a value of 1, for example)
-    if (character == -1)
-    {
-        character = CharacterID(region)
-    }
-    
-    return byte(0x01f9d88c + character)
-}
+// Episode Status
+EPISODE_OPEN = 0
+EPISODE_CLEARED = 1
+EPISODE_FAILED = 2
+EPISODE_UNKNOWN = 0xFF
 
-function AttackLevel(region, character=-1)
-{
-    // Returns a character's Attack level (refer to status screen)
-    // Value returned is 0-based (so 2 stars would return a value of 1, for example)
-    if (character == -1)
-    {
-        character = CharacterID(region)
-    }
-    
-    return byte(0x01f9d898 + character)
-}
-
-function SpeedLevel(region, character=-1)
-{
-    // Returns a character's Speed level (refer to status screen)
-    // Value returned is 0-based (so 2 stars would return a value of 1, for example)
-    if (character == -1)
-    {
-        character = CharacterID(region)
-    }
-    
-    return byte(0x01f9d8a4 + character)
-}
-
-function CurrentHP(region)
-{
-    // Returns the player's current HP
-    base = dword(0x432B74)
-    
-    return ResolvePointer(base, [0xC8], float)
-}
-
-function EpisodeSelectScreenState(region)
-{
-    // Returns an int representing the state of the episode select screen. Note this value persists when the screen is exited.
-    
-    // 0= Init/elements animating in
-    // 1= Elements done animating; idle
-    // 2= Level selected; should also be the value which persists into episodes
-    // 3= Exiting to Main Menu
-    
-    return dword(0x432A88)
-}
-
-function ResultScreenState(region)
-{
-    // Returns an int representing the state of the episode results screen. Note this value persists when the screen is exited.
-    
-    // 0x0= Screen never entered.
-    // 0x1= Animations finished. Waiting for X button to be pressed.
-    // 0x2= X button pressed; results screen fading out. Persists after leaving screen.
-    // 0x5= Items are animating into frame
-    return dword(0x432ABC)
-}
-
-function GameScoreScreenState(region)
-{
-    // Returns an int representing the state of the game score screen (i.e. after campaign end).
-    // Note this value persists after leaving the menu.
-    
-    // 0= Init
-    // 1= Survivors Screen idle
-    // 2= Game Score being tallied
-    // 3= Save game prompt
-    // 4= Transition to Game Score Screen
-    // 5= Game Score Screen coming into view
-    // 6= Game Score screen tally finished; cross button prompt sliding into view (transitions from 2 IF next points goal not met; else from 8)
-    // 7= Score finished being tallied; wait a sec (transitions from 2 IF points goal met)
-    // 8= Flash after score tally (from 7)
-    
-    return dword(0x432A48)
-}
-
-function GameScoreScreenRank(region)
-{
-    // Returns an int representing the rank in the game score screen
-    
-    // 0=S
-    // 1=A
-    // 2=B
-    // 3=C
-    // 4=D
-    // 5=E
-    
-    return dword(0x432A5C)
-}
-
-function NumTimesPointsGoalMet(region)
-{
-    // Returns the number of times the points game in the GAME SCORE menu has been met
-    // (the goal increments by 500 each time)
-
-    // 1= Hard Mode unlocked
-    // 2= Character Color Type A unlocked
-    // 3= Character Color Type B unlocked
-    // 4= Ultimate Weapon Masamune appears in game
-    // 5= Fire-extinguisher gun with unlimited ammo appears in game
-    
-    return dword(0x1F9D8B8)
-}
-
-function GetVictimStatus(region, victim)
-{
-    // Returns the status of a victim, given their ID
-    
-    // 0= Unknown?
-    // 1= Not Rescued
-    // 2= Rescued
-    // 3= Dead
-
-    return byte(0x01F9D864 + victim)
-}
-
+// Victim Status
 UNKNOWN = 0
 NOT_RESCUED = 1 // Turns to DEAD when going to results screen, if they were a part of that episode
 RESCUED = 2
 DEAD = 3
 
+// Victim ID
 VICTIM_A = 0x0
 VICTIM_B = 0x1
 FIREMAN = 0x2
@@ -286,28 +235,79 @@ VINCENT = 0x12
 PAUL = 0x13
 YUU = 0x14
 
+// MISC. GAME HELPERS
+
+function IsInGame(region)
+{
+    // Checks a pointer which is consistently NULL while not in-game/while in loading screens
+    base = FireCore[region]
+    
+    return !IsNULL(base) &&
+           !IsNULL(ResolvePointer(base, [0xC, 0x2C, 0x40]))
+}
+
+function IsPrologue(region)
+{
+    // Returns if we're in the prologue episode
+    return EpisodeID[region] == 0
+}
+
+function IsFinalEpisode(region)
+{
+    // Returns if this is one of the finale episodes (and as such does not have the building burn-down timer)
+    return any_of([8, 9], episode => EpisodeID[region] == episode)
+}
+
+function IsNormalEpisode(region)
+{
+    // Returns if this is an episode with the building burn-down timer
+    return !IsPrologue(region) && !IsFinalEpisode(region)
+}
+
+function HalfHoursToMidnight(region)
+{
+    // Returns how many half-hours until the building burns down, for RP purposes
+    return InGameCountdownMinutes[region] / 30
+}
+
+function GetVictimStatus(region, victim)
+{
+    // Returns the status of a victim, given their ID
+    return byte(VictimStatus[region] + victim)
+}
+
 function GetEpisodeStatus(region, episode)
 {
     // Returns the status of an episode on the episode select screen
-    
-    // 0= Open
-    // 1= Cleared
-    // 2= Failed
-    // 0xFF= Unknown
-    
-    return byte(0x1F9D858 + episode)
+    return byte(EpisodeStatus[region] + episode)
 }
 
-EPISODE_OPEN = 0
-EPISODE_CLEARED = 1
-EPISODE_FAILED = 2
-EPISODE_UNKNOWN = 0xFF
+function GetEnergyLevel(region, character=-1)
+{
+    // Returns a character's Energy level (refer to status screen)
+    // Value returned is 0-based (so 2 stars would return a value of 1, for example)
+    return byte(EnergyLevels[region] + if_else(character == -1, CharacterID[region], character))
+}
+
+function GetAttackLevel(region, character=-1)
+{
+    // Returns a character's Attack level (refer to status screen)
+    // Value returned is 0-based (so 2 stars would return a value of 1, for example)
+    return byte(AttackLevels[region] + if_else(character == -1, CharacterID[region], character))
+}
+
+function GetSpeedLevel(region, character=-1)
+{
+    // Returns a character's Speed level (refer to status screen)
+    // Value returned is 0-based (so 2 stars would return a value of 1, for example)
+    return byte(SpeedLevels[region] + if_else(character == -1, CharacterID[region], character))
+}
 
 // RICH PRESENCE START
 
 TitleLookup = {
     EU: "Fire Heroes",
-    JP: "Hard Luck",
+    JP: "Hard Luck: Return of the Heroes",
 }
 
 PrologueLookup = {
@@ -533,37 +533,37 @@ for region in Regions
         IsRegion(region) && IsInGame(region) && IsPrologue(region),
         "{0} | {1} is in {2} | {3} | {4} difficulty | {5}/{6} HP | 🕡 Evaluating the disaster...",
         rich_presence_lookup("TITLE", region, TitleLookup),
-        rich_presence_lookup("CHARACTER", CharacterID(region), CharacterLookup),
-        rich_presence_lookup("AREA", AreaID(region), AreaLookup),
-        rich_presence_lookup("PROLOGUE", CampaignID(region), PrologueLookup),
-        rich_presence_lookup("DIFFICULTY", Difficulty(region), DifficultyLookup),
-        rich_presence_value("CURRENT_HP", CurrentHP(region)),
-        rich_presence_value("MAX_HP", 100 + (EnergyLevel(region) * 25))
+        rich_presence_lookup("CHARACTER", CharacterID[region], CharacterLookup),
+        rich_presence_lookup("AREA", AreaID[region], AreaLookup),
+        rich_presence_lookup("PROLOGUE", CampaignID[region], PrologueLookup),
+        rich_presence_lookup("DIFFICULTY", Difficulty[region], DifficultyLookup),
+        rich_presence_value("CURRENT_HP", CurrentHP[region]),
+        rich_presence_value("MAX_HP", 100 + (GetEnergyLevel(region) * 25))
     )
     rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region) && IsNormalEpisode(region),
         "{0} | {1} is in {2} | {3} | {4} difficulty | {5}/{6} HP | {7} {8}m until the building burns down!",
         rich_presence_lookup("TITLE", region, TitleLookup),
-        rich_presence_lookup("CHARACTER", CharacterID(region), CharacterLookup),
-        rich_presence_lookup("AREA", AreaID(region), AreaLookup),
-        rich_presence_lookup("EPISODE", EpisodeID(region), EpisodeLookup),
-        rich_presence_lookup("DIFFICULTY", Difficulty(region), DifficultyLookup),
-        rich_presence_value("CURRENT_HP", CurrentHP(region)),
-        rich_presence_value("MAX_HP", 100 + (EnergyLevel(region) * 25)),
+        rich_presence_lookup("CHARACTER", CharacterID[region], CharacterLookup),
+        rich_presence_lookup("AREA", AreaID[region], AreaLookup),
+        rich_presence_lookup("EPISODE", EpisodeID[region], EpisodeLookup),
+        rich_presence_lookup("DIFFICULTY", Difficulty[region], DifficultyLookup),
+        rich_presence_value("CURRENT_HP", CurrentHP[region]),
+        rich_presence_value("MAX_HP", 100 + (GetEnergyLevel(region) * 25)),
         // Easy Mode gives you a 7 hour limit, so we'll just have a default string here for 7 PM if the time extends past 5 hours
         rich_presence_lookup("HALFHOURS", HalfHoursToMidnight(region), HalfHoursLookup, "🕖"),
-        rich_presence_value("COUNTDOWN", InGameCountdownMinutes(region), format="MINUTES")
+        rich_presence_value("COUNTDOWN", InGameCountdownMinutes[region], format="MINUTES")
     )
     rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region) && IsFinalEpisode(region),
         "{0} | {1} is in {2} | {3} | {4} difficulty | {5}/{6} HP | 🕛 The building is coming down at any moment!",
         rich_presence_lookup("TITLE", region, TitleLookup),
-        rich_presence_lookup("CHARACTER", CharacterID(region), CharacterLookup),
-        rich_presence_lookup("AREA", AreaID(region), AreaLookup),
-        rich_presence_lookup("EPISODE", EpisodeID(region), EpisodeLookup),
-        rich_presence_lookup("DIFFICULTY", Difficulty(region), DifficultyLookup),
-        rich_presence_value("CURRENT_HP", CurrentHP(region)),
-        rich_presence_value("MAX_HP", 100 + (EnergyLevel(region) * 25))
+        rich_presence_lookup("CHARACTER", CharacterID[region], CharacterLookup),
+        rich_presence_lookup("AREA", AreaID[region], AreaLookup),
+        rich_presence_lookup("EPISODE", EpisodeID[region], EpisodeLookup),
+        rich_presence_lookup("DIFFICULTY", Difficulty[region], DifficultyLookup),
+        rich_presence_value("CURRENT_HP", CurrentHP[region]),
+        rich_presence_value("MAX_HP", 100 + (GetEnergyLevel(region) * 25))
     )
     rich_presence_display(
         "{0} | In a menu or loading screen",
@@ -720,18 +720,18 @@ function EpisodeTrigger(region, character, episode)
            // Correct region
     return IsRegion(region) &&
            // Correct campaign
-           CampaignID(region) == character &&
+           CampaignID[region] == character &&
            // Correct episode
-           EpisodeID(region) == episode &&
+           EpisodeID[region] == episode &&
            // Listen for an episode result screen transition
-           prev(ResultScreenState(region)) == 5 &&
-           ResultScreenState(region) == 1
+           prev(EpisodeResultScreenState[region]) == 5 &&
+           EpisodeResultScreenState[region] == 1
 }
 
 function EndingTrigger(region, character=-1, episode=-1)
 {
-    character_check = if_else(character != -1, CampaignID(region) == character, always_true())
-    episode_check = if_else(episode != -1, EpisodeID(region) == episode, always_true())
+    character_check = if_else(character != -1, CampaignID[region] == character, always_true())
+    episode_check = if_else(episode != -1, EpisodeID[region] == episode, always_true())
 
            // Correct region
     return IsRegion(region) &&
@@ -740,8 +740,8 @@ function EndingTrigger(region, character=-1, episode=-1)
            // Correct episode
            episode_check &&
            // Ending screen state (we've started tallying game score)
-           prev(GameScoreScreenState(region)) != 2 &&
-           GameScoreScreenState(region) == 2
+           prev(GameResultScreenState[region]) != 2 &&
+           GameResultScreenState[region] == 2
 }
 
 function EndingScoreDoneTrigger(region)
@@ -749,8 +749,8 @@ function EndingScoreDoneTrigger(region)
            // Correct region
     return IsRegion(region) &&
            // Ending screen state (we've finished tallying game score)
-           prev(GameScoreScreenState(region)) == 2 &&
-           GameScoreScreenState(region) != 2
+           prev(GameResultScreenState[region]) == 2 &&
+           GameResultScreenState[region] != 2
 }
 
 function Episode8Trigger(region, character)
@@ -767,7 +767,7 @@ function Episode8Trigger(region, character)
             // Correct region
             IsRegion(region) &&
             // We're on episode 8
-            EpisodeID(region) == 8 &&
+            EpisodeID[region] == 8 &&
             // The event timer expired (you didn't reach the heli :()
             !IsNULL(event_time_ptr) &&
             // bruh they zero event_time out right *BEFORE* deallocating the pointer! Why???
@@ -776,7 +776,7 @@ function Episode8Trigger(region, character)
                   // Correct region
             until=IsRegion(region) &&
                   // We're so back (on episode 8!)
-                  EpisodeID(region) == 8 &&
+                  EpisodeID[region] == 8 &&
                   // You're giving us more time? How gracious, game
                   !IsNULL(event_time_ptr) &&
                   event_time > 0.0
@@ -793,14 +793,14 @@ function Episode8Trigger(region, character)
         // stuck at 2 when in-game, so this may end up being too voliatile and we
         // may have to do some hit check where the player was in game and now they
         // got to the episode select without being in the title screen or something
-        prev(EpisodeSelectScreenState(region)) == 2 &&
-        EpisodeSelectScreenState(region) == 0 &&
+        prev(EpisodeSelectScreenState[region]) == 2 &&
+        EpisodeSelectScreenState[region] == 0 &&
         // Episode 8 should be cleared
         GetEpisodeStatus(region, 8) == EPISODE_CLEARED &&
         // Check that Episode 9 is also open as a sanity check
         GetEpisodeStatus(region, 9) == EPISODE_OPEN &&
         // Lastly, check for character match
-        CampaignID(region) == character
+        CampaignID[region] == character
     )
 
            // Correct region
@@ -1065,7 +1065,7 @@ achievement(
         // Correct region
         IsRegion(region) &&
         // Correct difficulty
-        Difficulty(region) == HARD &&
+        Difficulty[region] == HARD &&
         // Game Score Tally done
         EndingScoreDoneTrigger(region)
     ))
@@ -1087,9 +1087,9 @@ achievement(
         // Correct region
         IsRegion(region) &&
         // Correct difficulty
-        Difficulty(region) == HARD &&
+        Difficulty[region] == HARD &&
         // Correct rank &&
-        GameScoreScreenRank(region) == 0 &&
+        GameResultScreenRank[region] == 0 &&
         // Game Score Tally done
         EndingScoreDoneTrigger(region)
     ))
@@ -1147,10 +1147,10 @@ for i in TotalPointsTitles
             // Correct Region
             IsRegion(region) &&
             // Make sure we're in the right state for save protection
-            GameScoreScreenState(region) == 7 &&
+            GameResultScreenState[region] == 7 &&
             // Hit them point goals
-            prev(NumTimesPointsGoalMet(region)) == i - 1 &&
-            NumTimesPointsGoalMet(region) == i
+            prev(NumTimesPointsGoalMet[region]) == i - 1 &&
+            NumTimesPointsGoalMet[region] == i
         ))
     )
 }
