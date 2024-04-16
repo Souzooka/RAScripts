@@ -95,11 +95,6 @@ VictimStatus = {
     EU: 0x1F9D864,
     JP: 0x1F99864,
 }
-// How many minutes until the building burns down
-InGameCountdownMinutes = {
-    EU: (ResolvePointer(FireCore[EU], [0xC, 0x108, 0xC4], float) / 60),
-    JP: (ResolvePointer(FireCore[JP], [0xC, 0x108, 0xC4], float) / 60),
-}
 // HP Guage
 SysGuage = {
     EU: dword(0x432B74),
@@ -264,10 +259,20 @@ function IsNormalEpisode(region)
     return !IsPrologue(region) && !IsFinalEpisode(region)
 }
 
+function InGameCountdownMinutes(region)
+{
+    // Return how many minutes until the building burns down
+    lookup = {
+        EU: ResolvePointer(FireCore[EU], [0xC, 0x108, 0xC4], float),
+        JP: ResolvePointer(FireCore[JP], [0xC, 0x108, 0xC4], float),
+    }
+    return lookup[region] / 60.0
+}
+
 function HalfHoursToMidnight(region)
 {
     // Returns how many half-hours until the building burns down, for RP purposes
-    return InGameCountdownMinutes[region] / 30
+    return InGameCountdownMinutes(region) / 30
 }
 
 function GetVictimStatus(region, victim)
@@ -552,7 +557,7 @@ for region in Regions
         rich_presence_value("MAX_HP", 100 + (GetEnergyLevel(region) * 25)),
         // Easy Mode gives you a 7 hour limit, so we'll just have a default string here for 7 PM if the time extends past 5 hours
         rich_presence_lookup("HALFHOURS", HalfHoursToMidnight(region), HalfHoursLookup, "🕖"),
-        rich_presence_value("COUNTDOWN", InGameCountdownMinutes[region], format="MINUTES")
+        rich_presence_value("COUNTDOWN", InGameCountdownMinutes(region), format="MINUTES")
     )
     rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region) && IsFinalEpisode(region),
