@@ -159,8 +159,8 @@ EpisodeSelectScreenState = {
 // 7= Score finished being tallied; wait a sec (transitions from 2 IF points goal met)
 // 8= Flash after score tally (from 7)
 GameResultScreenState = {
-    EU: dword(0x432A88),
-    JP: dword(0x42EA88),
+    EU: dword(0x432A48),
+    JP: dword(0x42EA48),
 }
 // Int representing the rank in the game score screen
 // 0=S
