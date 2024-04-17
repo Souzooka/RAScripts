@@ -391,7 +391,7 @@ AreaLookup = {
     0x14: "5F - 6F Emergency Stairs",
     0x15: "5F Shop Hallway",
     0x16: "5F Sports Shop",
-    0x17: "UNKNOWN AREA 0x17", // Loaded in Douglas/Max/Scott Episode 6
+    0x17: "6F Freight Elevator Hallway",
     0x18: "UNKNOWN AREA 0x18", // Loaded in Douglas/Max/Scott Episode 6
     0x19: "6F Monorail Platform",
     0x1A: "6F Station Lobby",
@@ -1157,7 +1157,7 @@ for i in TotalPointsTitles
             // Correct Region
             IsRegion(region) &&
             // Make sure we're in the right state for save protection
-            GameResultScreenState[region] == 7 &&
+            GameResultScreenState[region] >= 6 &&
             // Hit them point goals
             prev(NumTimesPointsGoalMet[region]) == i - 1 &&
             NumTimesPointsGoalMet[region] == i
