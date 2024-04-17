@@ -729,8 +729,9 @@ function EpisodeTrigger(region, character, episode)
            // Correct episode
            EpisodeID[region] == episode &&
            // Listen for an episode result screen transition
-           prev(EpisodeResultScreenState[region]) == 5 &&
-           EpisodeResultScreenState[region] == 1
+           // 1 = everything done, next button prompt in place
+           // 2 = going to save screen (just in case we superhumanly mash through 1 or smth)
+           any_of([1, 2], i => prev(EpisodeResultScreenState[region]) != i && EpisodeResultScreenState[region] == i)
 }
 
 function EndingTrigger(region, character=-1, episode=-1)
