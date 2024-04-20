@@ -46,6 +46,8 @@ Replay = byte(0x277574)
 Menu = word(0x277AD4)
 // Current mission (or free flight location) undertaken
 Mission = dword(0x2774DC)
+// If the current mission was successful
+MissionSuccess = word(0x277D2C)
 // Current game mode
 Mode = dword(0x2774E4)
 // Weather
@@ -104,6 +106,7 @@ FREEFLIGHT_WAHINA_ROMA = 0x12
 
 // Modes
 MODE_IN_GAME = 0x1
+MODE_RESULT = 0x1F
 
 // Weather
 WEATHER_SUNNY = 0x0
@@ -203,7 +206,7 @@ WeatherLookup = {
 // In mission
 rich_presence_conditional_display(
     IsInGame() && !IsFreeFlight(),
-    "{0}{1} | {2} | {3} | {4}m",
+    "{0}{1} | {2} | {3} | 💨 {4}m",
     rich_presence_lookup("MISSION", Mission, MissionLookup),
     rich_presence_lookup("REPLAY", Replay, ReplayLookup),
     rich_presence_lookup("HELI", Heli, HeliLookup),
@@ -213,7 +216,7 @@ rich_presence_conditional_display(
 // In Free Flight
 rich_presence_conditional_display(
     IsInGame() && IsFreeFlight(),
-    "{0}{1} | {2} | {3} | {4}m",
+    "{0}{1} | {2} | {3} | 💨 {4}m",
     rich_presence_lookup("FREEFLIGHT", Mission, FreeFlightLookup),
     rich_presence_lookup("REPLAY", Replay, ReplayLookup),
     rich_presence_lookup("HELI", Heli, HeliLookup),
@@ -224,3 +227,159 @@ rich_presence_display("In a menu or loading screen")
 
 
 // RICH PRESENCE END
+
+// ACHIEVEMENTS START
+
+// Prologue, Trials, Rescue Missions
+// For lessons I want to check if all are completed -- this is tracked somewhere else in the background but I gotta find it
+function MissionSuccessTrigger(mission)
+{
+    // TODO: Fine-tine the timing of this to pop at a certain point in the result state?
+    
+           // We completed the mission
+    return MissionSuccess == True &&
+           // The current mission matches
+           Mission == mission &&
+           // We're not in a free flight
+           !IsFreeFlight() &&
+           // We entered the result mode
+           prev(Mode) != MODE_RESULT &&
+           Mode == MODE_RESULT
+}
+
+MissionAchievements = {
+    MISSION_PROLOGUE: {
+        "id": 0,
+        "title": "New Aspirations",
+        "points": 1,
+        "name": "the prologue",
+        "objective": "",
+    },
+    MISSION_TRIAL1: {
+        "id": 0,
+        "title": "SIGHTSEEING FLIGHT",
+        "points": 5,
+        "name": "Trial 1: \"Sightseeing Flight\"",
+        "objective": " by earning at least $50",
+    },
+    MISSION_TRIAL2: {
+        "id": 0,
+        "title": "HELI TAXI",
+        "points": 5,
+        "name": "Trial 2: \"Heli Taxi\"",
+        "objective": " by delivering at least 4 passengers",
+    },
+    MISSION_TRIAL3: {
+        "id": 0,
+        "title": "MIDAIR RECORDING",
+        "points": 5,
+        "name": "Trial 3: \"Midair Recording\"",
+        "objective": " by obtaining a recording quality of at least 35%",
+    },
+    MISSION_TRIAL4: {
+        "id": 0,
+        "title": "TRANSPORT",
+        "points": 5,
+        "name": "Trial 4: \"Transport\"",
+        "objective": " by hitting at least 8 targets with your cargo",
+    },
+    MISSION_TRIAL5: {
+        "id": 0,
+        "title": "HIT THE TARGET",
+        "points": 5,
+        "name": "Trial 5: \"Hit the Target\"",
+        "objective": " by earning at least 20 points",
+    },
+    MISSION_TRIAL6: {
+        "id": 0,
+        "title": "BALLOON POPPING",
+        "points": 5,
+        "name": "Trial 1: \"Balloon Popping\"",
+        "objective": " by popping at least 35 balloons",
+    },
+    MISSION_RM1: {
+        "id": 0,
+        "title": "RM HARIMA MOUNTAIN",
+        "points": 5,
+        "name": "Rescue Mission 1: \"Harima Mountain\"",
+        "objective": "",
+    },
+    MISSION_RM2: {
+        "id": 0,
+        "title": "RM TONBU BEACH",
+        "points": 5,
+        "name": "Rescue Mission 2: \"Tonbu Beach\"",
+        "objective": "",
+    },
+    MISSION_RM3: {
+        "id": 0,
+        "title": "RM AMARAO PLATEAU 1",
+        "points": 5,
+        "name": "Rescue Mission 3: \"Amarao Plateau 1\"",
+        "objective": "",
+    },
+    MISSION_RM4: {
+        "id": 0,
+        "title": "RM MORGANSVILLE",
+        "points": 10,
+        "name": "Rescue Mission 4: \"Morgansville\"",
+        "objective": "",
+    },
+    MISSION_RM5: {
+        "id": 0,
+        "title": "RM SCHWEITZER",
+        "points": 10,
+        "name": "Rescue Mission 5: \"Schweitzer\"",
+        "objective": "",
+    },
+    MISSION_RM6: {
+        "id": 0,
+        "title": "RM NEW CANAL CITY 1",
+        "points": 10,
+        "name": "Rescue Mission 6: \"New Canal City 1\"",
+        "objective": "",
+    },
+    MISSION_RM7: {
+        "id": 0,
+        "title": "RM KONPA KONPA ISLANDS",
+        "points": 5,
+        "name": "Rescue Mission 7: \"Konpa Konpa Islands\"",
+        "objective": "",
+    },
+    MISSION_RM8: {
+        "id": 0,
+        "title": "RM AMARAO PLATEAU 2",
+        "points": 5,
+        "name": "Rescue Mission 8: \"Amarao Plateau 2\"",
+        "objective": "",
+    },
+    MISSION_RM9: {
+        "id": 0,
+        "title": "RM NEW CANAL CITY 2",
+        "points": 10,
+        "name": "Rescue Mission 9: \"New Canal City 2\"",
+        "objective": "",
+    },
+    MISSION_RM10: {
+        "id": 0,
+        "title": "Master Pilot",
+        "points": 10,
+        "name": "Rescue Mission 10: \"Wahina Roma Volcano\"",
+        "objective": "",
+    },
+}
+
+for mission in MissionAchievements
+{
+    params = MissionAchievements[mission]
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=format("Complete {0}{1}.", params["name"], params["objective"]),
+        points=params["points"],
+        trigger=MissionSuccessTrigger(mission),
+        type=if_else(mission == MISSION_RM10, "win_condition", "progression")
+    )
+}
+
+// ACHIEVEMENTS END
