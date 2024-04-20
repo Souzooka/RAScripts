@@ -38,18 +38,32 @@ function ResolvePointer(base, offsets, accessor=dword)
 
 // GAME VARIABLES
 
+// If Free Flight is active
+FreeFlight = word(0x277D48)
+// If the giga engine is active
+GigaEngine = bit(1, 0x3736BF)
 // Current heli
 Heli = dword(0x2774E0)
-// If a replay is happening
-Replay = byte(0x277574)
+// Array of bitsets indicating which helicopters have completed each rescue mission
+HeliClears = 0x3736C0
 // Current/last menu
 Menu = word(0x277AD4)
 // Current mission (or free flight location) undertaken
 Mission = dword(0x2774DC)
+// 32-bit bitset of cleared missions, indexed by mission ID
+MissionsCleared = dword(0x373590)
 // If the current mission was successful
 MissionSuccess = word(0x277D2C)
+// How many seconds were spent in the mission (set on mission finish)
+MissionTime = dword(0x277D34)
 // Current game mode
 Mode = dword(0x2774E4)
+// If a replay is happening
+Replay = byte(0x277574)
+// Array of star coin bitsets per locale
+StarCoins = 0x3736CA
+// The custom scoring metric for trials
+TrialScore = word(0x277D38)
 // Weather
 Weather = dword(0x277764)
 // Windspeed
@@ -57,6 +71,18 @@ WindPtr = dword(0x002775a8)
 WindSpeed = ResolvePointer(WindPtr, [0x604])
 
 // ENUMERATIONS
+
+// Areas (not used by the game -- we have to translate this into missions like the game does for Star Coins)
+AREA_KOPAN_KOPAN_DAY = 0
+AREA_NEW_CANAL_DAY = 1
+AREA_NEW_CANAL_NIGHT = 2
+AREA_KOPAN_KOPAN_SUNSET = 3
+AREA_HARIMA = 4
+AREA_TONBU = 5
+AREA_AMARAO = 6
+AREA_MORGANSVILLE = 7
+AREA_SCHWEITZER = 8
+AREA_WAHINA_ROMA = 9
 
 // Helis
 HELI_300CB = 0
@@ -83,6 +109,7 @@ MISSION_TRIAL3 = 0x8
 MISSION_TRIAL4 = 0x9
 MISSION_TRIAL5 = 0xA
 MISSION_TRIAL6 = 0xB
+MISSION_TRIAL7 = 0xC
 MISSION_RM1 = 0xD
 MISSION_RM2 = 0xF
 MISSION_RM3 = 0x15
@@ -132,11 +159,6 @@ function IsInGame()
     return Mode == MODE_IN_GAME && WindPtr != NULL
 }
 
-function IsFreeFlight()
-{
-    return Menu == MENU_FREEFLIGHT
-}
-
 // RICH PRESENCE START
 
 HeliLookup = {
@@ -153,7 +175,7 @@ FreeFlightLookup = {
     FREEFLIGHT_KOPAN_KOPAN: "Free-flying near the Konpa Konpa Islands",
     FREEFLIGHT_NEW_CANAL_DAY: "Free-flying in New Canal City during the day",
     FREEFLIGHT_NEW_CANAL_NIGHT: "Free-flying in New Canal City during the night",
-    FREEFLIGHT_HARIMA: "Free-flying near Harima Mountain",
+    FREEFLIGHT_HARIMA: "Free-flying around the Harima Mountains",
     FREEFLIGHT_AMARAO: "Free-flying near the Amarao Plateau",
     FREEFLIGHT_TONBU: "Free-flying at Tonbu Beach",
     FREEFLIGHT_SCHWEITZER: "Free-flying near Schweitzer Village",
@@ -175,7 +197,7 @@ MissionLookup = {
     MISSION_TRIAL4: "Transporting a ball through some rings on the Konpa Konpa Islands",
     MISSION_TRIAL5: "Hitting some targets with paintballs on the Konpa Konpa Islands",
     MISSION_TRIAL6: "Popping some balloons on Konpa Konpa Island",
-    MISSION_RM1: "Searching for survivors of a small plane crash on Harima Mountain",
+    MISSION_RM1: "Searching for survivors of a small plane crash in the Harima Mountains",
     MISSION_RM2: "Putting out fires and airlifting survivors from a hotel on Tonbu Beach",
     MISSION_RM3: "Searching for passengers who parachuted out of a shot-down plane in the Amarao Plateau",
     MISSION_RM4: "Airlifting civilians away from the path of a tornado in Morgansville",
@@ -205,7 +227,7 @@ WeatherLookup = {
 
 // In mission
 rich_presence_conditional_display(
-    IsInGame() && !IsFreeFlight(),
+    IsInGame() && FreeFlight == False,
     "{0}{1} | {2} | {3} | 💨 {4}m",
     rich_presence_lookup("MISSION", Mission, MissionLookup),
     rich_presence_lookup("REPLAY", Replay, ReplayLookup),
@@ -215,7 +237,7 @@ rich_presence_conditional_display(
 )
 // In Free Flight
 rich_presence_conditional_display(
-    IsInGame() && IsFreeFlight(),
+    IsInGame() && FreeFlight == False,
     "{0}{1} | {2} | {3} | 💨 {4}m",
     rich_presence_lookup("FREEFLIGHT", Mission, FreeFlightLookup),
     rich_presence_lookup("REPLAY", Replay, ReplayLookup),
@@ -240,8 +262,8 @@ function MissionSuccessTrigger(mission)
     return MissionSuccess == True &&
            // The current mission matches
            Mission == mission &&
-           // We're not in a free flight
-           !IsFreeFlight() &&
+           // We're not in a free flight (this seems unnecessary)
+           //FreeFlight == False &&
            // We entered the result mode
            prev(Mode) != MODE_RESULT &&
            Mode == MODE_RESULT
@@ -274,7 +296,7 @@ MissionAchievements = {
         "title": "MIDAIR RECORDING",
         "points": 5,
         "name": "Trial 3: \"Midair Recording\"",
-        "objective": " by obtaining a recording quality of at least 35%",
+        "objective": " by obtaining a footage quality of at least 35%",
     },
     MISSION_TRIAL4: {
         "id": 0,
@@ -299,9 +321,9 @@ MissionAchievements = {
     },
     MISSION_RM1: {
         "id": 0,
-        "title": "RM HARIMA MOUNTAIN",
+        "title": "RM HARIMA MOUNTAINS",
         "points": 5,
-        "name": "Rescue Mission 1: \"Harima Mountain\"",
+        "name": "Rescue Mission 1: \"Harima Mountains\"",
         "objective": "",
     },
     MISSION_RM2: {
@@ -334,7 +356,7 @@ MissionAchievements = {
     },
     MISSION_RM6: {
         "id": 0,
-        "title": "RM NEW CANAL CITY 1",
+        "title": "Like Speed, but with a Helicopter",
         "points": 10,
         "name": "Rescue Mission 6: \"New Canal City 1\"",
         "objective": "",
@@ -363,7 +385,7 @@ MissionAchievements = {
     MISSION_RM10: {
         "id": 0,
         "title": "Master Pilot",
-        "points": 10,
+        "points": 25,
         "name": "Rescue Mission 10: \"Wahina Roma Volcano\"",
         "objective": "",
     },
@@ -382,4 +404,314 @@ for mission in MissionAchievements
     )
 }
 
+// Lessons
+
+function AllLessonsTrigger()
+{
+           // In results screen
+    return Mode == MODE_RESULT &&
+           // The first 6 bits of the missions cleared bitset have been set (indicating we completed all six lessons)
+           prev(MissionsCleared) & 0x3F != 0x3F &&
+           MissionsCleared & 0x3F == 0x3F
+}
+
+achievement(
+    id=0,
+    title="Certified Pilot",
+    description="Complete all of the lessons in the Alpha Aviation School.",
+    points=10,
+    trigger=AllLessonsTrigger(),
+    type="progression"
+)
+
+// Trials (Challenge)
+
+function ChallengeMissionTrigger(mission, target)
+{
+           // We completed the mission
+    return MissionSuccess == True &&
+           // The current mission matches
+           Mission == mission &&
+           // We earned a high enough score to meet the target
+           TrialScore >= target &&
+           // We entered the result mode
+           prev(Mode) != MODE_RESULT &&
+           Mode == MODE_RESULT
+}
+
+ChallengeMissionAchievements = {
+    MISSION_TRIAL1: {
+        "id": 0,
+        "title": "SIGHTSEEING FLIGHT EX",
+        "points": 10,
+        "target": 80,
+        "description": "Complete Trial 1: \"Sightseeing Flight\" and earn at least ${0}.",
+    },
+    MISSION_TRIAL2: {
+        "id": 0,
+        "title": "HELI TAXI EX",
+        "points": 10,
+        "target": 7,
+        "description": "Complete Trial 2: \"Heli Taxi\" and deliver at least {0} passengers.",
+    },
+    MISSION_TRIAL3: {
+        "id": 0,
+        "title": "You're a Psycho!",
+        "points": 10,
+        "target": 95,
+        "description": "Complete Trial 3: \"Midair Recording\" and have a footage quality of at least {0}%. You can obtain better footage by getting very close to the suspect car!",
+    },
+    MISSION_TRIAL4: {
+        "id": 0,
+        "title": "TRANSPORT EX",
+        "points": 10,
+        "target": 20,
+        "description": "Complete Trial 4: \"Transport\" and hit at least {0} targets with your cargo.",
+    },
+    MISSION_TRIAL5: {
+        "id": 0,
+        "title": "HIT THE TARGET EX",
+        "points": 10,
+        "target": 40,
+        "description": "Complete Trial 5: \"Hit the Target\" and earn at least {0} points.",
+    },
+    MISSION_TRIAL6: {
+        "id": 0,
+        "title": "SIGHTSEEING FLIGHT EX",
+        "points": 10,
+        "target": 50,
+        "description": "Complete Trial 6: \"Balloon Popping\" and pop at least {0} balloons.",
+    },
+}
+
+for mission in ChallengeMissionAchievements
+{
+    params = ChallengeMissionAchievements[mission]
+    target = params["target"]
+    description = format(params["description"], target)
+    
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=description,
+        points=params["points"],
+        trigger=ChallengeMissionTrigger(mission, target)
+    )
+}
+
+// Trial 7 baybee
+
+function Trial7Trigger()
+{
+    minutes = 2
+    seconds = 30
+    time = minutes * 60 + seconds
+
+           // yadayada current mission
+    return Mission == MISSION_TRIAL7 &&
+           // mission success
+           MissionSuccess == 1 &&
+           // mission time
+           MissionTime <= time &&
+           // results mode
+           Mode == MODE_RESULT &&
+           prev(Mode) != MODE_RESULT
+}
+
+achievement(
+    id=0,
+    title="TRIATHLON",
+    description="Complete Trial 7: \"Triathlon\" in 2 minutes and 30 seconds or less.",
+    points=10,
+    trigger=Trial7Trigger()
+)
+
+// Now we get into the *really* dumb stuff
+// Star Coins (is it me or is there nowhere in this game to check what coins you've collected in a locale??? What trash)
+
+// It'd be nice to measure a combination of the temporary star coin storage (@ 0x373023) plus the permanent storage (saved in result screen to 0x3736CA)
+// However, RA's toolkit is graceful enough to alleviate us of that burden due to its limitations
+// We should try to have the measurement ALWAYS ACTIVE so players can actually check their coin progress!!!!
+
+function StarCoinsTrigger(area)
+{
+           // Always measure to make up for the UX sins of Garden Ltd.
+    return measured(bitcount(StarCoins + area) == 5) &&
+           prev(bitcount(StarCoins + area)) != 5 &&
+           // Star Coins get set on the result screen, so check that also as save protection
+           Mode == MODE_RESULT
+}
+
+AREA_KOPAN_KOPAN_DAY = 0
+AREA_NEW_CANAL_DAY = 1
+AREA_NEW_CANAL_NIGHT = 2
+AREA_KOPAN_KOPAN_SUNSET = 3
+AREA_HARIMA = 4
+AREA_TONBU = 5
+AREA_AMARAO = 6
+AREA_MORGANSVILLE = 7
+AREA_SCHWEITZER = 8
+AREA_WAHINA_ROMA = 9
+
+StarCoinsAchievements = {
+    AREA_KOPAN_KOPAN_DAY: {
+        "id": 0,
+        "title": "STAR KOPAN KOPAN DAY",
+        "description": "Collect all 5 Star Coins in the Kopan Kopan Islands during the day (Trial 1/4/5/6).",
+        "points": 5,
+    },
+    AREA_NEW_CANAL_DAY: {
+        "id": 0,
+        "title": "STAR NEW CANAL CITY DAY",
+        "description": "Collect all 5 Star Coins in New Canal City during the day (Trial 2, Rescue Mission 6/9).",
+        "points": 5,
+    },
+    AREA_NEW_CANAL_NIGHT: {
+        "id": 0,
+        "title": "STAR NEW CANAL CITY NIGHT",
+        "description": "Collect all 5 Star Coins in New Canal City during the night (Trial 3).",
+        "points": 5,
+    },
+    AREA_KOPAN_KOPAN_SUNSET: {
+        "id": 0,
+        "title": "STAR KOPAN KOPAN SUNSET",
+        "description": "Collect all 5 Star Coins in the Kopan Kopan Islands during the sunset (Trial 7, Rescue Mission 7).",
+        "points": 5,
+    },
+    AREA_HARIMA: {
+        "id": 0,
+        "title": "STAR HARIMA",
+        "description": "Collect all 5 Star Coins around Harima Mountains (Rescue Mission 1).",
+        "points": 5,
+    },
+    AREA_TONBU: {
+        "id": 0,
+        "title": "STAR TONBU",
+        "description": "Collect all 5 Star Coins on Tonbu Beach (Rescue Mission 2).",
+        "points": 5,
+    },
+    AREA_AMARAO: {
+        "id": 0,
+        "title": "STAR AMARAO",
+        "description": "Collect all 5 Star Coins in the Amarao Plateau (Rescue Mission 3/8).",
+        "points": 5,
+    },
+    AREA_MORGANSVILLE: {
+        "id": 0,
+        "title": "STAR MORGANSVILLE",
+        "description": "Collect all 5 Star Coins in Morgansville (Rescue Mission 4).",
+        "points": 5,
+    },
+    AREA_SCHWEITZER: {
+        "id": 0,
+        "title": "STAR SCHWEITZER VILLAGE",
+        "description": "Collect all 5 Star Coins around Schweitzer Village (Rescue Mission 5).",
+        "points": 5,
+    },
+    AREA_WAHINA_ROMA: {
+        "id": 0,
+        "title": "STAR WAHINA ROMA VOLCANO",
+        "description": "Collect all 5 Star Coins around the Wahina Roma Volcano (Rescue Mission 10).",
+        "points": 5,
+    },
+}
+
+for area in StarCoinsAchievements
+{
+    params = StarCoinsAchievements[area]
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=params["description"] + " New progress is evaluated when a mission is concluded.",
+        points=params["points"],
+        trigger=StarCoinsTrigger(area)
+    )
+}
+
+// Complete all rescue missions as every helicopter type (why????)
+// This unlocks the Giga Engine...
+
+function HeliClearTrigger(mission)
+{
+           // Count those heli clears
+    return measured(bitcount(HeliClears + mission) == 5) &&
+           prev(bitcount(HeliClears + mission)) != 5 &&
+           // Save protection
+           Mode == MODE_RESULT
+}
+
+HeliClearAchievements = {
+    MISSION_RM1: {
+        "id": 0,
+        "title": "CH HARIMA MOUNTAINS",
+        "points": 10,
+        "name": "Rescue Mission 1: \"Harima Mountains\"",
+    },
+    MISSION_RM2: {
+        "id": 0,
+        "title": "CH TONBU BEACH",
+        "points": 10,
+        "name": "Rescue Mission 2: \"Tonbu Beach\"",
+    },
+    MISSION_RM3: {
+        "id": 0,
+        "title": "CH AMARAO PLATEAU 1",
+        "points": 10,
+        "name": "Rescue Mission 3: \"Amarao Plateau 1\"",
+    },
+    MISSION_RM4: {
+        "id": 0,
+        "title": "CH MORGANSVILLE",
+        "points": 10,
+        "name": "Rescue Mission 4: \"Morgansville\"",
+    },
+    MISSION_RM5: {
+        "id": 0,
+        "title": "CH SCHWEITZER",
+        "points": 10,
+        "name": "Rescue Mission 5: \"Schweitzer\"",
+    },
+    MISSION_RM6: {
+        "id": 0,
+        "title": "CH NEW CANAL CITY 1",
+        "points": 10,
+        "name": "Rescue Mission 6: \"New Canal City 1\"",
+    },
+    MISSION_RM7: {
+        "id": 0,
+        "title": "CH KONPA KONPA ISLANDS",
+        "points": 10,
+        "name": "Rescue Mission 7: \"Konpa Konpa Islands\"",
+    },
+    MISSION_RM8: {
+        "id": 0,
+        "title": "CH AMARAO PLATEAU 2",
+        "points": 10,
+        "name": "Rescue Mission 8: \"Amarao Plateau 2\"",
+    },
+    MISSION_RM9: {
+        "id": 0,
+        "title": "CH NEW CANAL CITY 2",
+        "points": 25,
+        "name": "Rescue Mission 9: \"New Canal City 2\"",
+    },
+    MISSION_RM10: {
+        "id": 0,
+        "title": "CH WAHIMA ROMA VOLCANO",
+        "points": 25,
+        "name": "Rescue Mission 10: \"Wahina Roma Volcano\"",
+    },
+}
+
+for mission in HeliClearAchievements
+{
+    params = HeliClearAchievements[mission]
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=format("Complete {0} with all 5 available helicopter types.", params["name"]),
+        points=params["points"],
+        trigger=HeliClearTrigger(mission)
+    )
+}
 // ACHIEVEMENTS END
