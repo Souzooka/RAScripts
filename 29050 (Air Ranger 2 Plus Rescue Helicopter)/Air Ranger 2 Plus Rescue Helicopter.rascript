@@ -51,7 +51,9 @@ Menu = word(0x277AD4)
 // Current mission (or free flight location) undertaken
 Mission = dword(0x2774DC)
 // 32-bit bitset of cleared missions, indexed by mission ID
-MissionsCleared = dword(0x373590)
+MissionsCleared = dword(0x37359C)
+// The custom scoring metric for trials
+MissionScore = word(0x277D38)
 // If the current mission was successful
 MissionSuccess = word(0x277D2C)
 // How many seconds were spent in the mission (set on mission finish)
@@ -62,8 +64,6 @@ Mode = dword(0x2774E4)
 Replay = byte(0x277574)
 // Array of star coin bitsets per locale
 StarCoins = 0x3736CA
-// The custom scoring metric for trials
-TrialScore = word(0x277D38)
 // Weather
 Weather = dword(0x277764)
 // Windspeed
@@ -293,10 +293,10 @@ MissionAchievements = {
     },
     MISSION_TRIAL3: {
         "id": 419342,
-        "title": "MIDAIR RECORDING",
+        "title": "MIDAIR REPORT",
         "points": 5,
-        "name": "Trial 3: \"Midair Recording\"",
-        "objective": " by obtaining a footage quality of at least 35%",
+        "name": "Trial 3: \"Midair Report\"",
+        "objective": " by obtaining viewer ratings of at least 35%",
     },
     MISSION_TRIAL4: {
         "id": 419343,
@@ -433,7 +433,7 @@ function ChallengeMissionTrigger(mission, target)
            // The current mission matches
            Mission == mission &&
            // We earned a high enough score to meet the target
-           TrialScore >= target &&
+           MissionScore >= target &&
            // We entered the result mode
            prev(Mode) != MODE_RESULT &&
            Mode == MODE_RESULT
@@ -459,7 +459,7 @@ ChallengeMissionAchievements = {
         "title": "You're a Psycho!",
         "points": 10,
         "target": 95,
-        "description": "Complete Trial 3: \"Midair Recording\" and have a footage quality of at least {0}%. You can obtain better footage by getting very close to the suspect car!",
+        "description": "Complete Trial 3: \"Midair Report\" and have viewer ratings of at least {0}%. You can obtain better footage by getting very close to the suspect car!",
     },
     MISSION_TRIAL4: {
         "id": 419357,
@@ -477,7 +477,7 @@ ChallengeMissionAchievements = {
     },
     MISSION_TRIAL6: {
         "id": 419358,
-        "title": "SIGHTSEEING FLIGHT EX",
+        "title": "BALLOON POPPING EX",
         "points": 10,
         "target": 50,
         "description": "Complete Trial 6: \"Balloon Popping\" and pop at least {0} balloons.",
@@ -634,8 +634,8 @@ for area in StarCoinsAchievements
 function HeliClearTrigger(mission)
 {
            // Count those heli clears
-    return measured(bitcount(HeliClears + mission) == 5) &&
-           prev(bitcount(HeliClears + mission)) != 5 &&
+    return measured(bitcount(HeliClears + (mission - MISSION_RM1)) == 5) &&
+           prev(bitcount(HeliClears + (mission - MISSION_RM1))) != 5 &&
            // Save protection
            Mode == MODE_RESULT
 }
@@ -720,6 +720,144 @@ for mission in HeliClearAchievements
 
 // Trials 1-6 (Score attack)
 
+ScoreLeaderboards = {
+    MISSION_TRIAL1: {
+        "id": 95872,
+        "title": "Sightseeing Flight - Score Attack",
+        "description": "Finish Trial 1: \"Sightseeing Flight\" with the greatest amount of cash earned!",
+    },
+    MISSION_TRIAL2: {
+        "id": 95873,
+        "title": "Heli Taxi - Score Attack",
+        "description": "Finish Trial 2: \"Heli Taxi\" with the greatest amount of passengers delivered!",
+    },
+    MISSION_TRIAL3: {
+        "id": 95874,
+        "title": "Midair Report - Score Attack",
+        "description": "Finish Trial 3: \"Midair Report\" with the best viewer ratings!",
+    },
+    MISSION_TRIAL4: {
+        "id": 95875,
+        "title": "Transport - Score Attack",
+        "description": "Finish Trial 4: \"Transport\" while hitting the most targets with your cargo!",
+    },
+    MISSION_TRIAL5: {
+        "id": 95876,
+        "title": "Hit the Target - Score Attack",
+        "description": "Finish Trial 5: \"Hit the Target\" with the greatest amount of points!",
+    },
+    MISSION_TRIAL6: {
+        "id": 95877,
+        "title": "Balloon Popping - Score Attack",
+        "description": "Finish Trial 6: \"Balloon Popping\" with the greatest amount of balloons popped!",
+    },
+}
+
+TimeLeaderboards = {
+    MISSION_TRIAL7: {
+        "id": 95878,
+        "title": "Triathlon - Time Attack",
+        "name": "Trial 7: \"Triathlon\"",
+    },
+    MISSION_RM1: {
+        "id": 95879,
+        "title": "Harima Mountains - Time Attack",
+        "name": "Rescue Mission 1: \"Harima Mountains\"",
+    },
+    MISSION_RM2: {
+        "id": 95881,
+        "title": "Tonbu Beach - Time Attack",
+        "name": "Rescue Mission 2: \"Tonbu Beach\"",
+    },
+    MISSION_RM3: {
+        "id": 95887,
+        "title": "Amarao Plateau 1 - Time Attack",
+        "name": "Rescue Mission 3: \"Amarao Plateau 1\"",
+    },
+    MISSION_RM4: {
+        "id": 95883,
+        "title": "Morgansville - Time Attack",
+        "name": "Rescue Mission 4: \"Morgansville\"",
+    },
+    MISSION_RM5: {
+        "id": 95882,
+        "title": "Schweitzer - Time Attack",
+        "name": "Rescue Mission 5: \"Schweitzer\"",
+    },
+    MISSION_RM6: {
+        "id": 95885,
+        "title": "New Canal City 1 - Time Attack",
+        "name": "Rescue Mission 6: \"New Canal City 1\"",
+    },
+    MISSION_RM7: {
+        "id": 95886,
+        "title": "Konpa Konpa Islands - Time Attack",
+        "name": "Rescue Mission 7: \"Konpa Konpa Islands\"",
+    },
+    MISSION_RM8: {
+        "id": 95880,
+        "title": "Amarao Plateau 2 - Time Attack",
+        "name": "Rescue Mission 8: \"Amarao Plateau 2\"",
+    },
+    MISSION_RM9: {
+        "id": 95888,
+        "title": "New Canal City 2 - Time Attack",
+        "name": "Rescue Mission 9: \"New Canal City 2\"",
+    },
+    MISSION_RM10: {
+        "id": 95884,
+        "title": "Wahina Roma Volcano - Time Attack",
+        "name": "Rescue Mission 10: \"Wahina Roma Volcano\"",
+    },
+}
+
+for mission in ScoreLeaderboards
+{
+    params = ScoreLeaderboards[mission]
+
+    leaderboard(
+        id=params["id"],
+        title=params["title"],
+        description=params["description"] + " Use of the giga engine is disallowed.",
+              // Correct mission
+        start=Mission == mission &&
+              // Mission success
+              MissionSuccess == True &&
+              // Giga Engine is banned
+              GigaEngine == False &&
+              // Transition to mission result
+              Mode == MODE_RESULT &&
+              prev(Mode) != MODE_RESULT,
+        cancel=always_false(),
+        submit=always_true(),
+        value=MissionScore
+    )
+}
+
+for mission in TimeLeaderboards
+{
+    params = TimeLeaderboards[mission]
+    
+    leaderboard(
+        id=params["id"],
+        title=params["title"],
+        description=format("Finish {0} as quickly as possible! Use of the giga engine is disallowed.", params["name"]),
+              // Correct mission
+        start=Mission == mission &&
+              // Mission success
+              MissionSuccess == True &&
+              // Giga Engine is banned
+              GigaEngine == False &&
+              // Transition to mission result
+              Mode == MODE_RESULT &&
+              prev(Mode) != MODE_RESULT,
+        cancel=always_false(),
+        submit=always_true(),
+        value=MissionTime,
+        format="SECS",
+        lower_is_better=true
+    )
+}
 
 // LEADERBOARDS END
 
