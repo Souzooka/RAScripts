@@ -16,7 +16,8 @@ function if_else(cond, v1, v2)
     return v2
 }
 
-function ResolvePointer(base, offsets, accessor=dword)
+addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
+function ptr(base, offsets, accessor=dword)
 {
     val = base
     
@@ -41,7 +42,7 @@ function ResolvePointer(base, offsets, accessor=dword)
 // If Free Flight is active
 FreeFlight = word(0x277D48)
 // If the giga engine is active
-GigaEngine = bit(1, 0x3736BF)
+GigaEngine = bit1(0x3736BF)
 // Current heli
 Heli = dword(0x2774E0)
 // Array of bitsets indicating which helicopters have completed each rescue mission
@@ -52,12 +53,14 @@ Menu = word(0x277AD4)
 Mission = dword(0x2774DC)
 // 32-bit bitset of cleared missions, indexed by mission ID
 MissionsCleared = dword(0x37359C)
-// The custom scoring metric for trials
-MissionScore = word(0x277D38)
+// How much PP was earned in a mission (before bonuses)
+MissionScore = dword(0x277D30)
 // If the current mission was successful
 MissionSuccess = word(0x277D2C)
 // How many seconds were spent in the mission (set on mission finish)
 MissionTime = dword(0x277D34)
+// The custom scoring metric for trials
+MissionTrialScore = word(0x277D38)
 // Current game mode
 Mode = dword(0x2774E4)
 // If a replay is happening
@@ -68,7 +71,7 @@ StarCoins = 0x3736CA
 Weather = dword(0x277764)
 // Windspeed
 WindPtr = dword(0x002775a8)
-WindSpeed = ResolvePointer(WindPtr, [0x604])
+WindSpeed = ptr(WindPtr, [0x604])
 
 // ENUMERATIONS
 
@@ -78,10 +81,10 @@ AREA_NEW_CANAL_DAY = 1
 AREA_NEW_CANAL_NIGHT = 2
 AREA_KOPAN_KOPAN_SUNSET = 3
 AREA_HARIMA = 4
-AREA_TONBU = 5
-AREA_AMARAO = 6
-AREA_MORGANSVILLE = 7
-AREA_SCHWEITZER = 8
+AREA_AMARAO = 5
+AREA_TONBU = 6
+AREA_SCHWEITZER = 7
+AREA_MORGANSVILLE = 8
 AREA_WAHINA_ROMA = 9
 
 // Helis
@@ -433,7 +436,7 @@ function ChallengeMissionTrigger(mission, target)
            // The current mission matches
            Mission == mission &&
            // We earned a high enough score to meet the target
-           MissionScore >= target &&
+           MissionTrialScore >= target &&
            // We entered the result mode
            prev(Mode) != MODE_RESULT &&
            Mode == MODE_RESULT
@@ -541,17 +544,6 @@ function StarCoinsTrigger(area)
            // Star Coins get set on the result screen, so check that also as save protection
            Mode == MODE_RESULT
 }
-
-AREA_KOPAN_KOPAN_DAY = 0
-AREA_NEW_CANAL_DAY = 1
-AREA_NEW_CANAL_NIGHT = 2
-AREA_KOPAN_KOPAN_SUNSET = 3
-AREA_HARIMA = 4
-AREA_TONBU = 5
-AREA_AMARAO = 6
-AREA_MORGANSVILLE = 7
-AREA_SCHWEITZER = 8
-AREA_WAHINA_ROMA = 9
 
 StarCoinsAchievements = {
     AREA_KOPAN_KOPAN_DAY: {
@@ -734,7 +726,7 @@ ScoreLeaderboards = {
     MISSION_TRIAL3: {
         "id": 95874,
         "title": "Midair Report - Score Attack",
-        "description": "Finish Trial 3: \"Midair Report\" with the best viewer ratings!",
+        "description": "Finish Trial 3: \"Midair Report\" and earn the most PP!",
     },
     MISSION_TRIAL4: {
         "id": 95875,
@@ -830,7 +822,9 @@ for mission in ScoreLeaderboards
               prev(Mode) != MODE_RESULT,
         cancel=always_false(),
         submit=always_true(),
-        value=MissionScore
+        // Use total PP for Trial 3 (Midair Recording) because it's not too hard to
+        // max out the viewer ratings, and the PP can vary by how much you stick to the car
+        value=if_else(mission == MISSION_TRIAL3, MissionScore, MissionTrialScore)
     )
 }
 
