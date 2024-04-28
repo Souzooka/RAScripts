@@ -282,105 +282,105 @@ MissionAchievements = {
     },
     MISSION_TRIAL1: {
         "id": 419340,
-        "title": "SIGHTSEEING FLIGHT",
+        "title": "I Can Show You the World",
         "points": 5,
         "name": "Trial 1: \"Sightseeing Flight\"",
         "objective": " by earning at least $50",
     },
     MISSION_TRIAL2: {
         "id": 419341,
-        "title": "HELI TAXI",
+        "title": "Lyft Me Up",
         "points": 5,
         "name": "Trial 2: \"Heli Taxi\"",
         "objective": " by delivering at least 4 passengers",
     },
     MISSION_TRIAL3: {
         "id": 419342,
-        "title": "MIDAIR REPORT",
+        "title": "We'll Do it Live",
         "points": 5,
         "name": "Trial 3: \"Midair Report\"",
         "objective": " by obtaining viewer ratings of at least 35%",
     },
     MISSION_TRIAL4: {
         "id": 419343,
-        "title": "TRANSPORT",
+        "title": "Came In Like a Wrecking Ball",
         "points": 5,
         "name": "Trial 4: \"Transport\"",
         "objective": " by hitting at least 8 targets with your cargo",
     },
     MISSION_TRIAL5: {
         "id": 419344,
-        "title": "HIT THE TARGET",
+        "title": "Painting a Target",
         "points": 5,
         "name": "Trial 5: \"Hit the Target\"",
         "objective": " by earning at least 20 points",
     },
     MISSION_TRIAL6: {
         "id": 419345,
-        "title": "BALLOON POPPING",
+        "title": "Balloons Bubble Up Like Soda Pop",
         "points": 5,
         "name": "Trial 6: \"Balloon Popping\"",
         "objective": " by popping at least 35 balloons",
     },
     MISSION_RM1: {
         "id": 419355,
-        "title": "RM HARIMA MOUNTAINS",
+        "title": "Ain't No Mountain High Enough",
         "points": 5,
         "name": "Rescue Mission 1: \"Harima Mountains\"",
         "objective": "",
     },
     MISSION_RM2: {
         "id": 419347,
-        "title": "RM TONBU BEACH",
+        "title": "Not the Vacation Hotspot I Expected",
         "points": 5,
         "name": "Rescue Mission 2: \"Tonbu Beach\"",
         "objective": "",
     },
     MISSION_RM3: {
         "id": 419353,
-        "title": "RM AMARAO PLATEAU 1",
+        "title": "Crouching Parachuter, Hidden Helicopter",
         "points": 5,
         "name": "Rescue Mission 3: \"Amarao Plateau 1\"",
         "objective": "",
     },
     MISSION_RM4: {
         "id": 419349,
-        "title": "RM MORGANSVILLE",
+        "title": "That Was a Breeze",
         "points": 10,
         "name": "Rescue Mission 4: \"Morgansville\"",
         "objective": "",
     },
     MISSION_RM5: {
         "id": 419348,
-        "title": "RM SCHWEITZER",
+        "title": "Water the Odds of Success?",
         "points": 10,
         "name": "Rescue Mission 5: \"Schweitzer\"",
         "objective": "",
     },
     MISSION_RM6: {
         "id": 419351,
-        "title": "Like Speed, but with a Helicopter",
+        "title": "Like Speed, But With a Helicopter",
         "points": 10,
         "name": "Rescue Mission 6: \"New Canal City 1\"",
         "objective": "",
     },
     MISSION_RM7: {
         "id": 419352,
-        "title": "RM KONPA KONPA ISLANDS",
+        "title": "This Vacation Fell Off",
         "points": 5,
         "name": "Rescue Mission 7: \"Konpa Konpa Islands\"",
         "objective": "",
     },
     MISSION_RM8: {
         "id": 419346,
-        "title": "RM AMARAO PLATEAU 2",
+        "title": "Hero of the Commons",
         "points": 5,
         "name": "Rescue Mission 8: \"Amarao Plateau 2\"",
         "objective": "",
     },
     MISSION_RM9: {
         "id": 419369,
-        "title": "RM NEW CANAL CITY 2",
+        "title": "Sky Herder",
         "points": 10,
         "name": "Rescue Mission 9: \"New Canal City 2\"",
         "objective": "",
@@ -445,42 +445,42 @@ function ChallengeMissionTrigger(mission, target)
 ChallengeMissionAchievements = {
     MISSION_TRIAL1: {
         "id": 419371,
-        "title": "SIGHTSEEING FLIGHT EX",
+        "title": "Expert Tour Guide",
         "points": 10,
         "target": 80,
         "description": "Complete Trial 1: \"Sightseeing Flight\" and earn at least ${0}.",
     },
     MISSION_TRIAL2: {
         "id": 419356,
-        "title": "HELI TAXI EX",
+        "title": "Expert Cabby",
         "points": 10,
         "target": 7,
         "description": "Complete Trial 2: \"Heli Taxi\" and deliver at least {0} passengers.",
     },
     MISSION_TRIAL3: {
         "id": 419372,
-        "title": "You're a Psycho!",
+        "title": "Expert Reporter",
         "points": 10,
         "target": 95,
         "description": "Complete Trial 3: \"Midair Report\" and have viewer ratings of at least {0}%. You can obtain better footage by getting very close to the suspect car!",
     },
     MISSION_TRIAL4: {
         "id": 419357,
-        "title": "TRANSPORT EX",
+        "title": "Expert Transporter",
         "points": 10,
         "target": 20,
         "description": "Complete Trial 4: \"Transport\" and hit at least {0} targets with your cargo.",
     },
     MISSION_TRIAL5: {
         "id": 419373,
-        "title": "HIT THE TARGET EX",
+        "title": "Expert Marksman",
         "points": 10,
         "target": 40,
         "description": "Complete Trial 5: \"Hit the Target\" and earn at least {0} points.",
     },
     MISSION_TRIAL6: {
         "id": 419358,
-        "title": "BALLOON POPPING EX",
+        "title": "Expert Balloon Popper",
         "points": 10,
         "target": 50,
         "description": "Complete Trial 6: \"Balloon Popping\" and pop at least {0} balloons.",
@@ -523,7 +523,7 @@ function Trial7Trigger()
 
 achievement(
     id=419374,
-    title="TRIATHLON",
+    title="I Carried, I Aimed, I Popped",
     description="Complete Trial 7: \"Triathlon\" in 2 minutes and 30 seconds or less.",
     points=10,
     trigger=Trial7Trigger()
@@ -548,62 +548,102 @@ function StarCoinsTrigger(area)
 StarCoinsAchievements = {
     AREA_KOPAN_KOPAN_DAY: {
         "id": 419359,
-        "title": "STAR KOPAN KOPAN DAY",
-        "description": "Collect all 5 Star Coins in the Kopan Kopan Islands during the day (Trial 1/4/5/6).",
+        "title": "Wishing for Stars at the Islands by Day",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins in the Kopan Kopan Islands during daytime, then end the mission.",
+            "The Star Coins can be found in Trials 1, 4, 5, or 6."
+        ),
         "points": 5,
     },
     AREA_NEW_CANAL_DAY: {
         "id": 419375,
-        "title": "STAR NEW CANAL CITY DAY",
-        "description": "Collect all 5 Star Coins in New Canal City during the day (Trial 2, Rescue Mission 6/9).",
+        "title": "Wishing for Stars at the City by Day",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins in New Canal City during daytime, then end the mission.",
+            "The Star Coins can be found in Trial 2, or Rescue Missions 6 or 9."
+        ),
         "points": 5,
     },
     AREA_NEW_CANAL_NIGHT: {
         "id": 419376,
-        "title": "STAR NEW CANAL CITY NIGHT",
-        "description": "Collect all 5 Star Coins in New Canal City during the night (Trial 3).",
+        "title": "Wishing for Stars at the City by Night",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins in New Canal City during night, then end the mission.",
+            "The Star Coins can be found in Trial 3."
+        ),
         "points": 5,
     },
     AREA_KOPAN_KOPAN_SUNSET: {
         "id": 419360,
-        "title": "STAR KOPAN KOPAN SUNSET",
-        "description": "Collect all 5 Star Coins in the Kopan Kopan Islands during the sunset (Trial 7, Rescue Mission 7).",
+        "title": "Wishing for Stars at the Islands by Sunset",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins in the Kopan Kopan Islands during the sunset, then end the mission.",
+            "The Star Coins can be found in Trials 7 or Rescue Mission 7."
+        ),
         "points": 5,
     },
     AREA_HARIMA: {
         "id": 419361,
-        "title": "STAR HARIMA",
-        "description": "Collect all 5 Star Coins around Harima Mountains (Rescue Mission 1).",
+        "title": "Wishing for Stars at the Mountains",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins around Harima Mountains, then end the mission.",
+            "The Star Coins can be found in Rescue Mission 1."
+        ),
         "points": 5,
     },
     AREA_TONBU: {
         "id": 419377,
-        "title": "STAR TONBU",
-        "description": "Collect all 5 Star Coins on Tonbu Beach (Rescue Mission 2).",
+        "title": "Wishing for Stars at the Beach",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins on Tonbu Beach, then end the mission.",
+            "The Star Coins can be found in Rescue Mission 2."
+        ),
         "points": 5,
     },
     AREA_AMARAO: {
         "id": 419362,
-        "title": "STAR AMARAO",
-        "description": "Collect all 5 Star Coins in the Amarao Plateau (Rescue Mission 3/8).",
+        "title": "Wishing for Stars at the Battlefield",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins in the Amarao Plateau, then end the mission.",
+            "The Star Coins can be found in Rescue Missions 3 or 8."
+        ),
         "points": 5,
     },
     AREA_MORGANSVILLE: {
         "id": 419378,
-        "title": "STAR MORGANSVILLE",
-        "description": "Collect all 5 Star Coins in Morgansville (Rescue Mission 4).",
+        "title": "Wishing for Stars at the Farms",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins at Morgansville, then end the mission.",
+            "The Star Coins can be found in Rescue Mission 4."
+        ),
         "points": 5,
     },
     AREA_SCHWEITZER: {
         "id": 419379,
-        "title": "STAR SCHWEITZER VILLAGE",
-        "description": "Collect all 5 Star Coins around Schweitzer Village (Rescue Mission 5).",
+        "title": "Wishing for Stars around Schweitzer Village",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins around Schweitzer Village, then end the mission.",
+            "The Star Coins can be found in Rescue Mission 5."
+        ),
         "points": 5,
     },
     AREA_WAHINA_ROMA: {
         "id": 419363,
-        "title": "STAR WAHINA ROMA VOLCANO",
-        "description": "Collect all 5 Star Coins around the Wahina Roma Volcano (Rescue Mission 10).",
+        "title": "Wishing for Stars at the Volcano",
+        "description": format(
+            "{0} {1}",
+            "Finish collection of all 5 Star Coins around the Wahina Roma Volcano, then end the mission.",
+            "The Star Coins can be found in Rescue Mission 10."
+        ),
         "points": 5,
     },
 }
@@ -614,7 +654,7 @@ for area in StarCoinsAchievements
     achievement(
         id=params["id"],
         title=params["title"],
-        description=params["description"] + " New progress is evaluated when a mission is concluded.",
+        description=params["description"],
         points=params["points"],
         trigger=StarCoinsTrigger(area)
     )
@@ -635,61 +675,61 @@ function HeliClearTrigger(mission)
 HeliClearAchievements = {
     MISSION_RM1: {
         "id": 419380,
-        "title": "CH HARIMA MOUNTAINS",
+        "title": "Jack of All Flights I: Harima Mountains",
         "points": 10,
         "name": "Rescue Mission 1: \"Harima Mountains\"",
     },
     MISSION_RM2: {
         "id": 419381,
-        "title": "CH TONBU BEACH",
+        "title": "Jack of All Flights II: Tonbu Beach",
         "points": 10,
         "name": "Rescue Mission 2: \"Tonbu Beach\"",
     },
     MISSION_RM3: {
         "id": 419384,
-        "title": "CH AMARAO PLATEAU 1",
+        "title": "Jack of All Flights III: Amarao Plateau",
         "points": 10,
         "name": "Rescue Mission 3: \"Amarao Plateau 1\"",
     },
     MISSION_RM4: {
         "id": 419382,
-        "title": "CH MORGANSVILLE",
+        "title": "Jack of All Flights IV: Morgansville",
         "points": 10,
         "name": "Rescue Mission 4: \"Morgansville\"",
     },
     MISSION_RM5: {
         "id": 419365,
-        "title": "CH SCHWEITZER",
+        "title": "Jack of All Flights V: Schweitzer",
         "points": 10,
         "name": "Rescue Mission 5: \"Schweitzer\"",
     },
     MISSION_RM6: {
         "id": 419383,
-        "title": "CH NEW CANAL CITY 1",
+        "title": "Jack of All Flights VI: New Canal City 1",
         "points": 10,
         "name": "Rescue Mission 6: \"New Canal City 1\"",
     },
     MISSION_RM7: {
         "id": 419367,
-        "title": "CH KONPA KONPA ISLANDS",
+        "title": "Jack of All Flights VII: Konpa Konpa Islands",
         "points": 10,
         "name": "Rescue Mission 7: \"Konpa Konpa Islands\"",
     },
     MISSION_RM8: {
         "id": 419364,
-        "title": "CH AMARAO PLATEAU 2",
+        "title": "Jack of All Flights VIII: Amarao Plateau 2",
         "points": 10,
         "name": "Rescue Mission 8: \"Amarao Plateau 2\"",
     },
     MISSION_RM9: {
         "id": 419368,
-        "title": "CH NEW CANAL CITY 2",
+        "title": "Jack of All Flights IX: New Canal City 2",
         "points": 25,
         "name": "Rescue Mission 9: \"New Canal City 2\"",
     },
     MISSION_RM10: {
         "id": 419366,
-        "title": "CH WAHIMA ROMA VOLCANO",
+        "title": "Jack of All Flights X: Wahina Roma Volcano",
         "points": 25,
         "name": "Rescue Mission 10: \"Wahina Roma Volcano\"",
     },
