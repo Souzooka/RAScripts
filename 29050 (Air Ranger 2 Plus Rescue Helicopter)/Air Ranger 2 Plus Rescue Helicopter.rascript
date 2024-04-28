@@ -551,7 +551,7 @@ StarCoinsAchievements = {
         "title": "Wishing for Stars at the Islands by Day",
         "description": format(
             "{0} {1}",
-            "Finish collection of all 5 Star Coins in the Kopan Kopan Islands during daytime, then end the mission.",
+            "Finish collection of all 5 Star Coins in the Konpa Konpa Islands during daytime, then end the mission.",
             "The Star Coins can be found in Trials 1, 4, 5, or 6."
         ),
         "points": 5,
@@ -581,7 +581,7 @@ StarCoinsAchievements = {
         "title": "Wishing for Stars at the Islands by Sunset",
         "description": format(
             "{0} {1}",
-            "Finish collection of all 5 Star Coins in the Kopan Kopan Islands during the sunset, then end the mission.",
+            "Finish collection of all 5 Star Coins in the Konpa Konpa Islands during the sunset, then end the mission.",
             "The Star Coins can be found in Trials 7 or Rescue Mission 7."
         ),
         "points": 5,
