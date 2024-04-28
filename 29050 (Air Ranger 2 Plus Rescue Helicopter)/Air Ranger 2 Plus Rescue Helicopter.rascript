@@ -167,7 +167,7 @@ function IsInGame()
 HeliLookup = {
     HELI_300CB: "🚁 300CB",
     HELI_OH_6D: "🚁 OH-6D",
-    HELI_BK_117_B: "🚁 BK_117_B",
+    HELI_BK_117_B: "🚁 BK-117-B",
     HELI_AS365N2: "🚁 AS365N2",
     HELI_MH_53E: "🚁 MH-53E",
     HELI_CH_47J: "🚁 CH-47J",
@@ -296,7 +296,7 @@ MissionAchievements = {
     },
     MISSION_TRIAL3: {
         "id": 419342,
-        "title": "We'll Do it Live",
+        "title": "We'll Do It Live",
         "points": 5,
         "name": "Trial 3: \"Midair Report\"",
         "objective": " by obtaining viewer ratings of at least 35%",
