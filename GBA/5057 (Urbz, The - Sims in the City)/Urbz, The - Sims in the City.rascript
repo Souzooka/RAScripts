@@ -82,6 +82,7 @@ Goals = GoalsData()
 MAX_MINIGAME_DIFFICULTY = 4
 MAX_UTILITY_LEVEL = 2
 NUM_UTILITIES = 4
+NUM_MUSEUM_EXHIBITS = 5
 
 // The current game mode (See Game Modes enumeration)
 GameMode = dword(0x4910)
@@ -298,6 +299,20 @@ function IsChapterComplete(chapter, pred=mirror)
 function GetUtility(house, utility)
 {
     return byte(Utilities + (house * NUM_UTILITIES) + utility)
+}
+
+function CheckExhibitPurchase(idx)
+{
+    // There are 5 bits here from 2..6 which track museum exhibit purchases
+    bitset = 0x468E
+    return bit(idx + 2, bitset)
+}
+
+function CheckAllExhibitsPurchased(pred=mirror)
+{
+    bitset = byte(0x468E)
+    mask = 0x7C // bits 2..6
+    return pred(bitset) & mask == mask
 }
 
 // ACHIEVEMENTS START
@@ -1035,7 +1050,13 @@ achievement(
     title="Museum Mogul",
     description="Purchase every exhibit in the museum.",
     points=10,
-    trigger=always_false() // Existing logic is bunk. No.
+    trigger=(
+        SaveProtection() &&
+        // We have all exhibits
+        CheckAllExhibitsPurchased() &&
+        // we didn't last frame
+        CheckAllExhibitsPurchased(prev)
+    )
 )
 
 // Bike
