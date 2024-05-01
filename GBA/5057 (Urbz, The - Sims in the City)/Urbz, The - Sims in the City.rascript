@@ -83,6 +83,8 @@ MAX_MINIGAME_DIFFICULTY = 4
 MAX_UTILITY_LEVEL = 2
 NUM_UTILITIES = 4
 
+// The current game mode (See Game Modes enumeration)
+GameMode = dword(0x4910)
 // Index of the player's owned house (See the Houses enumeration)
 HouseID = byte(0x38AC)
 // Minigame Difficulty
@@ -121,6 +123,12 @@ for i in range(0, 8 - 1)
 }
 
 // ENUMERATIONS
+
+// Game Modes
+MODE_SAVELOAD = 6
+MODE_MINIGAME = 17
+NODE_CHARACTER_CREATE_CONFIRM = 28
+MODE_CHARACTER_CREATE_QUIZ = 29
 
 // NPCs
 NPC_BAYOO_BOO = 0
@@ -204,6 +212,19 @@ AREA_TAR_PIT_TIME_MACHINE = 14
 
 // GAME FUNCTIONS
 
+function SaveProtection()
+{
+    // We're in the save game/load game screen, where save data gets loaded
+    // into the regular game data RAM
+    return GameMode != MODE_SAVELOAD
+}
+
+function IsMinigame()
+{
+    // Should at least improve the stability of minigame achievements before I do more research
+    return GameMode == MODE_MINIGAME
+}
+
 function GetRelationshipLevel(npc)
 {
     relationship = Relationship(npc)
@@ -241,6 +262,11 @@ function GetObjective(chapter, mission, objective)
     idx = idx + objective
     
     return Goals["objectives"][idx]
+}
+
+function GetCurrentChapter()
+{
+    return Goals["current_chapter"]
 }
 
 function IsObjectiveComplete(chapter, mission, objective)
@@ -434,8 +460,13 @@ for npc in RelationshipAchievements
         title=params["title"],
         description=format("Max out your relationship with {0}.", params["name"]),
         points=5,
-        trigger=GetRelationshipLevel(npc) == 100 &&
-                prev(GetRelationshipLevel(npc)) != 100
+        trigger=(
+            SaveProtection() &&
+            // We're now max level
+            GetRelationshipLevel(npc) == 100 &&
+            // And we weren't last frame
+            prev(GetRelationshipLevel(npc)) != 100
+        )
     )
 }
 
@@ -482,8 +513,13 @@ for skill in SkillAchievements
         title=params["title"],
         description=format("Max out your {0} skill.", params["name"]),
         points=5,
-        trigger=GetSkillLevel(skill) == 10 &&
-                prev(GetSkillLevel(skill)) != 10
+        trigger=(
+            SaveProtection() &&
+            // We're currently at the max skill level!
+            GetSkillLevel(skill) == 10 &&
+            // And we weren't on the last frame!
+            prev(GetSkillLevel(skill)) != 10
+        )
     )
 }
 
@@ -536,8 +572,13 @@ for house in HouseAchievements
         title=params["title"],
         description=format("Purchase the {0}.", params["name"]),
         points=params["points"],
-        trigger=HouseID == house &&
-                prev(HouseID) != house
+        trigger=(
+            SaveProtection() &&
+            // Is it really this easy to own a house?
+            HouseID == house &&
+            // I guess we'll find out since this is the first frame of ownership
+            prev(HouseID) != house
+        )
     )
 }
 
@@ -574,8 +615,13 @@ for rep_group in ReputationAchievements
         title=params["title"],
         description=format("Max out your rep with the {0}.", params["name"]),
         points=25,
-        trigger=GetReputation(rep_group) == 10 &&
-                prev(GetReputation(rep_group)) != 10
+        trigger=(
+            SaveProtection() &&
+            // Everywhere I go, I see adoring fans
+            GetReputation(rep_group) == 10 &&
+            // But it wasn't always like this...
+            prev(GetReputation(rep_group)) != 10
+        )
     )
 }
 
@@ -620,8 +666,13 @@ for rep_group in RepGoalAchievements
         title=params["title"],
         description=format("Complete all the {0}' rep goals.", params["name"]),
         points=10,
-        trigger=IsMissionComplete(5, params["mission"]) == 1 &&
-                prev(IsMissionComplete(5, params["mission"])) == 0
+        trigger=(
+            SaveProtection() &&
+            // Goal's done guys
+            IsMissionComplete(5, params["mission"]) == 1 &&
+            // You're the first to know about it
+            prev(IsMissionComplete(5, params["mission"])) == 0
+        )
     )
 }
 
@@ -660,8 +711,13 @@ for chapter in range(0, length(ChapterAchievements))
         description=format("Complete every goal in Chapter {0}.", chapter + 1),
         points=if_else(chapter == 4, 25, 10),
         type=if_else(chapter == 4, "win_condition", "progression"),
-        trigger=IsChapterComplete(chapter) &&
-                !IsChapterComplete(chapter, prev)
+        trigger=(
+            SaveProtection() &&
+            // A new chapter in my Urbin Life has begun
+            IsChapterComplete(chapter) &&
+            // and a previous one has just concluded
+            !IsChapterComplete(chapter, prev)
+        )
     )
 }
 
@@ -722,8 +778,13 @@ for i in range(0, length(GoalAchievements))
         description=params["description"],
         points=params["points"],
         type="progression",
-        trigger=IsMissionComplete(chapter, mission) == 1 &&
-                prev(IsMissionComplete(chapter, mission)) == 0
+        trigger=(
+            SaveProtection() &&
+            // The goal's complete!
+            IsMissionComplete(chapter, mission) == 1 &&
+            // And my dopamine is at its peak!
+            prev(IsMissionComplete(chapter, mission)) == 0
+        )
     )
 }
 
@@ -796,6 +857,8 @@ for minigame in MinigameAchievements
         ),
         points=10,
         trigger=(
+            // Is in a minigame
+            IsMinigame() &&
             // Correct minigame
             MinigameID == minigame &&
             // Correct difficulty
@@ -809,14 +872,18 @@ for minigame in MinigameAchievements
     )
 }
 
+// Moogoo Monkey
+
 achievement(
     id=57547,
     title="Don't Touch My Coconuts!", 
     description="Reach 7 coconuts without losing one in the Moogoo Monkey minigame on Moogoo Monkey Master difficulty. Playing with multiple players is disallowed.",
     points=10,
     trigger=(
+        // Is in a minigame
+        IsMinigame() &&
         // Correct Minigame
-        MinigameID == 5 &&
+        MinigameID == MINIGAME_MOOGOO &&
         // Correct Difficulty
         MinigameDifficulty == MAX_MINIGAME_DIFFICULTY && 
         // Correct number of players
@@ -847,6 +914,9 @@ achievement(
     description = "Travel to every location possible using the time machine.",
     points=3,
     trigger=(
+        // Don't think this needs any sort of save protection but if we wanted to,
+        // we should reset this on going to the main menu (since going to the "save game"
+        // menu would reset this if we used SaveProtection, which would be annoying)
         all_of(time_travel_areas, area => once(AreaID == area))
     )
 )
@@ -857,7 +927,10 @@ achievement(
     description = "Take a blast to the past.",
     points=1,
     trigger=(
+        SaveProtection() &&
+        // Looking kind of retro
         AreaID == AREA_PAPER_BOY_TIME_MACHINE &&
+        // but for short enough a time for a retro achievement?
         prev(AreaID) != AREA_PAPER_BOY_TIME_MACHINE
     )
 )
@@ -870,6 +943,7 @@ achievement(
     description="You know what to do.",
     points=1,
     trigger=(
+        SaveProtection() &&
         // We have the item
         any_of(Inventory, item => item == ITEM_ROSEBUD) &&
         // We didn't have the item
@@ -883,6 +957,7 @@ achievement(
     description="Fill your inventory with chickens.",
     points=1,
     trigger=(
+        SaveProtection() &&
         // We're full up on chickens
         all_of(Inventory, item => item == ITEM_CHICKEN) &&
         // We weren't full up on chickens
@@ -900,18 +975,22 @@ achievement(
     points=10,
     type="missable",
     trigger=(
+        SaveProtection() &&
         // Did Squegee Clean
         IsObjectiveComplete(0, 0, 0) == 1 &&
         // Haven't found the key yet
         IsMissionComplete(0, 3) == 0 &&
-        // All NPCs romanced
-        all_of(chapter_1_female_npcs, npc => (
-            GetRelationshipStatus(npc) & RELATIONSHIP_LOVE == RELATIONSHIP_LOVE
-        )) &&
-        // 1 NPC wasn't romanced last frame
-        any_of(chapter_1_female_npcs, npc => (
-            prev(GetRelationshipStatus(npc)) & RELATIONSHIP_LOVE != RELATIONSHIP_LOVE
-        ))
+        // Trigger to show this achievement is active during chapter 1
+        trigger_when(
+            // All NPCs romanced
+            all_of(chapter_1_female_npcs, npc => (
+                GetRelationshipStatus(npc) & RELATIONSHIP_LOVE == RELATIONSHIP_LOVE
+            )) &&
+            // 1 NPC wasn't romanced last frame
+            any_of(chapter_1_female_npcs, npc => (
+                prev(GetRelationshipStatus(npc)) & RELATIONSHIP_LOVE != RELATIONSHIP_LOVE
+            ))
+        )
     )
 )
 
@@ -923,6 +1002,10 @@ achievement(
     description="Collect 100 piles of trash. Feel free to recycle!",
     points=2,
     trigger=(
+        // NOTE: TrashPiles is stored as a byte in game and with the patch
+        // could technically overflow, but I don't foresee it causing any
+        // major issues. The player should already have this achievement.
+        SaveProtection() &&
         measured(TrashPiles == 100, when=prev(TrashPiles) < 100)
     )
 )
@@ -935,6 +1018,7 @@ achievement(
     description="Purchase the Penthouse and every home upgrade for it.",
     points=5,
     trigger=(
+        SaveProtection() &&
         // Own Penthouse
         HouseID == HOUSE_PENTHOUSE &&
         // All utilities max
@@ -969,6 +1053,7 @@ achievement(
     description="In Create-a-Hogg, have your ride have the highest top speed possible.",
     points=3,
     trigger=(
+        SaveProtection() &&
         // We have the optimal bike
         all_of(optimal_bike, param => param[0] == param[1]) &&
         // We didn't have the optimal bike last frame
@@ -984,6 +1069,7 @@ achievement(
     description="Have 25 or more Xizzle Beads on you at once",
     points=10,
     trigger=(
+        SaveProtection() &&
         // We have the beads
         XizzleBeads >= 25 &&
         // and we didn't have the beads
@@ -999,7 +1085,11 @@ achievement(
     description="Answer the laziest possible combination of answers when creating your character.",
     points=0,
     trigger=(
-        // TODO: Some sort of delta, obv.
+        // Left the quiz
+        prev(GameMode) == MODE_CHARACTER_CREATE_QUIZ &&
+        // and entered the next screen
+        GameMode == NODE_CHARACTER_CREATE_CONFIRM &&
+        // Answered 0 to all questions
         all_of(range(0, 6 - 1), i => byte(QuizAnswers + i) == 0)
     )
 )
