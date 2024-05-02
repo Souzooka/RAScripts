@@ -717,7 +717,7 @@ ChapterAchievements = [
     },
 ]
 
-for chapter in range(0, length(ChapterAchievements))
+for chapter in range(0, length(ChapterAchievements) - 1)
 {
     params = ChapterAchievements[chapter]
     achievement(
@@ -781,9 +781,8 @@ GoalAchievements = [
     },
 ]
 
-for i in range(0, length(GoalAchievements))
+for params in GoalAchievements
 {
-    params = GoalAchievements[i]
     chapter = params["chapter"]
     mission = params["mission"]
     
