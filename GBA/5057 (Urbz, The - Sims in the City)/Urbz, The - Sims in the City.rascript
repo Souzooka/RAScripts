@@ -18,6 +18,27 @@ function if_else(cond, v1, v2)
     return v2
 }
 
+addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
+function ptr(base, offsets, accessor=dword)
+{
+    val = base
+    
+    for i in range(0, length(offsets) - 1)
+    {
+        addr = val + offsets[i]
+        if (i == length(offsets) - 1)
+        {
+            val = accessor(addr)
+        }
+        else
+        {
+            val = dword(addr)
+        }
+    }
+    
+    return val
+}
+
 // CLASSES
 
 function Relationship(npc)
@@ -77,54 +98,6 @@ function GoalsData()
 
 Goals = GoalsData()
 
-// GAME VARIABLES
-
-MAX_MINIGAME_DIFFICULTY = 4
-MAX_UTILITY_LEVEL = 2
-NUM_UTILITIES = 4
-NUM_MUSEUM_EXHIBITS = 5
-
-// The current game mode (See Game Modes enumeration)
-GameMode = dword(0x4910)
-// Used for storing the last game mode in some states or during transitions
-LastGameMode = dword(0x4914)
-// Index of the player's owned house (See the Houses enumeration)
-HouseID = byte(0x38AC)
-// Minigame Difficulty
-MinigameDifficulty = byte(0x4918)
-// Minigame ID (See Minigame enumeration)
-MinigameID = byte(0x4938)
-// Minigame Score (bad variable)
-MinigameScore = word(0x23EC4)
-// Current player zone (See Areas enumeration)
-AreaID = dword(0x48F8)
-// Total amount of piles of trash picked up
-TrashPiles = byte(0x4610)
-// 8-bit array of utilities owned per house
-Utilities = 0x462C
-// Amount of Xizzle Beads the player has currently picked up available to spend
-XizzleBeads = dword(0x38B8)
-// Array of 6 bytes for intro questionnaire answers
-QuizAnswers = 0x2F84
-// Some Moogoo Monkey vars (bad variables - pointers?)
-MoogooMonkeyCoconuts = byte(0x23FFA)
-MoogooMonkeyPlayers = byte(0x24087)
-
-// Motocross bike
-BikeChassis = byte(0x4648)
-BikeSuspension = byte(0x4649)
-BikeEngine = byte(0x464A)
-BikeNitro = byte(0x464B)
-BikeTires = byte(0x464C)
-BikeAccessory = byte(0x464D)
-
-// Item IDs in player inventory
-Inventory = []
-for i in range(0, 8 - 1)
-{
-    array_push(Inventory, word(0x4158 + (i * 0x8)))
-}
-
 // ENUMERATIONS
 
 // Game Modes
@@ -170,6 +143,7 @@ RELATIONSHIP_FRIEND = 0x4
 RELATIONSHIP_LOVE = 0x8
 
 // Items
+ITEM_GOLDEN_FIDDLE = 81
 ITEM_CHICKEN = 196
 ITEM_ROSEBUD = 362
 
@@ -214,31 +188,81 @@ AREA_PAPER_BOY_TIME_MACHINE = 8
 AREA_PLANET_OF_THE_APES_TIME_MACHINE = 10
 AREA_TAR_PIT_TIME_MACHINE = 14
 
-// GAME FUNCTIONS
+// GAME VARIABLES
 
-function IsStateTransition(pred=mirror)
+MAX_MINIGAME_DIFFICULTY = 4
+MAX_UTILITY_LEVEL = 2
+NUM_UTILITIES = 4
+NUM_MUSEUM_EXHIBITS = 5
+
+// The current game mode (See Game Modes enumeration)
+GameMode = dword(0x4910)
+// Used for storing the last game mode in some states or during transitions
+LastGameMode = dword(0x4914)
+// Index of the player's owned house (See the Houses enumeration)
+HouseID = byte(0x38AC)
+// Minigame Difficulty
+MinigameDifficulty = byte(0x4918)
+// Minigame ID (See Minigame enumeration)
+MinigameID = byte(0x4938)
+// Base to dynamic minigame information
+MinigameBase = dword(0x49C0)
+// Minigame Score
+MinigameScore = ptr(MinigameBase, [0x4], word)
+// Minigame Mode (See MGMODE enum)
+MinigameMode = ptr(MinigameBase, [0xF], byte)
+// Current player zone (See Areas enumeration)
+AreaID = dword(0x48F8)
+// Total amount of piles of trash picked up
+TrashPiles = byte(0x4610)
+// 8-bit array of utilities owned per house
+Utilities = 0x462C
+// Amount of Xizzle Beads the player has currently picked up available to spend
+XizzleBeads = dword(0x38B8)
+// Array of 6 bytes for intro questionnaire answers
+QuizAnswers = 0x2F84
+// Some Moogoo Monkey vars
+MoogooMonkeyCoconuts = ptr(MinigameBase, [0x13A], byte)
+MoogooMonkeyPlayers = ptr(MinigameBase, [0x1C7], byte)
+
+// Motocross bike
+BikeChassis = byte(0x4648)
+BikeSuspension = byte(0x4649)
+BikeEngine = byte(0x464A)
+BikeNitro = byte(0x464B)
+BikeTires = byte(0x464C)
+BikeAccessory = byte(0x464D)
+
+// Job levels
+
+
+// Item IDs in player inventory
+Inventory = []
+for i in range(0, 8 - 1)
 {
-    return pred(bit(7, 0x4950)) == 1
+    array_push(Inventory, word(0x4158 + (i * 0x8)))
 }
 
-function SaveProtection()
-{
-    return disable_when(
-        GameMode == MODE_SAVELOAD,
-        until=repeated(5, GameMode != MODE_SAVELOAD))
+// GAME FUNCTIONS
 
-    //       // When loading the save file, the last game mode is set to the title
-    //return (LastGameMode != MODE_TITLE &&
-    //       // Loading can also happen 1 frame after because why not
-    //       prev(LastGameMode) != MODE_TITLE) ||
-    //       // Ignore for minigames -- main menu minigames have the last game mode set as the title menu
-    //       IsMinigame()
+function SaveProtection(is_minigame=false)
+{
+           // When loading the save file, the last game mode is set to the title
+    return (LastGameMode != MODE_TITLE &&
+           // Loading can also happen 1 frame after because why not
+           prev(LastGameMode) != MODE_TITLE) ||
+           // Main menu minigames have the last game mode as the title, but I don't think we'll ever have to check for this
+           if_else(is_minigame, IsMinigame(), always_false())
 }
 
 function IsMinigame()
 {
-    // Should at least improve the stability of minigame achievements before I do more research
-    return GameMode == MODE_MINIGAME
+    return GameMode == MODE_MINIGAME && MinigameBase != NULL
+}
+
+function IsInInventory(item_id, pred=mirror)
+{
+    return any_of(Inventory, item => pred(item) == item_id)
 }
 
 function GetRelationshipLevel(npc)
@@ -875,14 +899,23 @@ for minigame in MinigameAchievements
 {
     params = MinigameAchievements[minigame]
     
+    // Extra check for Soul Music
+    extra = if_else(minigame == MINIGAME_SOUL, " Do not use the Golden Fiddle.", "")
+    extra_check = if_else(
+        minigame == MINIGAME_SOUL,
+        !any_of(Inventory, item => item == ITEM_GOLDEN_FIDDLE),
+        always_true()
+    )
+    
     achievement(
         id=params["id"],
         title=params["title"],
         description=format(
-            "Get ${0} or more in the {1} minigame on {2} difficulty.",
+            "Get ${0} or more in the {1} minigame on {2} difficulty.{3}",
             params["score"],
             params["name"],
-            params["difficulty_name"]
+            params["difficulty_name"],
+            extra
         ),
         points=10,
         trigger=(
@@ -892,6 +925,8 @@ for minigame in MinigameAchievements
             MinigameID == minigame &&
             // Correct difficulty
             MinigameDifficulty == MAX_MINIGAME_DIFFICULTY &&
+            // Extra check
+            extra_check &&
             // Trigger which tracks game score
             trigger_when(
                 MinigameScore >= params["score"] &&
