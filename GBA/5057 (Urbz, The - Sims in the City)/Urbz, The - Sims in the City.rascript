@@ -86,6 +86,8 @@ NUM_MUSEUM_EXHIBITS = 5
 
 // The current game mode (See Game Modes enumeration)
 GameMode = dword(0x4910)
+// Used for storing the last game mode in some states or during transitions
+LastGameMode = dword(0x4914)
 // Index of the player's owned house (See the Houses enumeration)
 HouseID = byte(0x38AC)
 // Minigame Difficulty
@@ -126,6 +128,7 @@ for i in range(0, 8 - 1)
 // ENUMERATIONS
 
 // Game Modes
+MODE_TITLE = 5
 MODE_SAVELOAD = 6
 MODE_MINIGAME = 17
 NODE_CHARACTER_CREATE_CONFIRM = 28
@@ -213,11 +216,23 @@ AREA_TAR_PIT_TIME_MACHINE = 14
 
 // GAME FUNCTIONS
 
+function IsStateTransition(pred=mirror)
+{
+    return pred(bit(7, 0x4950)) == 1
+}
+
 function SaveProtection()
 {
-    // We're in the save game/load game screen, where save data gets loaded
-    // into the regular game data RAM
-    return GameMode != MODE_SAVELOAD
+    return disable_when(
+        GameMode == MODE_SAVELOAD,
+        until=repeated(5, GameMode != MODE_SAVELOAD))
+
+    //       // When loading the save file, the last game mode is set to the title
+    //return (LastGameMode != MODE_TITLE &&
+    //       // Loading can also happen 1 frame after because why not
+    //       prev(LastGameMode) != MODE_TITLE) ||
+    //       // Ignore for minigames -- main menu minigames have the last game mode set as the title menu
+    //       IsMinigame()
 }
 
 function IsMinigame()
@@ -1054,7 +1069,7 @@ achievement(
         // We have all exhibits
         CheckAllExhibitsPurchased() &&
         // we didn't last frame
-        CheckAllExhibitsPurchased(prev)
+        !CheckAllExhibitsPurchased(prev)
     )
 )
 
