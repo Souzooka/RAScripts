@@ -325,14 +325,14 @@ function IsMissionComplete(chapter, mission)
 
 function IsChapterComplete(chapter, pred=mirror)
 {
-    completed_missions = 0
+    cond = always_true()
     
     for mission in range(0, NUM_MISSIONS - 1)
     {
-        completed_missions = completed_missions + pred(IsMissionComplete(chapter, mission))
+        cond = cond && (pred(IsMissionComplete(chapter, mission)) == 1)
     }
     
-    return completed_missions == NUM_MISSIONS
+    return cond
 }
 
 function GetUtility(house, utility)
@@ -1137,6 +1137,7 @@ achievement(
     id=57525,
     title="Simply Xizzlin'",
     description="Have 25 or more Xizzle Beads on you at once",
+    type="missable",
     points=10,
     trigger=(
         SaveProtection() &&
