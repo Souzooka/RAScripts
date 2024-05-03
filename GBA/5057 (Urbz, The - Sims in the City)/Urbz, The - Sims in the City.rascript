@@ -19,9 +19,16 @@ function if_else(cond, v1, v2)
 }
 
 addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
-function ptr(base, offsets, accessor=dword)
+BLOCK_WRAM = 0 // 0x2XXXXXX
+BLOCK_IWRAM = 1 // 0x3XXXXXX
+_tW = addr => (addr & 0xFFFFFF) + 0x8000
+_tI = addr => addr & 0xFFFFFF
+function ptr(base, offsets, accessor=dword, block=BLOCK_WRAM)
 {
-    val = base
+    // correct the pointer to ra's shitty custom memory map that makes no sense
+    transform = if_else(block == BLOCK_WRAM, _tW, _tI)
+
+    val = transform(base)
     
     for i in range(0, length(offsets) - 1)
     {
@@ -172,14 +179,19 @@ REP_GROUP_RICHIES = 2
 REP_GROUP_ARTSIES = 3
 
 // Minigames
-MINIGAME_SQUEEGEE = 0
-MINIGAME_HOOPZ = 1
+MINIGAME_MOOGOO = 0
+MINIGAME_COMIC = 1
 MINIGAME_DOCTOR = 2
-MINIGAME_COMIC = 3
-MINIGAME_MOTOCROSS = 4
-MINIGAME_MOOGOO = 5
+MINIGAME_SQUEEGEE = 3
+MINIGAME_HOOPZ = 4
+MINIGAME_SOUL = 5
 MINIGAME_YAR = 6
-MINIGAME_SOUL = 7
+MINIGAME_MOTOCROSS = 7
+
+// Minigame Mode
+MGMODE_GAME = 5
+MGMODE_GAMEOVER = 6
+MGMODE_ENTER_RESULT = 7
 
 // Areas
 AREA_CIVIL_WAR_TIME_MACHINE = 5
@@ -201,14 +213,14 @@ GameMode = dword(0x4910)
 LastGameMode = dword(0x4914)
 // Index of the player's owned house (See the Houses enumeration)
 HouseID = byte(0x38AC)
-// Minigame Difficulty
-MinigameDifficulty = byte(0x4918)
-// Minigame ID (See Minigame enumeration)
-MinigameID = byte(0x4938)
 // Base to dynamic minigame information
 MinigameBase = dword(0x49C0)
 // Minigame Score
 MinigameScore = ptr(MinigameBase, [0x4], word)
+// Minigame ID (See Minigame enumeration)
+MinigameID = ptr(MinigameBase, [0xD], byte)
+// Minigame Difficulty
+MinigameDifficulty = ptr(MinigameBase, [0xE], byte)
 // Minigame Mode (See MGMODE enum)
 MinigameMode = ptr(MinigameBase, [0xF], byte)
 // Current player zone (See Areas enumeration)
@@ -225,6 +237,16 @@ QuizAnswers = 0x2F84
 MoogooMonkeyCoconuts = ptr(MinigameBase, [0x13A], byte)
 MoogooMonkeyPlayers = ptr(MinigameBase, [0x1C7], byte)
 
+// Motocross Mayhem
+MotocrossMayhemCentiseconds = (
+    // Frames
+    ptr(MinigameBase, [0xA5], byte) * (100 / 30.0) +
+    // Seconds
+    ptr(MinigameBase, [0xA4], byte) * 100 +
+    // Minutes
+    ptr(MinigameBase, [0xA3], byte) * 100 * 60
+)
+
 // Motocross bike
 BikeChassis = byte(0x4648)
 BikeSuspension = byte(0x4649)
@@ -232,9 +254,6 @@ BikeEngine = byte(0x464A)
 BikeNitro = byte(0x464B)
 BikeTires = byte(0x464C)
 BikeAccessory = byte(0x464D)
-
-// Job levels
-
 
 // Item IDs in player inventory
 Inventory = []
@@ -258,6 +277,18 @@ function SaveProtection(is_minigame=false)
 function IsMinigame()
 {
     return GameMode == MODE_MINIGAME && MinigameBase != NULL
+}
+
+function IsMinigameOver()
+{
+    return MinigameMode == MGMODE_GAMEOVER &&
+           prev(MinigameMode) != MGMODE_GAMEOVER
+}
+
+function IsMinigamePlay(pred=mirror)
+{
+    return (pred(MinigameMode) == MGMODE_GAME ||
+           pred(MinigameMode) == MGMODE_GAMEOVER)
 }
 
 function IsInInventory(item_id, pred=mirror)
@@ -352,6 +383,12 @@ function CheckAllExhibitsPurchased(pred=mirror)
     bitset = byte(0x468E)
     mask = 0x7C // bits 2..6
     return pred(bitset) & mask == mask
+}
+
+function GetJobLevel(minigame)
+{
+    // Array of 8-bit job levels
+    return byte(0x4669 + minigame)
 }
 
 // ACHIEVEMENTS START
@@ -804,7 +841,7 @@ GoalAchievements = [
     },
     {
         "id": 57533,
-        "title": "I need....to run!",
+        "title": "I Need... to Run!",
         "description": "Complete the \"Running from the Law\" goal in Chapter 4.",
         "points": 2,
         "chapter": 3,
@@ -925,12 +962,14 @@ for minigame in MinigameAchievements
             MinigameID == minigame &&
             // Correct difficulty
             MinigameDifficulty == MAX_MINIGAME_DIFFICULTY &&
+            // Is playing the minigame (i.e. not in instructions or end screen)
+            IsMinigamePlay() &&
             // Extra check
             extra_check &&
-            // Trigger which tracks game score
+            // Trigger which tracks game score and the game ending
             trigger_when(
                 MinigameScore >= params["score"] &&
-                prev(MinigameScore) < params["score"]
+                IsMinigameOver()
             )
         )
     )
@@ -1164,3 +1203,115 @@ achievement(
         all_of(range(0, 6 - 1), i => byte(QuizAnswers + i) == 0)
     )
 )
+
+// LEADERBOARDS START
+
+MinigameLeaderboards = {
+    MINIGAME_MOOGOO:
+    {
+        "id": 96725,
+        "name": "Moogoo Monkey",
+    },
+    MINIGAME_COMIC:
+    {
+        "id": 96726,
+        "name": "Comic Explosion",
+    },
+    MINIGAME_DOCTOR:
+    {
+        "id": 96727,
+        "name": "Doctor Max Stat!",
+    },
+    MINIGAME_SQUEEGEE:
+    {
+        "id": 96728,
+        "name": "Squeegee Clean",
+    },
+    MINIGAME_HOOPZ:
+    {
+        "id": 96729,
+        "name": "Hoopz",
+    },
+    MINIGAME_SOUL:
+    {
+        "id": 96730,
+        "name": "Soul Music",
+    },
+    MINIGAME_YAR:
+    {
+        "id": 96731,
+        "name": "Yar Hey! Bombard!",
+    },
+}
+
+for minigame in MinigameLeaderboards
+{
+    params = MinigameLeaderboards[minigame]
+    
+    // Extra check for Soul Music
+    extra = if_else(minigame == MINIGAME_SOUL, " Do not use the Golden Fiddle.", "")
+    extra_check = if_else(
+        minigame == MINIGAME_SOUL,
+        !any_of(Inventory, item => item == ITEM_GOLDEN_FIDDLE),
+        always_true()
+    )
+    
+    leaderboard(
+        id=params["id"],
+        title=format("{0} - Highest Score", params["name"]),
+        description=format(
+            "Earn the highest score in the {0} minigame!{1}", 
+            params["name"],
+            extra
+        ),
+        start=(
+            // In minigame
+            IsMinigame() &&
+            // Correct minigame
+            MinigameID == minigame &&
+            // Extra check
+            extra_check &&
+            // Started gameplay
+            IsMinigamePlay() &&
+            !IsMinigamePlay(prev)
+        ),
+        cancel=(
+            !IsMinigame()
+        ),
+        submit=(
+            IsMinigameOver()
+        ),
+        value=(
+            MinigameScore
+        )
+    )
+}
+
+// Motocross
+leaderboard(
+    id=96732,
+    title="Motocross Mayhem - Fastest Time",
+    description="Complete Motocross Mayhem as quickly as possible!",
+    format="CENTISECS",
+    lower_is_better=true,
+    start=(
+        // In minigame
+        IsMinigame() &&
+        // Correct minigame
+        MinigameID == MINIGAME_MOTOCROSS &&
+        // Started gameplay
+        IsMinigamePlay() &&
+        !IsMinigamePlay(prev)
+    ),
+    cancel=(
+        !IsMinigame()
+    ),
+    submit=(
+        IsMinigameOver()
+    ),
+    value=(
+        MotocrossMayhemCentiseconds
+    )
+)
+
+// LEADERBOARDS END
