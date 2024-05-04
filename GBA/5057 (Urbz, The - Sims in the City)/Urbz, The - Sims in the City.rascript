@@ -200,6 +200,14 @@ AREA_PAPER_BOY_TIME_MACHINE = 8
 AREA_PLANET_OF_THE_APES_TIME_MACHINE = 10
 AREA_TAR_PIT_TIME_MACHINE = 14
 
+time_travel_areas = [
+    AREA_CIVIL_WAR_TIME_MACHINE,
+    AREA_HAYSEEDS_FARM_TIME_MACHINE,
+    AREA_PAPER_BOY_TIME_MACHINE,
+    AREA_PLANET_OF_THE_APES_TIME_MACHINE,
+    AREA_TAR_PIT_TIME_MACHINE,
+]
+
 // GAME VARIABLES
 
 MAX_MINIGAME_DIFFICULTY = 4
@@ -259,6 +267,10 @@ BikeAccessory = byte(0x464D)
 Days = word(0x37C8)
 Hours = byte(0x37CA)
 Minutes = byte(0x37CB)
+
+// Player characteristics
+PlayerName = 0x37D0
+PlayerGender = byte(0x37E0)
 
 // Item IDs in player inventory
 Inventory = []
@@ -1008,13 +1020,6 @@ achievement(
 // Misc. achievements
 
 // Visit Time Travel areas
-time_travel_areas = [
-    AREA_CIVIL_WAR_TIME_MACHINE,
-    AREA_HAYSEEDS_FARM_TIME_MACHINE,
-    AREA_PAPER_BOY_TIME_MACHINE,
-    AREA_PLANET_OF_THE_APES_TIME_MACHINE,
-    AREA_TAR_PIT_TIME_MACHINE,
-]
 
 achievement(
     id=57522,
@@ -1464,8 +1469,125 @@ ZeroPadLookup = {
     9: "0",
 }
 
+// Player name psuedo-generator
+
+function shift(n)
+{
+    // We can't left shift then right shift or & the result of an add source chain,
+    // so we have to use the upper bits of the int32 number so junk can be swept off
+    return n * 0x4000000
+}
+
+// Here we'll choose a player name using a hash of their name + their gender.
+// The length of this lookup needs to be a power of 2 so it can be accessed with &.
+NameLookup = {
+    // Sims 1
+    // Goth Family
+    shift(0): "Mortimer",  // (Boy)
+    shift(1): "Bella",     // (Girl)
+    shift(2): "Alexander", // (Boy, and so on)
+    shift(3): "Cassandra", // (Girl, and so on)
+    shift(4): "Gunther",
+    shift(5): "Cornelia",
+    // Newbie Family
+    shift(6): "Bob",
+    shift(7): "Betty",
+    shift(8): "Robert",
+    shift(9): "Mags",
+    // Pleasant Family
+    shift(10): "Jeff",
+    shift(11): "Diane",
+    shift(12): "Daniel",
+    shift(13): "Jennifer",
+    //
+    shift(15): "Angela",
+    //
+    shift(17): "Lilth",
+    // Bachelor Family
+    shift(14): "Michael",
+    // Roomies Family
+    //
+    shift(19): "Chris",
+    //
+    shift(21): "Melissa",
+    // Mashuga Family
+    shift(16): "Frankie",
+    shift(23): "Sylvia Marie",
+    // Burb Family
+    shift(18): "Brad",
+    shift(20): "Johnny",
+    shift(22): "Tucker",
+    shift(25): "Tiffany",
+    //
+    shift(27): "Lucy",
+    // Kat Family
+    shift(29): "Ginia",
+    // Charming Family
+    shift(31): "Claire",
+    // Half Life 2
+    shift(24): "Gordon",
+    shift(26): "Eli",
+    shift(28): "Wallace",
+    shift(30): "Barney",
+    shift(33): "Alyx",
+    // My Little Pony
+    shift(32): "Spike",
+    shift(35): "Luna",
+    // GTAshift(): VC
+    shift(34): "Victor",
+    shift(36): "Lance",
+    shift(37): "Mercedes",
+    shift(38): "Tommy",
+    shift(39): "Barbie", // slash Barbie
+    shift(40): "Ken",
+    // In Stars & Time
+    shift(41): "Mirabelle",
+    shift(42): "Isabeau",
+    shift(43): "Odile",
+    // Siffrin/ Bonnie goes into non-binary names
+    // Raw Danger
+    shift(44): "Keith",
+    shift(45): "Kelly",
+    shift(46): "Joshua",
+    shift(47): "Stephanie",
+    shift(48): "Aidan",
+    shift(49): "Amber",
+    shift(50): "Isaac",
+    shift(51): "Sophia",
+    shift(52): "Ivan",
+    shift(53): "Paige",
+    shift(54): "Geo",
+    shift(55): "Emily",
+    shift(56): "Greg",
+    shift(57): "Sierra",
+    // Non-binary names
+    // In Stars & Time
+    shift(58): "Siffrin",
+    shift(59): "Siffrin",
+    shift(60): "Bonnie",
+    shift(61): "Bonnie",
+    // Crypt of the NecroDancer
+    shift(62): "Bolt",
+    shift(63): "Bolt",
+}
+
+function HashPlayerName()
+{
+    res = 0
+    for i in range(0, 16 - 1)
+    {
+        res = res + byte(PlayerName + i)
+    }
+    
+    res = res * 2
+    res = res + PlayerGender
+    res = shift(res) // left-shift off upper bits since we can't & the result or do lshift/rshift...
+    return res
+}
+
 rich_presence_display(
-    "It is {0}:{1}{2} {3} on {4}, {5} {6} {7}.",
+    "An Urb is Urbin' in Miniopolis. They look like a \"{0}\" to me. It is {1}:{2}{3} {4} on {5}, {6} {7} {8}.",
+    rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
     rich_presence_lookup("HOURS", Hours, HourLookup),
     rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
     rich_presence_value("MINUTES", Minutes),
