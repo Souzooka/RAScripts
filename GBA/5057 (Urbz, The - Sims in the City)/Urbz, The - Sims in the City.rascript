@@ -39,7 +39,7 @@ function ptr(base, offsets, accessor=dword, block=BLOCK_WRAM)
         }
         else
         {
-            val = dword(addr)
+            val = transform(dword(addr))
         }
     }
     
@@ -254,6 +254,11 @@ BikeEngine = byte(0x464A)
 BikeNitro = byte(0x464B)
 BikeTires = byte(0x464C)
 BikeAccessory = byte(0x464D)
+
+// Game Time
+Days = word(0x37C8)
+Hours = byte(0x37CA)
+Minutes = byte(0x37CB)
 
 // Item IDs in player inventory
 Inventory = []
@@ -1315,3 +1320,161 @@ leaderboard(
 )
 
 // LEADERBOARDS END
+
+// RICH PRESENCE START
+
+// Time and Date (no man's land)
+
+// We could do this smarter if we had modulus, but we should be able to hardcode this for now
+DAYS_TO_CALC = 1000
+
+Weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+Months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+DaysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+// Day-based lookups
+function CalcDays()
+{
+    MonthLookup = {} // Month
+    DayLookup = {} // Day of the month
+    WeekdayLookup = {} // Weekday
+    YearLookup = {} // Years
+
+    // October 16th, 2004
+    day = 15
+    month = 9
+    year = 2004
+    
+    for i in range(0, DAYS_TO_CALC - 1)
+    {
+        WeekdayLookup[i] = Weekdays[i % 7]
+        DayLookup[i] = day + 1
+        MonthLookup[i] = Months[month]
+        YearLookup[i] = year
+        
+        day = day + 1
+        if day >= DaysPerMonth[month]
+        {
+            month = month + 1
+            day = 0
+        }
+        if month >= 12
+        {
+            year = year + 1
+            month = 0
+        }
+    }
+    
+    return [MonthLookup, DayLookup, WeekdayLookup, YearLookup]
+}
+foo = CalcDays()
+MonthLookup = foo[0]
+DayLookup = foo[1]
+WeekdayLookup = foo[2]
+YearLookup = foo[3]
+
+function CalcHours()
+{
+    TimeOfDayLookup = {}
+    HourLookup = {}
+    for i in range(0, 24 - 1)
+    {
+        hour = if_else(i % 12 == 0, 12, i)
+        HourLookup[i] = hour
+        TimeOfDayLookup[i] = if_else(i < 12, "AM", "PM")
+    }
+    
+    return [TimeOfDayLookup, HourLookup]
+}
+foo = CalcHours()
+TimeOfDayLookup = foo[0]
+HourLookup = foo[1]
+
+// sigh just let me put numbers in rich_presence_lookup I beg you
+ITOALookup = {
+    0: "0", 
+    1: "1", 
+    2: "2", 
+    3: "3", 
+    4: "4", 
+    5: "5", 
+    6: "6", 
+    7: "7", 
+    8: "8", 
+    9: "9", 
+    10: "10", 
+    11: "11", 
+    12: "12", 
+    13: "13", 
+    14: "14", 
+    15: "15", 
+    16: "16", 
+    17: "17", 
+    18: "18", 
+    19: "19", 
+    20: "20", 
+    21: "21", 
+    22: "22", 
+    23: "23", 
+    24: "24", 
+    25: "25", 
+    26: "26", 
+    27: "27", 
+    28: "28", 
+    29: "29", 
+    30: "30", 
+    31: "31",
+    2004: "2004", 
+    2005: "2005", 
+    2006: "2006", 
+    2007: "2007", 
+    2008: "2008", 
+    2009: "2009", 
+    2010: "2010", 
+    2011: "2011", 
+    2012: "2012", 
+    2013: "2013", 
+    2014: "2014", 
+    2015: "2015", 
+    2016: "2016", 
+    2017: "2017", 
+    2018: "2018", 
+    2019: "2019",
+}
+
+// Convert ints to strings...
+for i in DayLookup
+    DayLookup[i] = ITOALookup[DayLookup[i]]
+for i in YearLookup
+    YearLookup[i] = ITOALookup[YearLookup[i]]
+for i in HourLookup
+    HourLookup[i] = ITOALookup[HourLookup[i]]
+
+// Zero-padding for minutes
+ZeroPadLookup = {
+    0: "0",
+    1: "0",
+    2: "0",
+    3: "0",
+    4: "0",
+    5: "0",
+    6: "0",
+    7: "0",
+    8: "0",
+    9: "0",
+}
+
+rich_presence_display(
+    "It is {0}:{1}{2} {3} on {4}, {5} {6} {7}.",
+    rich_presence_lookup("HOURS", Hours, HourLookup),
+    rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
+    rich_presence_value("MINUTES", Minutes),
+    rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("WEEKDAY", Days, WeekdayLookup),
+    rich_presence_lookup("MONTH", Days, MonthLookup),
+    rich_presence_lookup("DAYSOFMONTH", Days, DayLookup),
+    rich_presence_lookup("YEAR", Days, YearLookup)
+)
+
+
+// RICH PRESENCE END
