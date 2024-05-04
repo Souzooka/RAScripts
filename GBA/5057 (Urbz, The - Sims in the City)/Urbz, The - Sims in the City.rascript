@@ -1328,6 +1328,8 @@ leaderboard(
 
 // RICH PRESENCE START
 
+// We make t
+
 // Time and Date (no man's land)
 
 // We could do this smarter if we had modulus, but we should be able to hardcode this for now
@@ -1384,7 +1386,7 @@ function CalcHours()
     HourLookup = {}
     for i in range(0, 24 - 1)
     {
-        hour = if_else(i % 12 == 0, 12, i)
+        hour = if_else(i % 12 == 0, 12, i % 12)
         HourLookup[i] = hour
         TimeOfDayLookup[i] = if_else(i < 12, "AM", "PM")
     }
