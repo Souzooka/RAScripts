@@ -1782,7 +1782,7 @@ NPCLookup = {
     (NPC_CRYSTAL + 0x21): "Crystal",
     (NPC_DADDY_BIGBUCKS + 0x21): "Daddy Bigbucks",
     (NPC_DARIUS + 0x21): "Darius",
-    (NPC_DET_DAN_D_MAN + 0x21): "Det Dan D. Mann",
+    (NPC_DET_DAN_D_MAN + 0x21): "Det. Dan D. Mann",
     (NPC_DUSTY_HOGG + 0x21): "Dusty Hogg",
     (NPC_EPHRAM_EARL + 0x21): "Ephram Earl",
     (NPC_EWAN_WATAHMEE + 0x21): "Ewan Watahmee",
