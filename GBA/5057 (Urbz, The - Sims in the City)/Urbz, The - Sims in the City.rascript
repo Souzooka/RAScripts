@@ -1,6 +1,11 @@
 // Urbz, The: Sims in the City
 // #ID = 5057
 
+// Hi, if you're looking at this script years down the line to fix missing text in the Rich Presence, simply change this variable to "true".
+// Due to limitations in mathemetics in rcheevos, abusing the integer boundry was the only way I found that I could effectively "bitwise and"
+// the result of an add source chain -- but this will likely break, of course, if rcheevos ever supports 64-bit integers.
+USE_64_BIT = false
+
 // MISC. SCRIPT HELPERS
 
 mirror = v => v
@@ -108,9 +113,18 @@ Goals = GoalsData()
 // ENUMERATIONS
 
 // Game Modes
+MODE_INGAME = 1
+MODE_COPYRIGHT = 3
+MODE_BOOTSPLASH = 4
 MODE_TITLE = 5
 MODE_SAVELOAD = 6
+MODE_SOCIAL = 13
 MODE_MINIGAME = 17
+MODE_JOBSMENU = 21
+MODE_INTRO_CUTSCENE = 23
+MODE_CHARACTER_CREATE_NAME_ENTRY = 25
+MODE_CHARACTER_CREATE_UNKNOWN = 26
+MODE_CHARACTER_CREATE_CLOTHING = 27
 NODE_CHARACTER_CREATE_CONFIRM = 28
 MODE_CHARACTER_CREATE_QUIZ = 29
 
@@ -219,6 +233,8 @@ NUM_MUSEUM_EXHIBITS = 5
 GameMode = dword(0x4910)
 // Used for storing the last game mode in some states or during transitions
 LastGameMode = dword(0x4914)
+// Sticky value for the last game mode
+LastGameModeSticky = dword(0x4930)
 // Index of the player's owned house (See the Houses enumeration)
 HouseID = byte(0x38AC)
 // Base to dynamic minigame information
@@ -267,6 +283,9 @@ BikeAccessory = byte(0x464D)
 Days = word(0x37C8)
 Hours = byte(0x37CA)
 Minutes = byte(0x37CB)
+
+// NPC being talked to
+ConversationNPC = dword(0x2290)
 
 // Player characteristics
 PlayerName = 0x37D0
@@ -1328,8 +1347,6 @@ leaderboard(
 
 // RICH PRESENCE START
 
-// We make t
-
 // Time and Date (no man's land)
 
 // We could do this smarter if we had modulus, but we should be able to hardcode this for now
@@ -1477,7 +1494,16 @@ function shift(n)
 {
     // We can't left shift then right shift or & the result of an add source chain,
     // so we have to use the upper bits of the int32 number so junk can be swept off
-    return n * 0x4000000
+    res = n * 0x4000000
+    
+    // Avoid "Number too large" error
+    if USE_64_BIT
+    {
+        res = res * 0x10000
+        res = res * 0x10000
+    }
+    
+    return res
 }
 
 // Here we'll choose a player name using a hash of their name + their gender.
@@ -1514,7 +1540,7 @@ NameLookup = {
     shift(21): "Melissa",
     // Mashuga Family
     shift(16): "Frankie",
-    shift(23): "Sylvia Marie",
+    shift(23): "Sylvia",
     // Burb Family
     shift(18): "Brad",
     shift(20): "Johnny",
@@ -1535,7 +1561,7 @@ NameLookup = {
     // My Little Pony
     shift(32): "Spike",
     shift(35): "Luna",
-    // GTAshift(): VC
+    // GTA: VC
     shift(34): "Victor",
     shift(36): "Lance",
     shift(37): "Mercedes",
@@ -1587,18 +1613,299 @@ function HashPlayerName()
     return res
 }
 
-rich_presence_display(
-    "An Urb is Urbin' in Miniopolis. They look like a \"{0}\" to me. It is {1}:{2}{3} {4} on {5}, {6} {7} {8}.",
+// Misc. lookups
+// Minigames
+
+function EncodeDifficulty(minigame, difficulty)
+{
+    return minigame * 0x100 + difficulty
+}
+
+MinigameNameLookup = {
+    MINIGAME_MOOGOO: "Bluffing in Moogoo Monkey",
+    MINIGAME_COMIC: "Raising the roof in Comic Explosion",
+    MINIGAME_DOCTOR: "Saving patients in Doctor Max Stat!",
+    MINIGAME_SQUEEGEE: "Cleaning windows in Squeegee Clean",
+    MINIGAME_HOOPZ: "Shooting some b-ball in Hoopz",
+    MINIGAME_SOUL: "Fiddling the Red Man in Soul Music",
+    MINIGAME_YAR: "Bumping in Yar, Hey! Bombard!",
+    MINIGAME_MOTOCROSS: "Speeding in Motocross Mayhem"
+}
+
+ED = EncodeDifficulty
+MinigameDifficultyLookup = {
+    ED(MINIGAME_MOOGOO, 0): "Wannabe Primate",
+    ED(MINIGAME_MOOGOO, 1): "Lucky Monkey",
+    ED(MINIGAME_MOOGOO, 2): "Awesome Orangutan",
+    ED(MINIGAME_MOOGOO, 3): "Great Gorilla",
+    ED(MINIGAME_MOOGOO, 4): "Moogoo Monkey master",
+    ED(MINIGAME_COMIC, 0): "Wiseguy",
+    ED(MINIGAME_COMIC, 1): "Prop Comic",
+    ED(MINIGAME_COMIC, 2): "Comedian",
+    ED(MINIGAME_COMIC, 3): "Cable Comedian",
+    ED(MINIGAME_COMIC, 4): "Wild and Crazy Guy",
+    ED(MINIGAME_DOCTOR, 0): "Intern",
+    ED(MINIGAME_DOCTOR, 1): "Bonesaw",
+    ED(MINIGAME_DOCTOR, 2): "Resident",
+    ED(MINIGAME_DOCTOR, 3): "Doctor",
+    ED(MINIGAME_DOCTOR, 4): "Brain Surgeon",
+    ED(MINIGAME_SQUEEGEE, 0): "Bird Watcher",
+    ED(MINIGAME_SQUEEGEE, 1): "Streaker",
+    ED(MINIGAME_SQUEEGEE, 2): "Glass Buffer",
+    ED(MINIGAME_SQUEEGEE, 3): "Squeegy Guru",
+    ED(MINIGAME_SQUEEGEE, 4): "Clean N Sheen",
+    ED(MINIGAME_HOOPZ, 0): "Got No Game",
+    ED(MINIGAME_HOOPZ, 1): "Granny Styler",
+    ED(MINIGAME_HOOPZ, 2): "Sure Shot",
+    ED(MINIGAME_HOOPZ, 3): "Hoop Master",
+    ED(MINIGAME_HOOPZ, 4): "En Fuego",
+    ED(MINIGAME_SOUL, 0): "L'il Fiddler",
+    ED(MINIGAME_SOUL, 1): "Prodigy",
+    ED(MINIGAME_SOUL, 2): "Maestro",
+    ED(MINIGAME_SOUL, 3): "Virtuoso",
+    ED(MINIGAME_SOUL, 4): "Red Man Incarnate",
+    ED(MINIGAME_YAR, 0): "Seaman",
+    ED(MINIGAME_YAR, 1): "Scurvy Dog",
+    ED(MINIGAME_YAR, 2): "First Mate",
+    ED(MINIGAME_YAR, 3): "Captain Chaos",
+    ED(MINIGAME_YAR, 4): "Boat Basher Supreme",
+    ED(MINIGAME_MOTOCROSS, 0): "Novice",
+    ED(MINIGAME_MOTOCROSS, 1): "Rookie",
+    ED(MINIGAME_MOTOCROSS, 2): "Pro",
+    ED(MINIGAME_MOTOCROSS, 3): "Expert Rider",
+    ED(MINIGAME_MOTOCROSS, 4): "Master of Mayhem",
+}
+
+// Chapter
+
+ChapterLookup = {
+    0: "Chapter 1: Squatting in King Tower",
+    1: "Chapter 2: Establishing oneself in Urbania",
+    2: "Chapter 3: Moving on up in Sim Quarter",
+    3: "Chapter 4: Walking the dazzling streets of Glasstown",
+    4: "Chapter 5: Cleaning up Miniopolis",
+}
+
+// Area
+
+TimeTravelDateLookup = {
+    AREA_CIVIL_WAR_TIME_MACHINE: "Saturday, December 31 1870",
+    AREA_HAYSEEDS_FARM_TIME_MACHINE: "Tuesday, December 2 2003", 
+    AREA_PLANET_OF_THE_APES_TIME_MACHINE: "3978 A.D.",
+    AREA_PAPER_BOY_TIME_MACHINE: "Thursday, November 29, 1984",
+    AREA_TAR_PIT_TIME_MACHINE: "1,000,000 B.C.",
+}
+
+AreaLookup = {
+    0: "on the Streetball Court",
+    1: "in the Bayou",
+    2: "in the Carnival",
+    3: "in the Graveyard",
+    4: "in Glasstown",
+    5: "in the Civil War",
+    6: "near Hayseed's Farm",
+    7: "in the Crater",
+    8: "near the Paperboy's Route",
+    9: "on Paradise Island",
+    10: "on the Planet of the Apes",
+    11: "on the River",
+    12: "on Salty's Riverboat",
+    13: "in the Sim Quarter Farmer's Market",
+    14: "near a tar pit",
+    15: "on the Twin's River Bed",
+    16: "in Urbania's Park",
+    17: "in the Glasstown Mega-Mall",
+    18: "in the Glasstown Mega-Mall",
+    19: "in the Small Brownstone",
+    20: "in the Large Brownstone",
+    21: "inside Bus Storage",
+    22: "in the Captain's Quarters",
+    23: "in Salty's Lounge",
+    24: "in the Cinema d'Urbania",
+    25: "in the Cinema Theater",
+    26: "in the City Apartment",
+    27: "in the City Apartment Lobby",
+    28: "inside City Storage",
+    29: "in Zeke's Zydeco Club",
+    30: "in the Coffee Shop",
+    31: "in the Crawfish Shack",
+    32: "in the Dark Tree",
+    33: "in the First Mate's Quarters",
+    34: "in the Fortune Teller's Shop",
+    35: "in the Chopper Garage",
+    36: "in the Miniopolis Hospital",
+    37: "in Café Multiplaya",
+    38: "in Jail",
+    39: "in the Magic Lamp",
+    40: "in the Mausoleum",
+    41: "on Moon Base Zeta",
+    42: "Epoch Museum's 1st Floor",
+    43: "Epoch Museum's 2nd Floor",
+    44: "Epoch Museum's Lobby",
+    45: "inside Miniopolis Chronicle",
+    46: "inside Slice O' Life Pizza",
+    47: "inside Sim Quarter Storage",
+    48: "inside the Artsie Clubhouse",
+    49: "inside the Rep Group Clubhouse",
+    50: "inside the Nerdie Clubhouse",
+    51: "inside the Richie Clubhouse",
+    52: "inside the Streetie Clubhouse",
+    53: "in the Secret Lab",
+    54: "in a Secret Tunnel",
+    55: "in the King Tower Executive Office",
+    56: "in the King Tower Waters' Gym",
+    57: "in the King Tower Law Offices",
+    58: "in the King Tower Tower Lobby",
+    59: "in the unfinished King Tower Penthouse",
+    60: "in the King Tower Penthouse",
+    61: "in the 2nd floor of the King Tower Penthouse",
+    62: "on the King Tower Roof",
+    63: "on the King Tower Roof",
+    64: "in the Second Looks Thrift Emporium",
+    65: "in the Townhouse",
+    66: "in the Townhouse",
+    67: "in the Twins' Bayou Shack",
+    68: "inside Miniopolis University",
+    69: "inside the Junked Schoolbus",
+    70: "inside Club Xizzle",
+    71: "in a bird cage in King Tower",
+}
+
+// NPCs
+// (NOTE: For whatever reason, NPCs are shifted by 0x21 when talking to them)
+
+NPCLookup = {
+    (NPC_BAYOO_BOO + 0x21): "Bayoo Boo",
+    (NPC_BERKELEY_CLODD + 0x21): "Berkeley Clodd",
+    (NPC_CANNONBALL_COLEMAN + 0x21): "Cannonball Coleman",
+    (NPC_CRAWDAD_CLEM + 0x21): "Crawdad Clem",
+    (NPC_CRYSTAL + 0x21): "Crystal",
+    (NPC_DADDY_BIGBUCKS + 0x21): "Daddy Bigbucks",
+    (NPC_DARIUS + 0x21): "Darius",
+    (NPC_DET_DAN_D_MAN + 0x21): "Det Dan D. Mann",
+    (NPC_DUSTY_HOGG + 0x21): "Dusty Hogg",
+    (NPC_EPHRAM_EARL + 0x21): "Ephram Earl",
+    (NPC_EWAN_WATAHMEE + 0x21): "Ewan Watahmee",
+    (NPC_GIUSEPPI_MEZZOLATO + 0x21): "Giuseppi Mezzolato",
+    (NPC_GRAMMA_HATTIE + 0x21): "Gramma Hattie",
+    (NPC_HARLAN_KING + 0x21): "Harlan King",
+    (NPC_KRIS_THISTLE + 0x21): "Kris Thistle",
+    (NPC_LILY_GATES + 0x21): "Lily Gates",
+    (NPC_LINCOLN_BROADSHEET + 0x21): "Lincoln Broadsheet",
+    (NPC_LOTTIE_CASH + 0x21): "Lottie Cash",
+    (NPC_LUTHOR_L_BIGBUCKS + 0x21): "Luthor L. Bigbucks",
+    (NPC_MAMBO_LOA + 0x21): "Mambo Loa",
+    (NPC_MAXIMILLIAN_MOORE + 0x21): "Maximillian Moore",
+    (NPC_MISTY_WATERS + 0x21): "Misty Waters",
+    (NPC_OLDE_SALTY + 0x21): "Olde Salty",
+    (NPC_PHEOBE_TWIDDLE + 0x21): "Phoebe Twiddle",
+    (NPC_POLLY_NOMINAL + 0x21): "Polly Nomial",
+    (NPC_PRITCHARD_LOCKSLEY + 0x21): "Pritchard Locksley",
+    (NPC_ROXANNA_MOXIE + 0x21): "Roxanna Moxie",
+    (NPC_SUE_PIRNOVA + 0x21): "Sue Pirnova",
+    (NPC_THERESA_BULLHORN + 0x21): "Theresa Bullhorn",
+    // Special NPCs
+    0x3E: "the Casino Dealer",
+    0x3F: "Gordie Puck",
+    0x40: "Lloyd",
+    0x41: "Pepper Pete",
+    0x42: "the professor",
+    0x43: "the Red Man",
+    0x44: "the Xizzle Door",
+}
+
+MODE_CHARACTER_CREATE_NAME_ENTRY = 25
+MODE_CHARACTER_CREATE_UNKNOWN = 26
+MODE_CHARACTER_CREATE_CLOTHING = 27
+NODE_CHARACTER_CREATE_CONFIRM = 28
+MODE_CHARACTER_CREATE_QUIZ = 29
+
+// Title screen (or load/save)
+rich_presence_conditional_display(
+    any_of(
+        [MODE_COPYRIGHT, MODE_BOOTSPLASH, MODE_TITLE, MODE_SAVELOAD],
+        i => GameMode == i
+    ) ||
+    (GameMode == MODE_JOBSMENU && LastGameModeSticky == MODE_TITLE),
+    "In the title or load screen"
+)
+// In Create-an-Urb
+rich_presence_conditional_display(
+    any_of(
+        [MODE_CHARACTER_CREATE_NAME_ENTRY, MODE_CHARACTER_CREATE_UNKNOWN, MODE_CHARACTER_CREATE_CLOTHING, NODE_CHARACTER_CREATE_CONFIRM, MODE_CHARACTER_CREATE_QUIZ],
+        i => GameMode == i
+    ),
+    "In Create-an-Urb"
+)
+// Watching the intro cutscene
+rich_presence_conditional_display(
+    GameMode == MODE_INTRO_CUTSCENE,
+    "Getting the run-down on their new life in the legendary Miniopolis"
+)
+// Playing a minigame from the main menu
+rich_presence_conditional_display(
+    GameMode == MODE_MINIGAME && LastGameModeSticky == MODE_JOBSMENU, 
+    "{0} on the {1} difficulty, from the main menu",
+    rich_presence_lookup("MINIGAME", MinigameID, MinigameNameLookup),
+    rich_presence_lookup("DIFFICULTY", ED(MinigameID, MinigameDifficulty), MinigameDifficultyLookup)
+)
+// Playing a minigame
+rich_presence_conditional_display(
+    IsMinigame(),
+    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | {9} on the {10} difficulty",
     rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
+    rich_presence_lookup("WEEKDAY", Days, WeekdayLookup),
+    rich_presence_lookup("MONTH", Days, MonthLookup),
+    rich_presence_lookup("DAYSOFMONTH", Days, DayLookup),
+    rich_presence_lookup("YEAR", Days, YearLookup),
     rich_presence_lookup("HOURS", Hours, HourLookup),
     rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
     rich_presence_value("MINUTES", Minutes),
     rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("MINIGAME", MinigameID, MinigameNameLookup),
+    rich_presence_lookup("DIFFICULTY", ED(MinigameID, MinigameDifficulty), MinigameDifficultyLookup)
+)
+// In time travel area
+rich_presence_conditional_display(
+    any_of(time_travel_areas, area => AreaID == area),
+    "An Urb is Urbin' through time | They look like a \"{0}\" to me | {1} {2}:{3}{4} {5} | Running around {6}",
+    rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
+    rich_presence_lookup("TIMETRAVEL", AreaID, TimeTravelDateLookup),
+    rich_presence_lookup("HOURS", Hours, HourLookup),
+    rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
+    rich_presence_value("MINUTES", Minutes),
+    rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("AREA", AreaID, AreaLookup)
+)
+// Talking to NPC
+rich_presence_conditional_display(
+    GameMode == MODE_SOCIAL,
+    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | Talking to {9} {10}",
+    rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
     rich_presence_lookup("WEEKDAY", Days, WeekdayLookup),
     rich_presence_lookup("MONTH", Days, MonthLookup),
     rich_presence_lookup("DAYSOFMONTH", Days, DayLookup),
-    rich_presence_lookup("YEAR", Days, YearLookup)
+    rich_presence_lookup("YEAR", Days, YearLookup),
+    rich_presence_lookup("HOURS", Hours, HourLookup),
+    rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
+    rich_presence_value("MINUTES", Minutes),
+    rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("NPCNAME", ConversationNPC, NPCLookup, "an unknown Urb"),
+    rich_presence_lookup("AREA", AreaID, AreaLookup)
 )
-
+// Just doing whatever
+rich_presence_display(
+    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | Running around {9}",
+    rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
+    rich_presence_lookup("WEEKDAY", Days, WeekdayLookup),
+    rich_presence_lookup("MONTH", Days, MonthLookup),
+    rich_presence_lookup("DAYSOFMONTH", Days, DayLookup),
+    rich_presence_lookup("YEAR", Days, YearLookup),
+    rich_presence_lookup("HOURS", Hours, HourLookup),
+    rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
+    rich_presence_value("MINUTES", Minutes),
+    rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("AREA", AreaID, AreaLookup)
+)
 
 // RICH PRESENCE END
