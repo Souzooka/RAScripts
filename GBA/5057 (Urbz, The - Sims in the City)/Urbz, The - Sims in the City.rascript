@@ -1852,7 +1852,7 @@ rich_presence_conditional_display(
 // Playing a minigame
 rich_presence_conditional_display(
     IsMinigame(),
-    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | {9} on the {10} difficulty",
+    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | {9} | {10} on the {11} difficulty",
     rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
     rich_presence_lookup("WEEKDAY", Days, WeekdayLookup),
     rich_presence_lookup("MONTH", Days, MonthLookup),
@@ -1862,25 +1862,27 @@ rich_presence_conditional_display(
     rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
     rich_presence_value("MINUTES", Minutes),
     rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("CHAPTER", GetCurrentChapter(), ChapterLookup),
     rich_presence_lookup("MINIGAME", MinigameID, MinigameNameLookup),
     rich_presence_lookup("DIFFICULTY", ED(MinigameID, MinigameDifficulty), MinigameDifficultyLookup)
 )
 // In time travel area
 rich_presence_conditional_display(
     any_of(time_travel_areas, area => AreaID == area),
-    "An Urb is Urbin' through time | They look like a \"{0}\" to me | {1} {2}:{3}{4} {5} | Running around {6}",
+    "An Urb is Urbin' through time | They look like a \"{0}\" to me | {1} {2}:{3}{4} {5} | {6} | Running around {7}",
     rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
     rich_presence_lookup("TIMETRAVEL", AreaID, TimeTravelDateLookup),
     rich_presence_lookup("HOURS", Hours, HourLookup),
     rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
     rich_presence_value("MINUTES", Minutes),
     rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("CHAPTER", GetCurrentChapter(), ChapterLookup),
     rich_presence_lookup("AREA", AreaID, AreaLookup)
 )
 // Talking to NPC
 rich_presence_conditional_display(
     GameMode == MODE_SOCIAL,
-    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | Talking to {9} {10}",
+    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | {9} | Talking to {10} {11}",
     rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
     rich_presence_lookup("WEEKDAY", Days, WeekdayLookup),
     rich_presence_lookup("MONTH", Days, MonthLookup),
@@ -1890,12 +1892,13 @@ rich_presence_conditional_display(
     rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
     rich_presence_value("MINUTES", Minutes),
     rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("CHAPTER", GetCurrentChapter(), ChapterLookup),
     rich_presence_lookup("NPCNAME", ConversationNPC, NPCLookup, "an unknown Urb"),
     rich_presence_lookup("AREA", AreaID, AreaLookup)
 )
 // Just doing whatever
 rich_presence_display(
-    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | Running around {9}",
+    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | {9} | Running around {10}",
     rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
     rich_presence_lookup("WEEKDAY", Days, WeekdayLookup),
     rich_presence_lookup("MONTH", Days, MonthLookup),
@@ -1904,7 +1907,8 @@ rich_presence_display(
     rich_presence_lookup("HOURS", Hours, HourLookup),
     rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
     rich_presence_value("MINUTES", Minutes),
-    rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup), 
+    rich_presence_lookup("CHAPTER", GetCurrentChapter(), ChapterLookup),
     rich_presence_lookup("AREA", AreaID, AreaLookup)
 )
 
