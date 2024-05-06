@@ -1372,9 +1372,9 @@ function CalcDays()
     for i in range(0, DAYS_TO_CALC - 1)
     {
         WeekdayLookup[i] = Weekdays[i % 7]
-        DayLookup[i] = day + 1
+        DayLookup[i] = format("{0}", day + 1) // convert to string
         MonthLookup[i] = Months[month]
-        YearLookup[i] = year
+        YearLookup[i] = format("{0}", year)
         
         day = day + 1
         if day >= DaysPerMonth[month]
@@ -1404,7 +1404,7 @@ function CalcHours()
     for i in range(0, 24 - 1)
     {
         hour = if_else(i % 12 == 0, 12, i % 12)
-        HourLookup[i] = hour
+        HourLookup[i] = format("{0}", hour) // convert to string
         TimeOfDayLookup[i] = if_else(i < 12, "AM", "PM")
     }
     
@@ -1413,66 +1413,6 @@ function CalcHours()
 foo = CalcHours()
 TimeOfDayLookup = foo[0]
 HourLookup = foo[1]
-
-// sigh just let me put numbers in rich_presence_lookup I beg you
-ITOALookup = {
-    0: "0", 
-    1: "1", 
-    2: "2", 
-    3: "3", 
-    4: "4", 
-    5: "5", 
-    6: "6", 
-    7: "7", 
-    8: "8", 
-    9: "9", 
-    10: "10", 
-    11: "11", 
-    12: "12", 
-    13: "13", 
-    14: "14", 
-    15: "15", 
-    16: "16", 
-    17: "17", 
-    18: "18", 
-    19: "19", 
-    20: "20", 
-    21: "21", 
-    22: "22", 
-    23: "23", 
-    24: "24", 
-    25: "25", 
-    26: "26", 
-    27: "27", 
-    28: "28", 
-    29: "29", 
-    30: "30", 
-    31: "31",
-    2004: "2004", 
-    2005: "2005", 
-    2006: "2006", 
-    2007: "2007", 
-    2008: "2008", 
-    2009: "2009", 
-    2010: "2010", 
-    2011: "2011", 
-    2012: "2012", 
-    2013: "2013", 
-    2014: "2014", 
-    2015: "2015", 
-    2016: "2016", 
-    2017: "2017", 
-    2018: "2018", 
-    2019: "2019",
-}
-
-// Convert ints to strings...
-for i in DayLookup
-    DayLookup[i] = ITOALookup[DayLookup[i]]
-for i in YearLookup
-    YearLookup[i] = ITOALookup[YearLookup[i]]
-for i in HourLookup
-    HourLookup[i] = ITOALookup[HourLookup[i]]
 
 // Zero-padding for minutes
 ZeroPadLookup = {
