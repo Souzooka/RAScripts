@@ -213,6 +213,7 @@ AREA_HAYSEEDS_FARM_TIME_MACHINE = 6
 AREA_PAPER_BOY_TIME_MACHINE = 8
 AREA_PLANET_OF_THE_APES_TIME_MACHINE = 10
 AREA_TAR_PIT_TIME_MACHINE = 14
+AREA_CLUB_XIZZLE = 70
 
 time_travel_areas = [
     AREA_CIVIL_WAR_TIME_MACHINE,
@@ -1036,7 +1037,83 @@ achievement(
     )
 )
 
+// Minigame promotion achievements
+
+PromotionAchievements = {
+    MINIGAME_MOOGOO: {
+        "id": 0,
+        "title": "Moogoo Monkey Master",
+        "name": "Moogoo Monkey",
+    },
+    MINIGAME_COMIC: {
+        "id": 0,
+        "title": "Wild and Crazy Guy",
+        "name": "Comic Explosion",
+    },
+    MINIGAME_DOCTOR: {
+        "id": 0,
+        "title": "Brain Surgeon",
+        "name": "Doctor Max Stat!",
+    },
+    MINIGAME_SQUEEGEE: {
+        "id": 0,
+        "title": "Clean N Sheen",
+        "name": "Squeegee Clean",
+    },
+    MINIGAME_HOOPZ: {
+        "id": 0,
+        "title": "En Fuego",
+        "name": "Hoopz",
+    },
+    MINIGAME_YAR: {
+        "id": 0,
+        "title": "Boat Basher Supreme",
+        "name": "Yar Hey! Bombard!",
+    },
+    MINIGAME_SOUL: {
+        "id": 0,
+        "title": "Red Man Incarnate",
+        "name": "Soul Music",
+    },
+    MINIGAME_MOTOCROSS: {
+        "id": 0,
+        "title": "Master of Mayhem",
+        "name": "Motocross Mayhem",
+    }
+}
+
+for minigame in PromotionAchievements
+{
+    params = PromotionAchievements[minigame]
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=format("Earn the highest promotion in the {0} minigame.", params["name"]),
+        points=10,
+        trigger=(
+            SaveProtection() &&
+            // We got the highest job level
+            GetJobLevel(minigame) == MAX_MINIGAME_DIFFICULTY &&
+            prev(GetJobLevel(minigame)) != MAX_MINIGAME_DIFFICULTY
+        )
+    )
+}
+
 // Misc. achievements
+
+// Get into Club Xizzle
+
+achievement(
+    id=0,
+    title="Welcome To Our Club",
+    description="Gain entry to Club Xizzle. Happy dancing, homie!",
+    points=5,
+    trigger=(
+        // Don't need save protection since if you know the password there's no barrier anyways
+        AreaID == AREA_CLUB_XIZZLE &&
+        prev(AreaID) != AREA_CLUB_XIZZLE
+    )
+)
 
 // Visit Time Travel areas
 
