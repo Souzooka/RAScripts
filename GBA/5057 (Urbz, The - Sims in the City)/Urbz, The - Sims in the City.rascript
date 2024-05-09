@@ -201,6 +201,16 @@ MINIGAME_HOOPZ = 4
 MINIGAME_SOUL = 5
 MINIGAME_YAR = 6
 MINIGAME_MOTOCROSS = 7
+// non-jobs
+MINIGAME_STUDY_COOKING = 0x8
+MINIGAME_STUDY_CREATIVITY = 0x9
+MINIGAME_STUDY_LOGIC = 0xA
+MINIGAME_STUDY_MECHANICAL = 0xB
+MINIGAME_SPELLING_BEE = 0xC
+MINIGAME_DARTS = 0xD
+MINIGAME_CUPS = 0xE
+MINIGAME_DERBY = 0xF
+MINIGAME_SLOTS = 0x10
 
 // Minigame Mode
 MGMODE_GAME = 5
@@ -326,6 +336,11 @@ function IsMinigamePlay(pred=mirror)
 {
     return (pred(MinigameMode) == MGMODE_GAME ||
            pred(MinigameMode) == MGMODE_GAMEOVER)
+}
+
+function IsJob()
+{
+    return IsMinigame() && MinigameID <= MINIGAME_MOTOCROSS
 }
 
 function IsInInventory(item_id, pred=mirror)
@@ -1693,6 +1708,18 @@ MinigameDifficultyLookup = {
     ED(MINIGAME_MOTOCROSS, 4): "Master of Mayhem",
 }
 
+SpecialMinigameLookup = {
+    MINIGAME_STUDY_COOKING: "Studying Cooking at Miniopolis U.",
+    MINIGAME_STUDY_CREATIVITY: "Studying Creativity at Miniopolis U.",
+    MINIGAME_STUDY_LOGIC: "Studying Logic at Miniopolis U.",
+    MINIGAME_STUDY_MECHANICAL: "Studying Mechanical at Miniopolis U.",
+    MINIGAME_SPELLING_BEE: "Seplling wlel in Spelling Bee",
+    MINIGAME_DARTS: "Playing Darts at the Carnival",
+    MINIGAME_CUPS: "Playing Cups at the Carnival",
+    MINIGAME_DERBY: "Playing Derby at the Carnival",
+    MINIGAME_SLOTS: "Playing Slots at the Carnival",
+}
+
 // Chapter
 
 ChapterLookup = {
@@ -1866,9 +1893,9 @@ rich_presence_conditional_display(
     rich_presence_lookup("MINIGAME", MinigameID, MinigameNameLookup),
     rich_presence_lookup("DIFFICULTY", ED(MinigameID, MinigameDifficulty), MinigameDifficultyLookup)
 )
-// Playing a minigame
+// Playing a job minigame
 rich_presence_conditional_display(
-    IsMinigame(),
+    IsJob(),
     "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | {9} | {10} on the {11} difficulty",
     rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
     rich_presence_lookup("WEEKDAY", Days, WeekdayLookup),
@@ -1882,6 +1909,22 @@ rich_presence_conditional_display(
     rich_presence_lookup("CHAPTER", GetCurrentChapter(), ChapterLookup),
     rich_presence_lookup("MINIGAME", MinigameID, MinigameNameLookup),
     rich_presence_lookup("DIFFICULTY", ED(MinigameID, MinigameDifficulty), MinigameDifficultyLookup)
+)
+// Playing a special minigame (i.e. carnival games, spell champ)
+rich_presence_conditional_display(
+    IsMinigame(),
+    "An Urb is Urbin' in Miniopolis | They look like a \"{0}\" to me | {1}, {2} {3} {4} {5}:{6}{7} {8} | {9} | {10}",
+    rich_presence_lookup("PLAYERNAME", HashPlayerName(), NameLookup),
+    rich_presence_lookup("WEEKDAY", Days, WeekdayLookup),
+    rich_presence_lookup("MONTH", Days, MonthLookup),
+    rich_presence_lookup("DAYSOFMONTH", Days, DayLookup),
+    rich_presence_lookup("YEAR", Days, YearLookup),
+    rich_presence_lookup("HOURS", Hours, HourLookup),
+    rich_presence_lookup("ZEROPAD", Minutes, ZeroPadLookup, ""),
+    rich_presence_value("MINUTES", Minutes),
+    rich_presence_lookup("TIMEOFDAY", Hours, TimeOfDayLookup),
+    rich_presence_lookup("CHAPTER", GetCurrentChapter(), ChapterLookup),
+    rich_presence_lookup("MINIGAME_SPECIAL", MinigameID, SpecialMinigameLookup)
 )
 // In time travel area
 rich_presence_conditional_display(
