@@ -167,6 +167,37 @@ RELATIONSHIP_LOVE = 0x8
 ITEM_GOLDEN_FIDDLE = 81
 ITEM_CHICKEN = 196
 ITEM_ROSEBUD = 362
+ITEM_NONE = 366
+// Housewarming Gifts
+ITEM_GOLDEN_MOP_AWARD = 51
+ITEM_VOODOO_DAN_DOLL = 52
+ITEM_FLAMING_HOOP = 53
+ITEM_KEY_TO_THE_CITY = 54
+ITEM_LAWN_FLAMINGO = 55
+ITEM_MAGIC_LAMP = 56
+ITEM_COMEDY_AND_TRAGEDY_MASKS = 57
+ITEM_ORANGE_PEDESTAL = 58
+ITEM_PERIODIC_TABLE_OF_ELEMENTS = 59
+ITEM_SAFE = 60
+ITEM_BURNING_SPOKE_SIGN = 61
+ITEM_VELOCIROOSTER_SKELETON = 62
+ITEM_SOAP_BOX = 63
+ITEM_MUSIC_STAND = 64
+ITEM_MOVIESTANDEE = 65
+ITEM_ANGEL_STATUE = 66
+ITEM_BLIND_JUSTICE_STATUE = 67
+ITEM_LOTTIE_CASH_STATUE = 68
+ITEM_PYTHON_STATUE = 69
+ITEM_3_CARD_MONTE_TABLE = 70
+ITEM_THRONE = 71
+ITEM_TRAFFIC_LIGHT = 72
+ITEM_MISS_URBVERSE_TROPHY = 73
+ITEM_TYPEWRITER = 74
+ITEM_WALL_MOUNTED_ALLIGATOR = 75
+ITEM_WALL_MOUNTED_SWORDFISH = 76
+ITEM_98_ADDER_BUMPER = 77
+ITEM_UNCLE_SUEDE_SHIZZLES_CANE = 78
+ITEM_KHRONITON_REACTOR = 80
 
 // Skills
 SKILL_COOKING = 0
@@ -346,6 +377,13 @@ function IsJob()
 function IsInInventory(item_id, pred=mirror)
 {
     return any_of(Inventory, item => pred(item) == item_id)
+}
+
+function IsHousewarmingGift(item)
+{
+    return item >= ITEM_GOLDEN_MOP_AWARD &&
+           item <= ITEM_KHRONITON_REACTOR
+           // item != 79 // this one is not a housewarming gift? Probably not necessary to check if we check for social mode too anyways
 }
 
 function GetRelationshipLevel(npc)
@@ -1052,6 +1090,58 @@ achievement(
     )
 )
 
+// Spell Champ
+
+achievement(
+    id=0,
+    title="Best Bee",
+    description="Successfully complete the Spelling Bee minigame.",
+    points=2,
+    trigger=(
+        // Is in a minigame
+        IsMinigame() &&
+        // Correct minigame
+        MinigameID == MINIGAME_SPELLING_BEE &&
+        // Is playing the minigame (i.e. not in instructions or end screen)
+        IsMinigamePlay() &&
+        // Trigger which tracks game score and the game ending
+        trigger_when(
+            // Any score above 0 (probably 200) indicates success
+            MinigameScore > 0 &&
+            IsMinigameOver()
+        )
+    )
+)
+
+// Carnival Games
+
+function CarnivalGamesTrigger()
+{
+    games = [MINIGAME_DARTS, MINIGAME_CUPS, MINIGAME_DERBY, MINIGAME_SLOTS]
+    comparisons = []
+    for game in games
+    {
+        array_push(comparisons,
+            once(
+                IsMinigame() &&
+                IsMinigameOver() &&
+                MinigameID == game &&
+                MinigameScore > 10
+            )
+        )
+    }
+    
+    return measured(tally(length(comparisons), comparisons))
+}
+
+achievement(
+    id=0,
+    title="Carnival Connoisseur",
+    description="Earn more than $10 from each carnival minigame within one attempt, in one session.",
+    points=3,
+    trigger=CarnivalGamesTrigger()
+)
+
 // Minigame promotion achievements
 
 PromotionAchievements = {
@@ -1115,6 +1205,24 @@ for minigame in PromotionAchievements
 }
 
 // Misc. achievements
+
+// Get Housewarming Gift
+// unfortunately, very difficult to track. There appears to be a 16-bit index at 0x22B2 for special conversation reactions,
+// but the values for liking the player's pad seem to vary by NPC. There may be some record of which NPCs have given out gifts,
+// but I haven't seen that yet.
+
+achievement(
+    id=0,
+    title="I Like Your Crib, G",
+    description="Invite another Urb over to your house and receive a housewarming gift.",
+    points=3,
+    trigger=(
+        // In conversation
+        GameMode == MODE_SOCIAL &&
+        // received the gift
+        any_of(Inventory, item => IsHousewarmingGift(item) && prev(item) == ITEM_NONE)
+    )
+)
 
 // Get into Club Xizzle
 
