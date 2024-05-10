@@ -1093,7 +1093,7 @@ achievement(
 // Spell Champ
 
 achievement(
-    id=0,
+    id=424977,
     title="Best Bee",
     description="Successfully complete the Spelling Bee minigame.",
     points=2,
@@ -1135,7 +1135,7 @@ function CarnivalGamesTrigger()
 }
 
 achievement(
-    id=0,
+    id=424978,
     title="Carnival Connoisseur",
     description="Earn more than $10 from each carnival minigame within one attempt, in one session.",
     points=3,
@@ -1146,42 +1146,42 @@ achievement(
 
 PromotionAchievements = {
     MINIGAME_MOOGOO: {
-        "id": 0,
+        "id": 424968,
         "title": "Moogoo Monkey Master",
         "name": "Moogoo Monkey",
     },
     MINIGAME_COMIC: {
-        "id": 0,
+        "id": 424969,
         "title": "Wild and Crazy Guy",
         "name": "Comic Explosion",
     },
     MINIGAME_DOCTOR: {
-        "id": 0,
+        "id": 424970,
         "title": "Brain Surgeon",
         "name": "Doctor Max Stat!",
     },
     MINIGAME_SQUEEGEE: {
-        "id": 0,
+        "id": 424971,
         "title": "Clean N Sheen",
         "name": "Squeegee Clean",
     },
     MINIGAME_HOOPZ: {
-        "id": 0,
+        "id": 424972,
         "title": "En Fuego",
         "name": "Hoopz",
     },
     MINIGAME_YAR: {
-        "id": 0,
+        "id": 424974,
         "title": "Boat Basher Supreme",
         "name": "Yar Hey! Bombard!",
     },
     MINIGAME_SOUL: {
-        "id": 0,
+        "id": 424973,
         "title": "Red Man Incarnate",
         "name": "Soul Music",
     },
     MINIGAME_MOTOCROSS: {
-        "id": 0,
+        "id": 424975,
         "title": "Master of Mayhem",
         "name": "Motocross Mayhem",
     }
@@ -1212,7 +1212,7 @@ for minigame in PromotionAchievements
 // but I haven't seen that yet.
 
 achievement(
-    id=0,
+    id=424979,
     title="I Like Your Crib, G",
     description="Invite another Urb over to your house and receive a housewarming gift.",
     points=3,
@@ -1227,7 +1227,7 @@ achievement(
 // Get into Club Xizzle
 
 achievement(
-    id=0,
+    id=424976,
     title="Welcome To Our Club",
     description="Gain entry to Club Xizzle. Happy dancing, homie!",
     points=5,
