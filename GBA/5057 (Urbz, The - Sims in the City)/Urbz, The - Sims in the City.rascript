@@ -1196,7 +1196,7 @@ for minigame in PromotionAchievements
         description=format("Earn the highest promotion in the {0} minigame.", params["name"]),
         points=10,
         trigger=(
-            SaveProtection() &&
+            IsMinigame() &&
             // We got the highest job level
             GetJobLevel(minigame) == MAX_MINIGAME_DIFFICULTY &&
             prev(GetJobLevel(minigame)) != MAX_MINIGAME_DIFFICULTY
