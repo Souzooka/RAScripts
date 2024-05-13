@@ -754,28 +754,36 @@ BossAchievementTitles = {
 
 function GetBossHPCond(stage_id)
 {
+    // The >= 0x80000000 is to check for if boss HP goes into the negatives
+    boss_hp_check = prev(BossHP) > 0 && (BossHP == 0 || BossHP >= 0x80000000)
+    
     // Each boss is non-standardized and has its own structure and functions for logic.
     // SOME don't follow the convention of updating the display HP to 0 or negative when dying 
     // Sigh
     // Unfortunately, true boss HP is inaccessible in RA even if we wanted to read it due to the nature of bosses
     // being controlled by in-game tasks, which by the nature of the task-manager paradigm there is no static pointer path to them.
-    problematic_stages = [0x31, 0x33, 0x44]
-    // The >= 0x80000000 is to check for if boss HP goes into the negatives
-    boss_hp_check = prev(BossHP) > 0 && (BossHP == 0 || BossHP >= 0x80000000)
-    for stage in problematic_stages
-    {
-        if stage == stage_id
-        {
-            // TODO: Investigate this boolean some more
-            BossMaybeDead = dword(GetRealAddress(0x528904, 0x528A84, 0x528904))
-            boss_hp_check = prev(BossMaybeDead) == 0 &&
-                            BossMaybeDead == 1 &&
-                            // Sanity check display HP of boss is under 5%
-                            BossHP / BossMaxHP < 0.05
-        }
-    }
+    // NOTE: tbh we might want to use this as a fallback condition universally maybe?
+    //problematic_stages = [0x23, 0x31, 0x33, 0x44]
+    //for stage in problematic_stages
+    //{
+    //    if stage == stage_id
+    //    {
+    //        // TODO: Investigate this boolean some more
+    //        BossMaybeDead = dword(GetRealAddress(0x528904, 0x528A84, 0x528904))
+    //        boss_hp_check = prev(BossMaybeDead) == 0 &&
+    //                        BossMaybeDead == 1 &&
+    //                        // Sanity check display HP of boss is under 5%
+    //                        BossHP / BossMaxHP < 0.05
+    //    }
+    //}
+    // TODO: Investigate this boolean some more
+    BossMaybeDead = dword(GetRealAddress(0x528904, 0x528A84, 0x528904))
+    fallback_check = prev(BossMaybeDead) == 0 &&
+                     BossMaybeDead == 1 &&
+                     // Sanity check display HP of boss is under 5%
+                     BossHP / BossMaxHP < 0.05
 
-    return boss_hp_check &&
+    return (boss_hp_check || fallback_check) &&
            !(PlayerHP == 0 || PlayerHP >= 0x80000000) // Prevent the achievement from triggering if Dean "kills" the boss in the afterlife (i.e. while dying)
 }
 
