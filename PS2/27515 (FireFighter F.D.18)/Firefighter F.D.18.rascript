@@ -1,7 +1,41 @@
 // Firefighter F.D.18
 // #ID = 27515
 
+// MISC. SCRIPT HELPERS
+
 NULL = 0
+True = 1
+False = 0
+
+function if_else(cond, v1, v2)
+{
+    if cond == true
+    {
+        return v1
+    }
+    return v2
+}
+
+addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
+function ptr(base, offsets, accessor=dword)
+{
+    val = base
+    
+    for i in range(0, length(offsets) - 1)
+    {
+        addr = val + offsets[i]
+        if (i == length(offsets) - 1)
+        {
+            val = accessor(addr)
+        }
+        else
+        {
+            val = dword(addr)
+        }
+    }
+    
+    return val
+}
 
 // Region checks
 // I'm working on a 60-fps hack but these addresses should be used for debug menu code, so they shouldn't get touched
@@ -43,6 +77,12 @@ CharacterID = dword(GetRealAddress(0x5A548C, 0x5A560C, 0x5A548C))
 PlayerInitialMaxHP = dword(GetRealAddress(0x5C4F90, 0x5C5110, 0x5C4F90))
 PlayerMaxHP = dword(GetRealAddress(0x5C4F94, 0x5C5114, 0x5C4F94))
 PlayerHP = dword(GetRealAddress(0x5C4F98, 0x5C5118, 0x5C4F98))
+_player_pos = GetRealAddress(0x531520, 0x5316A0, 0x531520)
+PlayerPos = {
+    "x": float(_player_pos + 0x0),
+    "y": float(_player_pos + 0x4),
+    "z": float(_player_pos + 0x8),
+}
 // See note for 0x5a5178
 LostItemsTemp = GetRealAddress(0x5A5188, 0x5A5308, 0x5A5188)
 LostItemsPerm = GetRealAddress(0x5A5CD8, 0x5A5E58, 0x5A5CD8)
@@ -712,16 +752,36 @@ BossAchievementTitles = {
     0x44: "Assume the Party Escort Submission Position"
 }
 
-function GetBossHPCond()
+function GetBossHPCond(stage_id)
 {
+    // Each boss is non-standardized and has its own structure and functions for logic.
+    // SOME don't follow the convention of updating the display HP to 0 or negative when dying 
+    // Sigh
+    // Unfortunately, true boss HP is inaccessible in RA even if we wanted to read it due to the nature of bosses
+    // being controlled by in-game tasks, which by the nature of the task-manager paradigm there is no static pointer path to them.
+    problematic_stages = [0x31, 0x33, 0x44]
     // The >= 0x80000000 is to check for if boss HP goes into the negatives
-    return prev(BossHP) > 0 && (BossHP == 0 || BossHP >= 0x80000000) &&
+    boss_hp_check = prev(BossHP) > 0 && (BossHP == 0 || BossHP >= 0x80000000)
+    for stage in problematic_stages
+    {
+        if stage == stage_id
+        {
+            // TODO: Investigate this boolean some more
+            BossMaybeDead = dword(GetRealAddress(0x528904, 0x528A84, 0x528904))
+            boss_hp_check = prev(BossMaybeDead) == 0 &&
+                            BossMaybeDead == 1 &&
+                            // Sanity check display HP of boss is under 5%
+                            BossHP / BossMaxHP < 0.05
+        }
+    }
+
+    return boss_hp_check &&
            !(PlayerHP == 0 || PlayerHP >= 0x80000000) // Prevent the achievement from triggering if Dean "kills" the boss in the afterlife (i.e. while dying)
 }
 
 function RegularBossTrigger(stage_id)
 {
-    boss_hp_cond = GetBossHPCond()
+    boss_hp_cond = GetBossHPCond(stage_id)
     return byte(StageID) == stage_id &&
            GameStatus == STATUS_Game &&
            prev(GameStatus) == STATUS_Game && // Try to prevent a false trigger when entering a new stage after soft-resetting another stage while in the boss
@@ -741,38 +801,45 @@ for stage_id in BossNames
     )
 }
 
-// No, you can't even use a cardinal plane or bounding box because the tank you fight the bodyguard is off at a diagonal. Sigh.
-// The only other data nearby boss HP is their name (changes per language), and the height and width of nametag (probably changes by language)
-// and position. It's not ideal but the simplest solution here is to probably actually use a 2-hits count for the boss HP going to 0 in 4-5
-// for the bodyguard
+// Jason Hunt & Bodyguard :)
+// The two bosses have the same max HP, are fought at the same height, and have arenas which can't be contained
+// within non-overlapping boxes. They're special boys. Very very good bosses. The only thing I could find that was accessible (i.e. part of a non-task data)
+// which differs was the boss name (which changes in each language anyways).
+// Anyways, we should be able to create a rotated 2D plane even within RA's limited mathematics, with a fairly simple slope
+// as the two boss areas can be separated with a 45* plane.
 
-// Jason Hunt
-// This'll trigger on both bosses, but shouldn't be an issue as it should be impossible to fight Bodyguard without beating Jason Hunt
+// First position (near the line on Jason's side)
+// X: 6787.07
+// Z: -3129.25
+
+// Second position (near the line on Bodyguard's side)
+// X: 7742.54
+// Z: -2316.61
+
+// We take the interpolation of these two positions to see how we should transform the slope.
+// X: 7264.805
+// Z: -2722.93
+
+// HINT: Plug (-x+7264.805)+(-y-2722.93)>0.0 or (-x+7264.805)+(-y-2722.93)<0.0 into Desmos
+// Simplifying the above equation:
+// (x + y) < 4541.875 for Jason's side, (x + y) > 4541.875 for bodyguard's side
+// NOTE: For the above, x and z are taken from the 3d position and mapped to x and y on a 2d coordinate plane.
+in_jason_arena = (PlayerPos["x"] + PlayerPos["z"]) < 4541.875
+
 achievement(
     title="Don't Shoot the Messenger",
     description="Defeat Jason Hunt.",
     points=5,
-    trigger=RegularBossTrigger(0x45)
+    trigger=RegularBossTrigger(0x45) &&
+            in_jason_arena
 )
-
-// Bodyguard
-function RepeatBossTrigger(stage_id, count)
-{
-    boss_hp_cond = GetBossHPCond()
-    reset = never(!any_of([STATUS_Game, STATUS_GameLoad, STATUS_GameCutscene, STATUS_GameCutsceneLoad], x=>GameStatus == x))
-    return byte(StageID) == stage_id &&
-           GameStatus == STATUS_Game &&
-           prev(GameStatus) == STATUS_Game && // Try to prevent a false trigger when entering a new stage after soft-resetting another stage while in the boss
-           tally(count, boss_hp_cond) &&
-           reset &&
-           BossMaxHP != 0
-}
 
 achievement(
     title="I'll Guard Every Body!",
     description="Defeat Bodyguard.",
     points=5,
-    trigger=RepeatBossTrigger(0x45, 2)
+    trigger=RegularBossTrigger(0x45) &&
+            !in_jason_arena
 )
 
 // WIN CONDITIONS
