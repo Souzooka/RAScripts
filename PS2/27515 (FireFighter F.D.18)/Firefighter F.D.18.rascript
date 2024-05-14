@@ -804,6 +804,7 @@ for stage_id in BossNames
     achievement(
         title=BossAchievementTitles[stage_id],
         description=format("Defeat {0}.", BossNames[stage_id]),
+        type="progression",
         points=5,
         trigger=RegularBossTrigger(stage_id)
     )
@@ -838,6 +839,7 @@ achievement(
     title="Don't Shoot the Messenger",
     description="Defeat Jason Hunt.",
     points=5,
+    type="progression",
     trigger=RegularBossTrigger(0x45) &&
             in_jason_arena
 )
@@ -846,6 +848,7 @@ achievement(
     title="I'll Guard Every Body!",
     description="Defeat Bodyguard.",
     points=5,
+    type="progression",
     trigger=RegularBossTrigger(0x45) &&
             !in_jason_arena
 )
@@ -891,6 +894,7 @@ for difficulty in Difficulties
             Difficulties[difficulty],
             OrHigherSuffix[AllowHigherDifficulty[difficulty]]
         ),
+        type=if_else(difficulty == DIFFICULTY_Easy, "win_condition", ""),
         points=WinConditionAchievementPoints[difficulty],
         trigger=AwardTrigger(
             WinConditionAwards[difficulty], 
