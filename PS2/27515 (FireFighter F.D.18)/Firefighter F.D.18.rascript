@@ -787,16 +787,23 @@ function GetBossHPCond(stage_id)
            !(PlayerHP == 0 || PlayerHP >= 0x80000000) // Prevent the achievement from triggering if Dean "kills" the boss in the afterlife (i.e. while dying)
 }
 
-function RegularBossTrigger(stage_id)
+function RegularBossTrigger(stage_id, extra_check=always_true())
 {
     boss_hp_cond = GetBossHPCond(stage_id)
-    return byte(StageID) == stage_id &&
-           GameStatus == STATUS_Game &&
-           prev(GameStatus) == STATUS_Game && // Try to prevent a false trigger when entering a new stage after soft-resetting another stage while in the boss
-           boss_hp_cond &&
-           // This is just a sanity check because boss max/current HP aren't zeroed out from exit until entering the game
-           // (and it might also prevent triggers on death too?)
-           BossMaxHP != 0
+    full_cond = byte(StageID) == stage_id &&
+                GameStatus == STATUS_Game &&
+                prev(GameStatus) == STATUS_Game && // Try to prevent a false trigger when entering a new stage after soft-resetting another stage while in the boss
+                boss_hp_cond &&
+                // This is just a sanity check because boss max/current HP aren't zeroed out from exit until entering the game
+                // (and it might also prevent triggers on death too?)
+                BossMaxHP != 0
+                
+    // If all else fails, just award the achievement on stage end
+    // Had some issues with some particularly troublesome bosses like Firestorm
+    // (which for some reason would tend to trigger with raintegration enabled and not
+    // with it disabled?)
+    emergency_fallback_check = CreateLeaderboardStart(stage_id, CharacterID, Difficulty)
+    return (full_cond && extra_check) || emergency_fallback_check
 }
 
 for stage_id in BossNames
@@ -840,8 +847,7 @@ achievement(
     description="Defeat Jason Hunt.",
     points=5,
     type="progression",
-    trigger=RegularBossTrigger(0x45) &&
-            in_jason_arena
+    trigger=RegularBossTrigger(0x45, in_jason_arena)
 )
 
 achievement(
@@ -849,8 +855,7 @@ achievement(
     description="Defeat Bodyguard.",
     points=5,
     type="progression",
-    trigger=RegularBossTrigger(0x45) &&
-            !in_jason_arena
+    trigger=RegularBossTrigger(0x45, !in_jason_arena)
 )
 
 // WIN CONDITIONS
