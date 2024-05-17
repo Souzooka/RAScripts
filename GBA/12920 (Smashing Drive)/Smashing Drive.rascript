@@ -78,6 +78,22 @@ LeaderboardLevels = {
     0x0700: "Night Owl - Bonus Route",
 }
 
+LeaderboardIDs = {
+    0x0100: 102267,
+    0x0101: 102268,
+    0x0102: 102269,
+    0x0200: 102270,
+    0x0201: 102271,
+    0x0202: 102272,
+    0x0300: 102273,
+    0x0301: 102274,
+    0x0302: 102275,
+    0x0400: 102276,
+    0x0500: 102277,
+    0x0600: 102278,
+    0x0700: 102279,
+}
+
 ScoreLeaderboardStart = () => CurrentProcess == PROCESS_INSERTNAME && prev(CurrentProcess) == PROCESS_GAMEOVER
 ScoreLeaderboardCancel = () => always_false()
 ScoreLeaderboardSubmit = () => always_true()
@@ -86,12 +102,13 @@ ScoreLeaderboardValue = () => GameScore
 TimeLeaderboardStart = (level) => level == Level && 
                                   CurrentProcess == PROCESS_TRACKS &&
                                   ProcessSubstate == 6 &&
-                                  prev(ProcessSubstate) == 5
+                                  prev(ProcessSubstate) != 6
 TimeLeaderboardCancel = () => always_false()
 TimeLeaderboardSubmit = () => always_true()
 TimeLeaderboardValue = () => RideTime * 100.0 // Convert to centisecs
 
 leaderboard(
+    id=102266,
     title="Score Attack",
     description="Complete the game with the highest score!",
     start=ScoreLeaderboardStart(),
@@ -103,7 +120,8 @@ leaderboard(
 for level in LeaderboardLevels
 {
     leaderboard(
-    title=format("{0} - Time Attack", LeaderboardLevels[level]),
+        id=LeaderboardIDs[level],
+        title=format("{0} - Time Attack", LeaderboardLevels[level]),
         description=format("Complete the stage \"{0}\" in the fastest time!", LeaderboardLevels[level]),
         start=TimeLeaderboardStart(level),
         cancel=TimeLeaderboardCancel(),
