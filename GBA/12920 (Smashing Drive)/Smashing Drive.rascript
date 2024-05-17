@@ -1,6 +1,23 @@
 // Smashing Drive
 // #ID = 12920
 
+// MISC. SCRIPT HELPERS
+
+mirror = v => v
+
+NULL = 0
+True = 1
+False = 0
+
+function if_else(cond, v1, v2)
+{
+    if cond == true
+    {
+        return v1
+    }
+    return v2
+}
+
 // GAME VARIABLES
 
 CurrentProcess = dword(0x6A04)
@@ -8,6 +25,7 @@ PROCESS_TRACKS = 0x8032A34
 PROCESS_GOTONEXT = 0x8032A60
 PROCESS_GAMEOVER = 0x8032A8C
 PROCESS_INSERTNAME = 0x80329DC
+PROCESS_CREDITS = 0x8032928
 
 in_game_processes = [PROCESS_TRACKS, PROCESS_GOTONEXT]
 
@@ -107,15 +125,20 @@ TimeLeaderboardCancel = () => always_false()
 TimeLeaderboardSubmit = () => always_true()
 TimeLeaderboardValue = () => RideTime * 100.0 // Convert to centisecs
 
-leaderboard(
-    id=102266,
-    title="Score Attack",
-    description="Complete the game with the highest score!",
-    start=ScoreLeaderboardStart(),
-    cancel=ScoreLeaderboardCancel(),
-    submit=ScoreLeaderboardSubmit(),
-    value=ScoreLeaderboardValue()
-)
+// The game increments the level to 0x401 at the end of the liberty statue stage
+LibertyLeaderboardStart = () => Level == 0x401 && prev(Level) == 0x400
+
+// If you play Dusk & Wired again, your score is that of your last playthrough + the score you gained on that level, wtf
+// that kind of makes this invalid sadly
+//leaderboard(
+//    id=102266,
+//    title="Score Attack",
+//    description="Complete the game with the highest score!",
+//    start=ScoreLeaderboardStart(),
+//    cancel=ScoreLeaderboardCancel(),
+//    submit=ScoreLeaderboardSubmit(),
+//    value=ScoreLeaderboardValue()
+//)
 
 for level in LeaderboardLevels
 {
@@ -123,7 +146,7 @@ for level in LeaderboardLevels
         id=LeaderboardIDs[level],
         title=format("{0} - Time Attack", LeaderboardLevels[level]),
         description=format("Complete the stage \"{0}\" in the fastest time!", LeaderboardLevels[level]),
-        start=TimeLeaderboardStart(level),
+        start=if_else(level == 0x0400, LibertyLeaderboardStart(), TimeLeaderboardStart(level)),
         cancel=TimeLeaderboardCancel(),
         submit=TimeLeaderboardSubmit(),
         value=TimeLeaderboardValue(),
