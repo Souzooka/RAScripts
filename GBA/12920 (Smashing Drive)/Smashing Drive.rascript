@@ -188,7 +188,7 @@ Achievements = {
     },
     0x302: {
         "id": 428609,
-        "title": "The Yellow Car's Your Enemy",
+        "title": "The Other Car's Your Enemy",
         "description": "Complete the \"Night Owl\" Route.",
         "points": 5,
         "type": "progression",
@@ -202,7 +202,7 @@ Achievements = {
     },
     0x400: {
         "id": 428610,
-        "title": "Let's Scratch This Town",
+        "title": "Let's Smash This Town",
         "description": "Complete the ride in the \"Dusk & Wired\" Route.",
         "points": 5,
         "type": "win_condition",
