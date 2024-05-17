@@ -154,3 +154,71 @@ for level in LeaderboardLevels
         lower_is_better=true
     )
 }
+
+// ACHIEVEMENTS START
+
+Achievements = {
+    0x0102: {
+        "id": 428607,
+        "title": "Up & Running",
+        "description": "Complete the \"Early Bird\" Route.",
+        "points": 5,
+        "type": "progression",
+    },
+    0x0500: {
+        "id": 428611,
+        "title": "Keep the Change",
+        "description": "Earn a high enough score to unlock, then complete, the bonus route for the \"Early Bird\" Route.",
+        "points": 5,
+        "type": "",
+    },
+    0x0202: {
+        "id": 428608,
+        "title": "Stay On the Sidewalk, Grandpa",
+        "description": "Complete the \"Rush Hour\" Route.",
+        "points": 5,
+        "type": "progression",
+    },
+    0x0600: {
+        "id": 428612,
+        "title": "Loosen Up Your Diapers",
+        "description": "Earn a high enough score to unlock, then complete, the bonus route for the \"Rush Hour\" Route.",
+        "points": 5,
+        "type": "",
+    },
+    0x302: {
+        "id": 428609,
+        "title": "The Yellow Car's Your Enemy",
+        "description": "Complete the \"Night Owl\" Route.",
+        "points": 5,
+        "type": "progression",
+    },
+    0x700: {
+        "id": 428613,
+        "title": "Step Aboard the Yellow Sun",
+        "description": "Earn a high enough score to unlock, then complete, the bonus route for the \"Night Owl\" Route.",
+        "points": 5,
+        "type": "",
+    },
+    0x400: {
+        "id": 428610,
+        "title": "Let's Scratch This Town",
+        "description": "Complete the ride in the \"Dusk & Wired\" Route.",
+        "points": 5,
+        "type": "win_condition",
+    },
+}
+
+for level in Achievements
+{
+    params = Achievements[level]
+    
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=params["description"],
+        points=params["points"],
+        type=params["type"],
+        trigger=if_else(level == 0x0400, LibertyLeaderboardStart(), TimeLeaderboardStart(level))
+    )
+}
