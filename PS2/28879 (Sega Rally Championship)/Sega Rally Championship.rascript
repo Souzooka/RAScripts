@@ -37,6 +37,17 @@ function ptr(base, offsets, accessor=dword)
     return val
 }
 
+function assert(cond)
+{
+    if cond == false
+    {
+        // make rcheevos try and think to throw a compile-time exception
+        return (byte(0) + byte(1)) * (byte(2) + byte(3))
+    }
+    
+    return true
+}
+
 FRAMES_PER_SECOND = 60.0
 function FramesToCentiseconds(val)
 {
@@ -55,8 +66,8 @@ function array_index(arr, val)
         i = i + 1
     }
     
-    // make rcheevos try and think to throw a compile-time exception
-    return (byte(0) + byte(1)) * (byte(2) + byte(3))
+    // didn't find the value :(
+    return assert(false)
 }
 
 // GAME VARIABLES
@@ -109,12 +120,26 @@ MaxLaps = dword(0x30FD74)
 RacePosition = dword(0x311710)
 
 // GAME FUNCTIONS
-
-function InGame()
+function InGame(championship=false, practice=false)
 {
+    // Both championship and practice are false by default to prevent generic functions like RaceOver()
+    // from introducing them into achievement logic, but at some point the logic should pass true to at least
+    // one of the arguments
+    sub_states = []
+    if championship
+    {
+        array_push(sub_states, 2)
+        array_push(sub_states, 3)
+    }
+    if practice
+    {
+        array_push(sub_states, 4)
+        array_push(sub_states, 5)
+    }
+
     return MainGameState == 3 &&
            any_of([5, 7], state => SecondaryGameState == state) &&
-           any_of([2, 3, 4, 5], state => QuadraryGameState == state)
+           if_else(length(sub_states) > 0, any_of(sub_states, state => QuadraryGameState == state), always_true())
 }
 
 function InSelectMenu()
@@ -137,14 +162,12 @@ function InSelectMenu()
 
 function InChampionship()
 {
-    return InGame() &&
-           any_of([2, 3], state => QuadraryGameState == state)
+    return InGame(championship=true, practice=false)
 }
 
 function InPractice()
 {
-    return InGame() &&
-           any_of([4, 5], state => QuadraryGameState == state)
+    return InGame(championship=false, practice=true)
 }
 
 function RaceOver(this_frame=true)
@@ -309,7 +332,7 @@ for stage in LapLeaderboards
         // NOTE: Completing the event does not increment the lap counter (we'll also have to grab
         // the delta lap count in value to account for both scenarios)
         start=Stage == stage && 
-              InGame() &&
+              InGame(championship=true, practice=true) &&
               (RaceOver(this_frame=true) || Laps > prev(Laps)),
         cancel=always_false(),
         submit=always_true(),
@@ -415,35 +438,35 @@ achievement(
     title="The Neverending Rally",
     description="In Championship Mode, complete the Lakeside stage with Round Length set to Longest, on the Normal or higher difficulty.",
     points=25,
-    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL, longest=True)
+    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL, longest=true)
 )
 
 // Very hard
 FORMAT_STR = "In Championship Mode, complete the {0} stage on the Very Hard difficulty{1}."
 achievement(
     id=429811,
-    title="Desert Expert",
+    title="Desert Land",
     description=format(FORMAT_STR, "Desert", " [The difficulty can be altered by pressing Select while in the attract mode]"),
     points=5,
     trigger=ChampionshipRaceOverTrigger(STAGE_DESERT, DIFFICULTY_VERYHARD)
 )
 achievement(
     id=429812,
-    title="Forest Expert",
+    title="Conditioned Reflex",
     description=format(FORMAT_STR, "Forest", ""),
     points=10,
     trigger=ChampionshipRaceOverTrigger(STAGE_FOREST, DIFFICULTY_VERYHARD)
 )
 achievement(
     id=429813,
-    title="Mountains Expert",
+    title="Getting Muddy",
     description=format(FORMAT_STR, "Mountains", ""),
     points=25,
     trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAINS, DIFFICULTY_VERYHARD)
 )
 achievement(
     id=429814,
-    title="Lakeside Expert",
+    title="My Dear Friend Rally",
     description=format(FORMAT_STR, "Lakeside", ""),
     points=50,
     trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_VERYHARD)
@@ -452,7 +475,7 @@ achievement(
 // Practice mode
 achievement(
     id=429815,
-    title="Rev Up Those Engines",
+    title="Ignition",
     description="In Practice Mode, complete any stage.",
     points=2,
     trigger=InPractice() &&
