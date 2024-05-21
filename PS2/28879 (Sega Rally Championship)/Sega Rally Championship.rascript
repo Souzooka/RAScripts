@@ -43,6 +43,22 @@ function FramesToCentiseconds(val)
     return val * (100.0 / FRAMES_PER_SECOND)
 }
 
+function array_index(arr, val)
+{
+    i = 0
+    for item in arr
+    {
+        if (item == val)
+        {
+            return i
+        }
+        i = i + 1
+    }
+    
+    // make rcheevos try and think to throw a compile-time exception
+    return (byte(0) + byte(1)) * (byte(2) + byte(3))
+}
+
 // GAME VARIABLES
 
 
@@ -338,3 +354,107 @@ for params in ChampionshipLeaderboards
         lower_is_better=true
     )
 }
+
+// ACHIEVEMENTS
+
+function ChampionshipRaceOverTrigger(stage, difficulty, longest=false, extra_cond=always_true())
+{
+    // Get a list of the valid difficulties (i.e. difficulty or harder difficulty) for an achievement
+    difficulties = [DIFFICULTY_VERYEASY, DIFFICULTY_EASY, DIFFICULTY_NORMAL, DIFFICULTY_HARD, DIFFICULTY_VERYHARD]
+    difficulty_idx = array_index(difficulties, difficulty)
+    valid_difficulties = []
+    for i in range(difficulty_idx, length(difficulties) - 1)
+    {
+        array_push(valid_difficulties, difficulties[i])
+    }
+    
+           // Correct game mode
+    return InChampionship() &&
+           // Correct stage
+           Stage == stage &&
+           // Is correct difficulty or harder
+           any_of(valid_difficulties, difficulty => Difficulty == difficulty) &&
+           // Is longest length, if we want it
+           if_else(longest, RoundLength == LENGTH_LONGEST, always_true()) &&
+           // Extra spice
+           extra_cond &&
+           // The race ended
+           RaceOver(this_frame=true)
+}
+
+// Complete stage 3 and 4 on normal or higher
+achievement(
+    id=429808,
+    title="Lap Leader",
+    description="In Championship Mode, complete the Mountains stage on Normal or higher difficulty.",
+    points=10,
+    type="progression",
+    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAINS, DIFFICULTY_NORMAL)
+)
+achievement(
+    id=429809,
+    title="Sega Rally Champion",
+    description="In Championship Mode, complete the Lakeside stage on Normal or higher difficulty.",
+    points=25,
+    type="win_condition",
+    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL)
+)
+
+// Manual Transmission Championship
+achievement(
+    id=429816,
+    title="Top Gear",
+    description="In Championship Mode, complete the Lakeside stage on Normal or higher difficulty with a Manual Transmission car.",
+    points=10,
+    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL, extra_cond=Transmission == TRANSMISSION_MANUAL)
+)
+
+// Longest :)
+achievement(
+    id=429810,
+    title="The Neverending Rally",
+    description="In Championship Mode, complete the Lakeside stage with Round Length set to Longest, on the Normal or higher difficulty.",
+    points=25,
+    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL, longest=True)
+)
+
+// Very hard
+FORMAT_STR = "In Championship Mode, complete the {0} stage on the Very Hard difficulty{1}."
+achievement(
+    id=429811,
+    title="Desert Expert",
+    description=format(FORMAT_STR, "Desert", " [The difficulty can be altered by pressing Select while in the attract mode]"),
+    points=5,
+    trigger=ChampionshipRaceOverTrigger(STAGE_DESERT, DIFFICULTY_VERYHARD)
+)
+achievement(
+    id=429812,
+    title="Forest Expert",
+    description=format(FORMAT_STR, "Forest", ""),
+    points=10,
+    trigger=ChampionshipRaceOverTrigger(STAGE_FOREST, DIFFICULTY_VERYHARD)
+)
+achievement(
+    id=429813,
+    title="Mountains Expert",
+    description=format(FORMAT_STR, "Mountains", ""),
+    points=25,
+    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAINS, DIFFICULTY_VERYHARD)
+)
+achievement(
+    id=429814,
+    title="Lakeside Expert",
+    description=format(FORMAT_STR, "Lakeside", ""),
+    points=50,
+    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_VERYHARD)
+)
+
+// Practice mode
+achievement(
+    id=429815,
+    title="Rev Up Those Engines",
+    description="In Practice Mode, complete any stage.",
+    points=2,
+    trigger=InPractice() &&
+            RaceOver(this_frame=true)
+)
