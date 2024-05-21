@@ -41,7 +41,7 @@ function assert(cond)
 {
     if cond == false
     {
-        // make rcheevos try and think to throw a compile-time exception
+        // This won't compile, causing an error to appear if evaluated
         return (byte(0) + byte(1)) * (byte(2) + byte(3))
     }
     
@@ -52,6 +52,11 @@ FRAMES_PER_SECOND = 60.0
 function FramesToCentiseconds(val)
 {
     return val * (100.0 / FRAMES_PER_SECOND)
+}
+
+function TimeToCentiseconds(minutes=0, seconds=0, frames=0)
+{
+    return FramesToCentiseconds(minutes * (60 * FRAMES_PER_SECOND) + (seconds * FRAMES_PER_SECOND) + frames)
 }
 
 function array_index(arr, val)
@@ -396,7 +401,7 @@ function ChampionshipRaceOverTrigger(stage, difficulty, longest=false, extra_con
            // Correct stage
            Stage == stage &&
            // Is correct difficulty or harder
-           any_of(valid_difficulties, difficulty => Difficulty == difficulty) &&
+           if_else(difficulty != DIFFICULTY_VERYEASY, any_of(valid_difficulties, difficulty => Difficulty == difficulty), always_true()) &&
            // Is longest length, if we want it
            if_else(longest, RoundLength == LENGTH_LONGEST, always_true()) &&
            // Extra spice
@@ -436,9 +441,9 @@ achievement(
 achievement(
     id=429810,
     title="The Neverending Rally",
-    description="In Championship Mode, complete the Lakeside stage with Round Length set to Longest, on the Normal or higher difficulty.",
+    description="In Championship Mode, complete the Mountains stage with Round Length set to Longest and achieve a total time under 17 minutes and 30 seconds.",
     points=25,
-    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL, longest=true)
+    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_VERYEASY, longest=true, extra_cond=GetTotalTime() < TimeToCentiseconds(minutes=17, seconds=30))
 )
 
 // Very hard
