@@ -144,6 +144,11 @@ function GetLapTime(lap)
     return FramesToCentiseconds(dword(0x1e0810 + lap * 4))
 }
 
+function GetTotalTime()
+{
+    return FramesToCentiseconds(dword(0x30fd60))
+}
+
 function GetTotalRaceProgress(max_laps)
 {   
     // rcheevos can't handle using a memory lookup (MaxLaps) in place of max_laps here...
@@ -255,3 +260,81 @@ for i in range(1, 5)
 rich_presence_display(
     "INSERT COIN(S)"
 )
+
+// LEADERBOARDS
+
+// Lap times
+LapLeaderboards = {
+    STAGE_DESERT: {
+        "id": 102672,
+        "name": "Desert",
+    },
+    STAGE_FOREST: {
+        "id": 102673,
+        "name": "Forest",
+    },
+    STAGE_MOUNTAINS: {
+        "id": 102674,
+        "name": "Mountains",
+    },
+    STAGE_LAKESIDE: {
+        "id": 102675,
+        "name": "Lakeside",
+    },
+}
+
+for stage in LapLeaderboards
+{
+    params = LapLeaderboards[stage]
+    leaderboard(
+        id=params["id"],
+        title=format("{0} - Best Lap", params["name"]),
+        description=format("Achieve the fastest lap time in the {0} stage!", params["name"]),
+        // NOTE: Completing the event does not increment the lap counter (we'll also have to grab
+        // the delta lap count in value to account for both scenarios)
+        start=Stage == stage && 
+              InGame() &&
+              (RaceOver(this_frame=true) || Laps > prev(Laps)),
+        cancel=always_false(),
+        submit=always_true(),
+        value=GetLapTime(prev(Laps)),
+        format="CENTISECS",
+        lower_is_better=true
+    )
+}
+
+// Championship (Normal / Longest)
+
+ChampionshipLeaderboards = [
+    {
+        "id": 102676,
+        "lengths": [LENGTH_SHORT, LENGTH_NORMAL, LENGTH_LONG],
+        "title": "Championship Mode (1 Lap Stages) - Fastest Time",
+        "description": "Complete the Championship Mode on any Length but Longest in the fastest time!"
+    },
+    {
+        "id": 102677,
+        "lengths": [LENGTH_LONGEST],
+        "title": "Championship Mode (5 Lap Stages) - Fastest Time",
+        "description": "Complete the Championship Mode on the Longest Length in the fastest time!"
+    }
+]
+
+for params in ChampionshipLeaderboards
+{
+    lengths = params["lengths"]
+    leaderboard(
+        id=params["id"],
+        title=params["title"],
+        description=params["description"],
+        start=InChampionship() &&
+              Stage == STAGE_MOUNTAINS &&
+              any_of(lengths, length => RoundLength == length) &&
+              RaceOver(this_frame=true),
+        cancel=always_false(),
+        submit=always_true(),
+        value=GetTotalTime(),
+        format="CENTISECS",
+        lower_is_better=true
+    )
+}
