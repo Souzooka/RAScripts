@@ -443,7 +443,8 @@ achievement(
 achievement(
     id=429810,
     title="The Neverending Rally",
-    description="In Championship Mode, complete the Mountain stage with Round Length set to Longest and achieve a total time under 17 minutes and 30 seconds.",
+    description="In Championship Mode, complete the Mountain stage with round length set to Longest and achieve a total time under 17 minutes and 30 seconds " +
+                "[The length can be altered by pressing Select while in the attract mode].",
     points=25,
     trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_VERYEASY, longest=true, extra_cond=GetTotalTime() < TimeToCentiseconds(minutes=17, seconds=30))
 )
