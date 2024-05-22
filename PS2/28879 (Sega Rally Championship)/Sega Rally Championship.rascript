@@ -109,7 +109,7 @@ CAR_DELTA = 1
 Stage = dword(0x310338)
 STAGE_DESERT = 0
 STAGE_FOREST = 1
-STAGE_MOUNTAINS = 2
+STAGE_MOUNTAIN = 2
 STAGE_LAKESIDE = 3
 
 // The amount of "progress" on a lap represented internally, used for calculating the top progress bar
@@ -214,7 +214,7 @@ TransmissionLookup = {
 StageLookup = {
     STAGE_DESERT: "Desert",
     STAGE_FOREST: "Forest",
-    STAGE_MOUNTAINS: "Mountains",
+    STAGE_MOUNTAIN: "Mountain",
     STAGE_LAKESIDE: "Lakeside",
 }
 
@@ -317,9 +317,9 @@ LapLeaderboards = {
         "id": 102673,
         "name": "Forest",
     },
-    STAGE_MOUNTAINS: {
+    STAGE_MOUNTAIN: {
         "id": 102674,
-        "name": "Mountains",
+        "name": "Mountain",
     },
     STAGE_LAKESIDE: {
         "id": 102675,
@@ -372,7 +372,7 @@ for params in ChampionshipLeaderboards
         title=params["title"],
         description=params["description"],
         start=InChampionship() &&
-              Stage == STAGE_MOUNTAINS &&
+              Stage == STAGE_MOUNTAIN &&
               any_of(lengths, length => RoundLength == length) &&
               RaceOver(this_frame=true),
         cancel=always_false(),
@@ -411,13 +411,15 @@ function ChampionshipRaceOverTrigger(stage, difficulty, longest=false, extra_con
 }
 
 // Complete stage 3 and 4 on normal or higher
+// I don't know how you'd complete stage 3 without being 1st (on regular round length) but I'll include that
+// condition just so I have something to use for the badge
 achievement(
     id=429808,
     title="Lap Leader",
-    description="In Championship Mode, complete the Mountains stage on Normal or higher difficulty.",
+    description="In Championship Mode, complete the Mountain stage on Normal or higher difficulty in 1st place.",
     points=10,
     type="progression",
-    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAINS, DIFFICULTY_NORMAL)
+    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_NORMAL, extra_cond=RacePosition==1)
 )
 achievement(
     id=429809,
@@ -441,9 +443,9 @@ achievement(
 achievement(
     id=429810,
     title="The Neverending Rally",
-    description="In Championship Mode, complete the Mountains stage with Round Length set to Longest and achieve a total time under 17 minutes and 30 seconds.",
+    description="In Championship Mode, complete the Mountain stage with Round Length set to Longest and achieve a total time under 17 minutes and 30 seconds.",
     points=25,
-    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_VERYEASY, longest=true, extra_cond=GetTotalTime() < TimeToCentiseconds(minutes=17, seconds=30))
+    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_VERYEASY, longest=true, extra_cond=GetTotalTime() < TimeToCentiseconds(minutes=17, seconds=30))
 )
 
 // Very hard
@@ -465,9 +467,9 @@ achievement(
 achievement(
     id=429813,
     title="Getting Muddy",
-    description=format(FORMAT_STR, "Mountains", ""),
+    description=format(FORMAT_STR, "Mountain", ""),
     points=25,
-    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAINS, DIFFICULTY_VERYHARD)
+    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_VERYHARD)
 )
 achievement(
     id=429814,
