@@ -124,6 +124,9 @@ MaxLaps = dword(0x30FD74)
 
 RacePosition = dword(0x311710)
 
+// Cheats
+AltHandling = dword(0x30FD58)
+
 // GAME FUNCTIONS
 function InGame(championship=false, practice=false)
 {
@@ -173,6 +176,12 @@ function InChampionship()
 function InPractice()
 {
     return InGame(championship=false, practice=true)
+}
+
+function CheatProtection()
+{
+    // This value indicates a modified vehicle handing/acceleration profile
+    return AltHandling == 0
 }
 
 function RaceOver(this_frame=true)
@@ -226,14 +235,20 @@ DifficultyLookup = {
     DIFFICULTY_VERYHARD: "Very Hard",
 }
 
+CheatLookup = {
+    0: "",
+    // DEFAULT: " (⚠️ Tuned Version)"
+}
+
 rich_presence_conditional_display(
     InSelectMenu(),
     "Selecting game mode and car"
 )
 rich_presence_conditional_display(
     InChampionship() && RaceOver(this_frame=false),
-    "Driving the {0} ({1}) through {2} | Championship Mode | {3} Difficulty | Lap {4}/{5} (🏁 Stage Complete 🏁) | Position {6}/15",
+    "Driving the {0}{1} ({2}) through {3} | Championship Mode | {4} Difficulty | Lap {5}/{6} (🏁 Stage Complete 🏁) | Position {7}/15",
     rich_presence_lookup("CAR", Car, CarLookup),
+    rich_presence_lookup("CHEAT", AltHandling, CheatLookup, " (⚠️ Tuned Version)"),
     rich_presence_lookup("TRANSMISSION", Transmission, TransmissionLookup),
     rich_presence_lookup("STAGE", Stage, StageLookup),
     rich_presence_lookup("DIFFICULTY", Difficulty, DifficultyLookup),
@@ -243,8 +258,9 @@ rich_presence_conditional_display(
 )
 rich_presence_conditional_display(
     InPractice() && RaceOver(this_frame=false),
-    "Driving the {0} ({1}) through {2} | Practice Mode | {3} Difficulty | Lap {4}/{5} (🏁 Stage Complete 🏁) | Position {6}/2",
+    "Driving the {0}{1} ({2}) through {3} | Practice Mode | {4} Difficulty | Lap {5}/{6} (🏁 Stage Complete 🏁) | Position {7}/2",
     rich_presence_lookup("CAR", Car, CarLookup),
+    rich_presence_lookup("CHEAT", AltHandling, CheatLookup, " (⚠️ Tuned Version)"),
     rich_presence_lookup("TRANSMISSION", Transmission, TransmissionLookup),
     rich_presence_lookup("STAGE", Stage, StageLookup),
     rich_presence_lookup("DIFFICULTY", Difficulty, DifficultyLookup),
@@ -254,8 +270,9 @@ rich_presence_conditional_display(
 )
 rich_presence_conditional_display(
     InChampionship() && any_of([2, 4], state => QuadraryGameState == state),
-    "Driving the {0} ({1}) through {2} | Championship Mode | {3} Difficulty | Lap {4}/{5} (Loading Stage)",
+    "Driving the {0}{1} ({2}) through {3} | Championship Mode | {4} Difficulty | Lap {5}/{6} (Loading Stage)",
     rich_presence_lookup("CAR", Car, CarLookup),
+    rich_presence_lookup("CHEAT", AltHandling, CheatLookup, " (⚠️ Tuned Version)"),
     rich_presence_lookup("TRANSMISSION", Transmission, TransmissionLookup),
     rich_presence_lookup("STAGE", Stage, StageLookup),
     rich_presence_lookup("DIFFICULTY", Difficulty, DifficultyLookup),
@@ -265,8 +282,9 @@ rich_presence_conditional_display(
 )
 rich_presence_conditional_display(
     InPractice() && any_of([2, 4], state => QuadraryGameState == state),
-    "Driving the {0} ({1}) through {2} | Practice Mode | {3} Difficulty | Lap {4}/{5} (Loading Stage)",
+    "Driving the {0}{1} ({2}) through {3} | Practice Mode | {4} Difficulty | Lap {5}/{6} (Loading Stage)",
     rich_presence_lookup("CAR", Car, CarLookup),
+    rich_presence_lookup("CHEAT", AltHandling, CheatLookup, " (⚠️ Tuned Version)"),
     rich_presence_lookup("TRANSMISSION", Transmission, TransmissionLookup),
     rich_presence_lookup("STAGE", Stage, StageLookup),
     rich_presence_lookup("DIFFICULTY", Difficulty, DifficultyLookup),
@@ -278,8 +296,9 @@ for i in range(1, 5)
 {
     rich_presence_conditional_display(
         InChampionship() && MaxLaps == i,
-        "Driving the {0} ({1}) through {2} | Championship Mode | {3} Difficulty | Lap {4}/{5} ({6}% stage progress) | Position {7}/15",
+        "Driving the {0}{1} ({2}) through {3} | Championship Mode | {4} Difficulty | Lap {5}/{6} ({7}% stage progress) | Position {8}/15",
         rich_presence_lookup("CAR", Car, CarLookup),
+        rich_presence_lookup("CHEAT", AltHandling, CheatLookup, " (⚠️ Tuned Version)"),
         rich_presence_lookup("TRANSMISSION", Transmission, TransmissionLookup),
         rich_presence_lookup("STAGE", Stage, StageLookup),
         rich_presence_lookup("DIFFICULTY", Difficulty, DifficultyLookup),
@@ -290,8 +309,9 @@ for i in range(1, 5)
     )
     rich_presence_conditional_display(
         InPractice() && MaxLaps == i,
-        "Driving the {0} ({1}) through {2} | Practice Mode | {3} Difficulty | Lap {4}/{5} ({6}% stage progress) | Position {7}/2",
+        "Driving the {0}{1} ({2}) through {3} | Practice Mode | {4} Difficulty | Lap {5}/{6} ({7}% stage progress) | Position {8}/2",
         rich_presence_lookup("CAR", Car, CarLookup),
+        rich_presence_lookup("CHEAT", AltHandling, CheatLookup, " (⚠️ Tuned Version)"),
         rich_presence_lookup("TRANSMISSION", Transmission, TransmissionLookup),
         rich_presence_lookup("STAGE", Stage, StageLookup),
         rich_presence_lookup("DIFFICULTY", Difficulty, DifficultyLookup),
@@ -336,7 +356,8 @@ for stage in LapLeaderboards
         description=format("Achieve the fastest lap time in the {0} stage!", params["name"]),
         // NOTE: Completing the event does not increment the lap counter (we'll also have to grab
         // the delta lap count in value to account for both scenarios)
-        start=Stage == stage && 
+        start=CheatProtection() &&
+              Stage == stage && 
               InGame(championship=true, practice=true) &&
               (RaceOver(this_frame=true) || Laps > prev(Laps)),
         cancel=always_false(),
@@ -371,7 +392,8 @@ for params in ChampionshipLeaderboards
         id=params["id"],
         title=params["title"],
         description=params["description"],
-        start=InChampionship() &&
+        start=CheatProtection() &&
+              InChampionship() &&
               Stage == STAGE_MOUNTAIN &&
               any_of(lengths, length => RoundLength == length) &&
               RaceOver(this_frame=true),
@@ -419,7 +441,8 @@ achievement(
     description="In Championship Mode, complete the Mountain stage on Normal or higher difficulty in 1st place.",
     points=10,
     type="progression",
-    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_NORMAL, extra_cond=RacePosition==1)
+    trigger=CheatProtection() &&
+            ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_NORMAL, extra_cond=RacePosition==1)
 )
 achievement(
     id=429809,
@@ -427,7 +450,8 @@ achievement(
     description="In Championship Mode, complete the Lakeside stage on Normal or higher difficulty.",
     points=25,
     type="win_condition",
-    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL)
+    trigger=CheatProtection() &&
+            ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL)
 )
 
 // Manual Transmission Championship
@@ -436,7 +460,8 @@ achievement(
     title="Top Gear",
     description="In Championship Mode, complete the Lakeside stage on Normal or higher difficulty with a Manual Transmission car.",
     points=10,
-    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL, extra_cond=Transmission == TRANSMISSION_MANUAL)
+    trigger=CheatProtection() &&
+            ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_NORMAL, extra_cond=Transmission == TRANSMISSION_MANUAL)
 )
 
 // Longest :)
@@ -446,7 +471,8 @@ achievement(
     description="In Championship Mode, complete the Mountain stage with round length set to Longest and achieve a total time under 17 minutes and 30 seconds " +
                 "[The length can be altered by pressing Select while in the attract mode].",
     points=25,
-    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_VERYEASY, longest=true, extra_cond=GetTotalTime() < TimeToCentiseconds(minutes=17, seconds=30))
+    trigger=CheatProtection() &&
+            ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_VERYEASY, longest=true, extra_cond=GetTotalTime() < TimeToCentiseconds(minutes=17, seconds=30))
 )
 
 // Very hard
@@ -456,28 +482,32 @@ achievement(
     title="Desert Land",
     description=format(FORMAT_STR, "Desert", " [The difficulty can be altered by pressing Select while in the attract mode]"),
     points=5,
-    trigger=ChampionshipRaceOverTrigger(STAGE_DESERT, DIFFICULTY_VERYHARD)
+    trigger=CheatProtection() &&
+            ChampionshipRaceOverTrigger(STAGE_DESERT, DIFFICULTY_VERYHARD)
 )
 achievement(
     id=429812,
     title="Conditioned Reflex",
     description=format(FORMAT_STR, "Forest", ""),
     points=10,
-    trigger=ChampionshipRaceOverTrigger(STAGE_FOREST, DIFFICULTY_VERYHARD)
+    trigger=CheatProtection() &&
+            ChampionshipRaceOverTrigger(STAGE_FOREST, DIFFICULTY_VERYHARD)
 )
 achievement(
     id=429813,
     title="Getting Muddy",
     description=format(FORMAT_STR, "Mountain", ""),
     points=25,
-    trigger=ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_VERYHARD)
+    trigger=CheatProtection() &&
+            ChampionshipRaceOverTrigger(STAGE_MOUNTAIN, DIFFICULTY_VERYHARD)
 )
 achievement(
     id=429814,
     title="My Dear Friend Rally",
     description=format(FORMAT_STR, "Lakeside", ""),
     points=50,
-    trigger=ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_VERYHARD)
+    trigger=CheatProtection() &&
+            ChampionshipRaceOverTrigger(STAGE_LAKESIDE, DIFFICULTY_VERYHARD)
 )
 
 // Practice mode
@@ -486,6 +516,7 @@ achievement(
     title="Ignition",
     description="In Practice Mode, complete any stage.",
     points=2,
-    trigger=InPractice() &&
+    trigger=CheatProtection() &&
+            InPractice() &&
             RaceOver(this_frame=true)
 )
