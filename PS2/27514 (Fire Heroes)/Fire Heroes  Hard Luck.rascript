@@ -86,6 +86,14 @@ Difficulty = {
     EU: ResolvePointer(FireCore[EU], [0xC, 0xE4]),
     JP: ResolvePointer(FireCore[JP], [0xC, 0xE4]),
 }
+// Backup game difficulty (the above is not sadly while in the game result menu, sadly)
+// 0.5f == Easy
+// 1.0f == Normal
+// 2.0f == Hard
+DifficultyAlt = {
+    EU: float(0x1f9d834),
+    JP: float(0x1f99834),
+}
 // Victim Status Array (size 0x18) of 8-bit ints
 // 0= Unknown?
 // 1= Not Rescued
@@ -195,6 +203,9 @@ SCOTT = 2
 EASY = 0
 NORMAL = 1
 HARD = 2
+EASY_ALT = 0.5
+NORMAL_ALT = 1.0
+HARD_ALT = 2.0
 
 // Episode Status
 EPISODE_OPEN = 0
@@ -1071,7 +1082,7 @@ achievement(
         // Correct region
         IsRegion(region) &&
         // Correct difficulty
-        Difficulty[region] == HARD &&
+        DifficultyAlt[region] == HARD_ALT &&
         // Episode 9 means they got ending 1
         EpisodeID[region] == 9 &&
         // Game Score Tally done
@@ -1095,7 +1106,7 @@ achievement(
         // Correct region
         IsRegion(region) &&
         // Correct difficulty
-        Difficulty[region] == HARD &&
+        DifficultyAlt[region] == HARD_ALT &&
         // Episode 9 means they got ending 1
         EpisodeID[region] == 9 &&
         // Correct rank &&
