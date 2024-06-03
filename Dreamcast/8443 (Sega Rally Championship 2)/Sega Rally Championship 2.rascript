@@ -101,6 +101,12 @@ RacePosition    = (addr) => dword(0xcce260 - PROCESS_START + addr)
 CurrentLap      = (addr) => dword(0xd5f3f0 - PROCESS_START + addr)
 // Array of 8(?) 32-bit values for lap times, in milliseconds
 LapTimes        = (addr) => 0xd5f3f8 - PROCESS_START + addr
+// Fastest lap (in Time Attack)
+FastestLap      = (addr) => dword(0xd5f44c - PROCESS_START + addr)
+// Car Record (in Time Attack)
+CarRecord       = (addr) => dword(0xd5f450 - PROCESS_START + addr)
+// Course Record (in Time Attack)
+CourseRecord     = (addr) => dword(0xd5f460 - PROCESS_START + addr)
 // Array of 8(?) 32-bit values for area segment times, in milliseconds, fore free run Time Attack mode
 AreaTimes       = (addr) => 0xd5f468 - PROCESS_START + addr
 // Remaining time for the cones minigame in Riviera in arcade mode
@@ -111,6 +117,9 @@ ConesScore      = (addr) => dword(0xd5f4c8 - PROCESS_START + addr)
 GameMode        = (addr) => dword(0xd7a904 - PROCESS_START + addr)
 // Remaining time for arcade, 10year in milliseconds; -1 in time attack
 RemainingTime   = (addr) => dword(0xd7a908 - PROCESS_START + addr)
+// Some sort of enumeration for race state (?) -- there's another byte at 0x....11 which may be helpful too
+// See RACESTATE enum
+RaceState       = (addr) => byte(0xd7a910 - PROCESS_START + addr)
 // Total time for current event, in millseconds
 EventTime       = (addr) => dword(0xd7a914 - PROCESS_START + addr)
 // Range [0, 0x10], see TRACK enum below
@@ -137,7 +146,8 @@ Steering        = (addr) => dword(0xd7aa04 - PROCESS_START + addr)
 Brakes          = (addr) => dword(0xd7aa08 - PROCESS_START + addr)
 
 // Current progress through the current lap -- max progress varies by track, Desert SS1's max progress is about 360
-LapProgress     = (addr) => ptr(dword(0xd88c30 - PROCESS_START + addr), [0x8, 0x10], dword, process_start=addr)
+LapProgressPtr  = (addr) => dword(0xd88c30 - PROCESS_START + addr) // NULL when not in a race (or demo, or replay), so good to check
+LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, process_start=addr)
 
 // GAME ENUMERATIONS
 
@@ -153,6 +163,11 @@ GAMEMODE_RECORDS = 0x8
 GAMEMODE_CAR_SETTINGS = 0x9
 GAMEMODE_CAR_PROFILES = 0xA
 GAMEMODE_OPTIONS = 0xB
+
+RACESTATE_RACING = 0x0
+RACESTATE_COUNTDOWN = 0x1
+RACESTATE_LOADING = 0x9
+RACESTATE_FINISHED = 0xA
 
 TRACK_DESERTSS1 = 0x0
 TRACK_DESERTSS2 = 0x4
@@ -280,6 +295,32 @@ NAVIGATOR_FEMALE = 0x1
 
 CONES_MAXSCORE = 28400
 
+// GAME FUNCTIONS
+
+function AntiCheat(addr)
+{
+    // TODO: Check if player has year 10 car without completing year 10
+    // (or just a specific car if some are accessible??) to combat unlock all cars code
+    return true
+}
+
+function InRace(addr)
+{
+    // Not completely ideal since this isn't NULL when in the demo mode (or replays?) but probably good enough for now
+    return LapProgressPtr(addr) != NULL
+}
+
+function RaceOver(addr, pred=v=>v)
+{
+    return InRace(addr) && pred(RaceState(addr)) == RACESTATE_FINISHED
+}
+
+function GetLapTime(addr, lap)
+{
+    // To centiseconds
+    return dword(LapTimes(addr) + 4 * lap) / 10
+}
+
 // ACHIEVEMENTS
 
 // Test achievement -- should hopefully work regardless of CPU overclocking state
@@ -290,24 +331,205 @@ achievement(
     trigger=any_of(PROCESS_STARTS, start => ProcessStartsAt(start) && LapProgress(start) >= 5 && prev(LapProgress(start) < 5))
 )
 
+// LEADERBOARDS
+
+MAX_OF_VARARGS_ARITY = 2
+assert(
+    length(PROCESS_STARTS) == MAX_OF_VARARGS_ARITY,
+    "Hey! max_of can't accept an array for leaderboard values; if you add new potential memory locations " +
+    "for game memory, please make sure to update the leaderboards' value cases appropriately! Thanks!"
+)
+
+// Should time attack leaderboards always submit, even if the player hasn't achieved a new fastest time in game?
+// Yes for now for testing purposes
+// TODO: Find addresses for time records in game
+ALWAYS_SUBMIT = false
+_EXTRA = if_else(ALWAYS_SUBMIT, "", " Submits when achieving a new best in-game time.")
+
+LeaderboardParamsFLAP = [
+    {
+        "id": 0,
+        "track_id": TRACK_DESERTSS1,
+        "track_name": "Desert SS1",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_DESERTSS2,
+        "track_name": "Desert SS2",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_DESERTSS3,
+        "track_name": "Desert SS3",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_MOUNTAINSS1,
+        "track_name": "Mountain SS1",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_MOUNTAINSS2,
+        "track_name": "Mountain SS2",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_MOUNTAINSS3,
+        "track_name": "Mountain SS3",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_SNOWYSS1,
+        "track_name": "Snowy SS1",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_SNOWYSS1,
+        "track_name": "Snowy SS1",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_SNOWYSS2,
+        "track_name": "Snowy SS2",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_SNOWYSS3,
+        "track_name": "Snowy SS3",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_RIVERIA,
+        "track_name": "Riveria",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_MUDDYSS1,
+        "track_name": "Muddy SS1",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_MUDDYSS2,
+        "track_name": "Muddy SS2",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_MUDDYSS3,
+        "track_name": "Muddy SS3",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_ISLESS1,
+        "track_name": "Isle SS1",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_ISLESS2,
+        "track_name": "Isle SS2",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_ISLESS3,
+        "track_name": "Isle SS3",
+    },
+    {
+        "id": 0,
+        "track_id": TRACK_SUPERSS,
+        "track_name": "Super S.S.",
+    },
+]
+
+function FLAP_Value(addr)
+{
+    if ALWAYS_SUBMIT
+    {
+        // NOTE: Short by about .25 seconds for the last lap
+        return GetLapTime(addr, prev(CurrentLap(addr)))
+    }
+    
+    // To centiseconds
+    return FastestLap(addr) / 10
+}
+
+for params in LeaderboardParamsFLAP
+{
+    leaderboard(
+        title=format("{0} - Best Lap", params["track_name"]),
+        description=format("In Time Attack, complete a lap on the {0} stage within the fastest time!{1}", params["track_name"], _EXTRA),
+        start=any_of(PROCESS_STARTS, s => (
+                ProcessStartsAt(s) &&
+                // New fastest lap
+                ((FastestLap(s) < prev(FastestLap(s))) || ALWAYS_SUBMIT) &&
+                // Correct mode
+                GameMode(s) == GAMEMODE_TIME_ATTACK &&
+                // Correct track
+                TrackID(s) == params["track_id"] &&
+                // Lap counter increments or race is over
+                (
+                    (RaceOver(s) && !RaceOver(s, prev)) ||
+                    (CurrentLap(s) > prev(CurrentLap(s)))
+                )
+            )
+        ),
+        cancel=always_false(),
+        submit=always_true(),
+        // NOTE: Unfortunately for the last lap, the game doesn't seems to store the value too early into the lap times array so there's a very small discrepancy
+        // of about .25 in that case. Fortunately, we can also prevent the discrepancy in the leaderboards by only submitting when the player obtains a new fastest lap.
+        value=max_of(
+            measured(FLAP_Value(PROCESS_START), when=ProcessStartsAt(PROCESS_START)),
+            measured(FLAP_Value(PROCESS_START2), when=ProcessStartsAt(PROCESS_START2))
+        ),
+        format="CENTISECS",
+        lower_is_better=true
+    )
+}
+
+for params in LeaderboardParamsFLAP
+{
+    leaderboard(
+        title=format("{0} - Course Record", params["track_name"]),
+        description=format("In Time Attack, complete a 3 Laps run on the {0} stage within the fastest time!{1}", params["track_name"], _EXTRA),
+        start=any_of(PROCESS_STARTS, s => (
+                ProcessStartsAt(s) &&
+                // Correct mode
+                GameMode(s) == GAMEMODE_TIME_ATTACK &&
+                // Correct track
+                TrackID(s) == params["track_id"] &&
+                // Race is over
+                RaceOver(s) && !RaceOver(s, prev) &&
+                // The event timer is less than the course record
+                EventTime(s) < CourseRecord(s)
+            )
+        ),
+        cancel=always_false(),
+        submit=always_true(),
+        value=max_of(
+            measured(EventTime(PROCESS_START) / 10, when=ProcessStartsAt(PROCESS_START)),
+            measured(EventTime(PROCESS_START2) / 10, when=ProcessStartsAt(PROCESS_START2))
+        ),
+        format="CENTISECS",
+        lower_is_better=true
+    )
+}
+
 leaderboard(
-	title="Riviera Cones Minigame",
-	description="Knock over as many cones as you can in the cones minigame in Riviera in arcade mode. Score maxout will earn bonus points for remaining time.",
+    title="Riviera Cones Minigame",
+    description="Knock over as many cones as you can in the cones minigame in Riviera in arcade mode. Score maxout will earn bonus points for remaining time.",
 
-	start=any_of(PROCESS_STARTS, s => (
-		ProcessStartsAt(s) && TrackID(s) == TRACK_RIVERIA && 
-		(
-			(ConesScore(s) == CONES_MAXSCORE) ||
-			(prev(ConesTime(s)) > 0 && ConesTime(s) == 0)
-		)
-	)),
-	cancel=always_false(),
-	submit=always_true(),
+    start=any_of(PROCESS_STARTS, s => (
+        ProcessStartsAt(s) && TrackID(s) == TRACK_RIVERIA && 
+        (
+            (ConesScore(s) == CONES_MAXSCORE) ||
+            (prev(ConesTime(s)) > 0 && ConesTime(s) == 0)
+        )
+    )),
+    cancel=always_false(),
+    submit=always_true(),
 
-	value=max_of(
-		measured(ConesScore(PROCESS_START) + ConesTime(PROCESS_START), when=ProcessStartsAt(PROCESS_START)),
-		measured(ConesScore(PROCESS_START2) + ConesTime(PROCESS_START2), when=ProcessStartsAt(PROCESS_START2))
-	),
-	format="SCORE",
-	lower_is_better=false
+    value=max_of(
+        measured(ConesScore(PROCESS_START) + ConesTime(PROCESS_START), when=ProcessStartsAt(PROCESS_START)),
+        measured(ConesScore(PROCESS_START2) + ConesTime(PROCESS_START2), when=ProcessStartsAt(PROCESS_START2))
+    ),
+    format="SCORE",
+    lower_is_better=false
 )
