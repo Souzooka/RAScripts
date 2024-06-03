@@ -148,6 +148,8 @@ Brakes          = (addr) => dword(0xd7aa08 - PROCESS_START + addr)
 // Current progress through the current lap -- max progress varies by track, Desert SS1's max progress is about 360
 LapProgressPtr  = (addr) => dword(0xd88c30 - PROCESS_START + addr) // NULL when not in a race (or demo, or replay), so good to check
 LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, process_start=addr)
+// Array of arcade (and 10year) stage times
+StageTimes      = (addr) => 0xd88c7C - PROCESS_START + addr
 
 // GAME ENUMERATIONS
 
@@ -321,6 +323,12 @@ function GetLapTime(addr, lap)
     return dword(LapTimes(addr) + 4 * lap) / 10
 }
 
+function GetStageTime(addr, stage)
+{
+    // To centiseconds
+    return dword(StageTimes(addr) + 4 * stage) / 10
+}
+
 // RICH PRESENCE
 
 TrackLookup = {
@@ -484,6 +492,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
     id = CourseRecordID //+ i
     
     leaderboard(
+        id=id,
         title=format("{0} - Course Record", TrackLookup[track]),
         description=format("In Time Attack, complete a 3 Laps run on the {0} stage within the fastest time!{1}", TrackLookup[track], _EXTRA),
         start=any_of(PROCESS_STARTS, s => (
@@ -508,6 +517,83 @@ for i in range(0, length(ALL_TRACKS) - 1)
         lower_is_better=true
     )
 }
+
+ARCADE_TRACKS = [
+    {
+        "name": "Desert",
+        "track_id": TRACK_DESERTSS1,
+    },
+    {
+        "name": "Mountain",
+        "track_id": TRACK_MOUNTAINSS2,
+    },
+    {
+        "name": "Snowy",
+        "track_id": TRACK_SNOWYSS3,
+    },
+    {
+        "name": "Riveria",
+        "track_id": TRACK_RIVERIA,
+    },
+]
+
+ArcadeLeaderboardID = 0
+
+for i in range(0, length(ARCADE_TRACKS) - 1)
+{
+    params = ARCADE_TRACKS[i]
+    name = params["name"]
+    track = params["track_id"]
+    id = ArcadeLeaderboardID //+ i
+    
+    leaderboard(
+        id=id,
+        title=format("{0} - Arcade Stage Record", name),
+        description=format("In Arcade, complete the {0} stage as fast as possible!", name),
+        start=any_of(PROCESS_STARTS, s => (
+                ProcessStartsAt(s) &&
+                // Correct mode
+                GameMode(s) == GAMEMODE_ARCADE &&
+                // Correct track
+                TrackID(s) == track &&
+                // Race is over
+                RaceOver(s) && !RaceOver(s, prev)
+            )
+        ),
+        cancel=always_false(),
+        submit=always_true(),
+        value=max_of(
+            measured(GetStageTime(PROCESS_START, i), when=ProcessStartsAt(PROCESS_START)),
+            measured(GetStageTime(PROCESS_START2, i), when=ProcessStartsAt(PROCESS_START2))
+        ),
+        format="CENTISECS",
+        lower_is_better=true
+    )
+}
+
+leaderboard(
+    id=0,
+    title=format("Arcade Record"),
+    description="Complete the arcade mode as fast as possible!",
+    start=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) &&
+            // Correct mode
+            GameMode(s) == GAMEMODE_ARCADE &&
+            // Correct track
+            TrackID(s) == TRACK_RIVERIA &&
+            // Race is over
+            RaceOver(s) && !RaceOver(s, prev)
+        )
+    ),
+    cancel=always_false(),
+    submit=always_true(),
+    value=max_of(
+        measured(EventTime(PROCESS_START) / 10, when=ProcessStartsAt(PROCESS_START)),
+        measured(EventTime(PROCESS_START2) / 10, when=ProcessStartsAt(PROCESS_START2))
+    ),
+    format="CENTISECS",
+    lower_is_better=true
+)
 
 leaderboard(
     title="Riviera Cones Minigame",
