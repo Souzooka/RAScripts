@@ -126,6 +126,8 @@ EventTime       = (addr) => dword(0xd7a914 - PROCESS_START + addr)
 TrackID         = (addr) => dword(0xd7a920 - PROCESS_START + addr)
 // Range [0, 0x16], see CAR enum below
 CarID           = (addr) => dword(0xd7a9e0 - PROCESS_START + addr)
+// Same as CarID, only set during Car Settings
+TuningCarID     = (addr) => dword(0xc8763c - PROCESS_START + addr)
 
 // Car Tuning Values
 // Range [0, 7], see TRANSMISSION enum below
@@ -389,20 +391,59 @@ for s in PROCESS_STARTS
     rp_car_name = rich_presence_lookup("Car", CarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
     rp_track_name = rich_presence_lookup("Track", TrackID(s), TrackLookup, fallback=TrackLookup[TRACK_RIVERIA])
 
-    rp_race_position = rich_presence_value("_Number", RacePosition(s), "VALUE")
-    rp_race_position_suffix = rich_presence_lookup("Suffix", RacePosition(s), OrdinalSuffixLookup, fallback="th")
+    rp_race_position = rich_presence_value("_Number", RacePosition(s)+1, "VALUE")
+    rp_race_position_suffix = rich_presence_lookup("Suffix", RacePosition(s)+1, OrdinalSuffixLookup, fallback="th")
     rp_time_remaining = rich_presence_value("_Number", RemainingTime(s)/60, "VALUE")
 
+    rp_tuning_car_name = rich_presence_lookup("Car", TuningCarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
+
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE,
-        "Arcade | 🚩 {0} ({4}) | 🚗 {1} | {2}{3}/12",
-        rp_car_name, rp_track_name,
+        "🕹️ Arcade | 🚩 {0} ({4}s left) | 🚗 {1} | {2}{3}/16",
+        rp_track_name, rp_car_name,
         rp_race_position, rp_race_position_suffix,
         rp_time_remaining
     )
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE_PRACTICE,
-        "Arcade (Practice) | 🚩 {0} | 🚗 {1}",
-        rp_car_name, rp_track_name
+        "🕹️ Arcade | 🚩 Practicing {0} | 🚗 {1}",
+        rp_track_name, rp_car_name
+    )
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR,
+        "🏆 10 Year Championship | 🗓️ Year {2} | 🚩 {0} ({5}s left) | 🚗 {1} | {3}{4}/16",
+        rp_track_name, rp_car_name,
+        rp_race_position, // placeholder - NEED YEAR NUMBER
+        rp_race_position, rp_race_position_suffix,
+        rp_time_remaining
+    )
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_TIME_ATTACK,
+        "⏱️ Time Attack | 🚩 Grinding {0} | 🚗 {1}",
+        rp_track_name, rp_car_name
+    )
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_2PBATTLE,
+        "👥 2P Battle | 🚩 {0}",
+        rp_track_name
+    )
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && GameMode(s) == GAMEMODE_RECORDS,
+        "📋 Viewing Records"
+    )
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_CAR_PROFILES,
+        "📖 Car Profile | 🚗 Learning about {0}",
+        rp_car_name
+    )
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && !InRace(s) && GameMode(s) == GAMEMODE_CAR_SETTINGS,
+        "🛠️ Tuning up the 🚗 {0}",
+        rp_tuning_car_name
+    )
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_CAR_SETTINGS,
+        "🔰 Test driving the 🚗 {0}",
+        rp_tuning_car_name
     )
 }
 
