@@ -321,6 +321,28 @@ function GetLapTime(addr, lap)
     return dword(LapTimes(addr) + 4 * lap) / 10
 }
 
+// RICH PRESENCE
+
+TrackLookup = {
+	TRACK_DESERTSS1: "Desert SS1",
+	TRACK_DESERTSS2: "Desert SS2",
+	TRACK_DESERTSS3: "Desert SS3",
+	TRACK_MOUNTAINSS1: "Mountain SS1",
+	TRACK_MOUNTAINSS2: "Mountain SS2",
+	TRACK_MOUNTAINSS3: "Mountain SS3",
+	TRACK_SNOWYSS1: "Snowy SS1",
+	TRACK_SNOWYSS2: "Snowy SS2",
+	TRACK_SNOWYSS3: "Snowy SS3",
+	TRACK_RIVERIA: "Riviera",
+	TRACK_MUDDYSS1: "Muddy SS1",
+	TRACK_MUDDYSS2: "Muddy SS2",
+	TRACK_MUDDYSS3: "Muddy SS3",
+	TRACK_ISLESS1: "Isles SS1",
+	TRACK_ISLESS2: "Isles SS2",
+	TRACK_ISLESS3: "Isles SS3",
+	TRACK_SUPERSS: "Super S.S.",
+}
+
 // ACHIEVEMENTS
 
 // Test achievement -- should hopefully work regardless of CPU overclocking state
@@ -350,92 +372,74 @@ LeaderboardParamsFLAP = [
     {
         "id": 0,
         "track_id": TRACK_DESERTSS1,
-        "track_name": "Desert SS1",
     },
     {
         "id": 0,
         "track_id": TRACK_DESERTSS2,
-        "track_name": "Desert SS2",
     },
     {
         "id": 0,
         "track_id": TRACK_DESERTSS3,
-        "track_name": "Desert SS3",
     },
     {
         "id": 0,
         "track_id": TRACK_MOUNTAINSS1,
-        "track_name": "Mountain SS1",
     },
     {
         "id": 0,
         "track_id": TRACK_MOUNTAINSS2,
-        "track_name": "Mountain SS2",
     },
     {
         "id": 0,
         "track_id": TRACK_MOUNTAINSS3,
-        "track_name": "Mountain SS3",
     },
     {
         "id": 0,
         "track_id": TRACK_SNOWYSS1,
-        "track_name": "Snowy SS1",
     },
     {
         "id": 0,
         "track_id": TRACK_SNOWYSS1,
-        "track_name": "Snowy SS1",
     },
     {
         "id": 0,
         "track_id": TRACK_SNOWYSS2,
-        "track_name": "Snowy SS2",
     },
     {
         "id": 0,
         "track_id": TRACK_SNOWYSS3,
-        "track_name": "Snowy SS3",
     },
     {
         "id": 0,
         "track_id": TRACK_RIVERIA,
-        "track_name": "Riveria",
     },
     {
         "id": 0,
         "track_id": TRACK_MUDDYSS1,
-        "track_name": "Muddy SS1",
     },
     {
         "id": 0,
         "track_id": TRACK_MUDDYSS2,
-        "track_name": "Muddy SS2",
     },
     {
         "id": 0,
         "track_id": TRACK_MUDDYSS3,
-        "track_name": "Muddy SS3",
     },
     {
         "id": 0,
         "track_id": TRACK_ISLESS1,
-        "track_name": "Isle SS1",
     },
     {
         "id": 0,
         "track_id": TRACK_ISLESS2,
-        "track_name": "Isle SS2",
     },
     {
         "id": 0,
         "track_id": TRACK_ISLESS3,
-        "track_name": "Isle SS3",
     },
     {
         "id": 0,
         "track_id": TRACK_SUPERSS,
-        "track_name": "Super S.S.",
     },
 ]
 
@@ -454,8 +458,8 @@ function FLAP_Value(addr)
 for params in LeaderboardParamsFLAP
 {
     leaderboard(
-        title=format("{0} - Best Lap", params["track_name"]),
-        description=format("In Time Attack, complete a lap on the {0} stage within the fastest time!{1}", params["track_name"], _EXTRA),
+        title=format("{0} - Best Lap", TrackLookup[params["track_id"]]),
+        description=format("In Time Attack, complete a lap on the {0} stage within the fastest time!{1}", TrackLookup[params["track_id"]], _EXTRA),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
                 // New fastest lap
@@ -487,8 +491,8 @@ for params in LeaderboardParamsFLAP
 for params in LeaderboardParamsFLAP
 {
     leaderboard(
-        title=format("{0} - Course Record", params["track_name"]),
-        description=format("In Time Attack, complete a 3 Laps run on the {0} stage within the fastest time!{1}", params["track_name"], _EXTRA),
+        title=format("{0} - Course Record", TrackLookup[params["track_id"]]),
+        description=format("In Time Attack, complete a 3 Laps run on the {0} stage within the fastest time!{1}", TrackLookup[params["track_id"]], _EXTRA),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
                 // Correct mode
