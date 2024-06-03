@@ -103,6 +103,10 @@ CurrentLap      = (addr) => dword(0xd5f3f0 - PROCESS_START + addr)
 LapTimes        = (addr) => 0xd5f3f8 - PROCESS_START + addr
 // Array of 8(?) 32-bit values for area segment times, in milliseconds, fore free run Time Attack mode
 AreaTimes       = (addr) => 0xd5f468 - PROCESS_START + addr
+// Remaining time for the cones minigame in Riviera in arcade mode
+ConesTime       = (addr) => dword(0xd5f4c0 - PROCESS_START + addr)
+// Score for cones minigame (28400 max score)
+ConesScore      = (addr) => dword(0xd5f4c8 - PROCESS_START + addr)
 // Range [0, 0xB], see GAMEMODE enum below -- indicates current active game mode
 GameMode        = (addr) => dword(0xd7a904 - PROCESS_START + addr)
 // Remaining time for arcade, 10year in milliseconds; -1 in time attack
@@ -167,6 +171,26 @@ TRACK_ISLESS1 = 0xD
 TRACK_ISLESS2 = 0xE
 TRACK_ISLESS3 = 0xF
 TRACK_SUPERSS = 0x10
+
+ALL_TRACKS = [
+	TRACK_DESERTSS1,
+	TRACK_DESERTSS2,
+	TRACK_DESERTSS3,
+	TRACK_MOUNTAINSS1,
+	TRACK_MOUNTAINSS2,
+	TRACK_MOUNTAINSS3,
+	TRACK_SNOWYSS1,
+	TRACK_SNOWYSS2,
+	TRACK_SNOWYSS3,
+	TRACK_RIVERIA,
+	TRACK_MUDDYSS1,
+	TRACK_MUDDYSS2,
+	TRACK_MUDDYSS3,
+	TRACK_ISLESS1,
+	TRACK_ISLESS2,
+	TRACK_ISLESS3,
+	TRACK_SUPERSS,
+]
 
 CAR_COROLLA_WRC = 0x0
 CAR_306_MAXI = 0x1
@@ -253,6 +277,8 @@ function IsSnowTire(tire)
 
 NAVIGATOR_MALE = 0x0
 NAVIGATOR_FEMALE = 0x1
+
+CONES_MAXSCORE = 28400
 
 // ACHIEVEMENTS
 
