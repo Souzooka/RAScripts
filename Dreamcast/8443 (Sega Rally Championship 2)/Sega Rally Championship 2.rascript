@@ -446,13 +446,13 @@ function FLAP_Value(addr)
 }
 
 // TODO: Assert contiguous IDs when uploading leaderboards
-LapRecordID = 0
-CourseRecordID = 0
+LapRecordID = 103983
+CourseRecordID = 104000
 
 for i in range(0, length(ALL_TRACKS) - 1)
 {
     track = ALL_TRACKS[i]
-    id = LapRecordID //+ i
+    id = LapRecordID + i
 
     leaderboard(
         id=id,
@@ -489,7 +489,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
 for i in range(0, length(ALL_TRACKS) - 1)
 {
     track = ALL_TRACKS[i]
-    id = CourseRecordID //+ i
+    id = CourseRecordID + i
     
     leaderboard(
         id=id,
@@ -537,14 +537,14 @@ ARCADE_TRACKS = [
     },
 ]
 
-ArcadeLeaderboardID = 0
+ArcadeLeaderboardID = 103978
 
 for i in range(0, length(ARCADE_TRACKS) - 1)
 {
     params = ARCADE_TRACKS[i]
     name = params["name"]
     track = params["track_id"]
-    id = ArcadeLeaderboardID //+ i
+    id = ArcadeLeaderboardID + i
     
     leaderboard(
         id=id,
@@ -572,7 +572,7 @@ for i in range(0, length(ARCADE_TRACKS) - 1)
 }
 
 leaderboard(
-    id=0,
+    id=103982,
     title=format("Arcade Record"),
     description="Complete the arcade mode as fast as possible!",
     start=any_of(PROCESS_STARTS, s => (
