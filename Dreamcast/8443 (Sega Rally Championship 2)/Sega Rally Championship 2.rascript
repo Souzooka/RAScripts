@@ -290,3 +290,24 @@ achievement(
     trigger=any_of(PROCESS_STARTS, start => ProcessStartsAt(start) && LapProgress(start) >= 5 && prev(LapProgress(start) < 5))
 )
 
+leaderboard(
+	title="Riviera Cones Minigame",
+	description="Knock over as many cones as you can in the cones minigame in Riviera in arcade mode. Score maxout will earn bonus points for remaining time.",
+
+	start=any_of(PROCESS_STARTS, s => (
+		ProcessStartsAt(s) && TrackID(s) == TRACK_RIVERIA && 
+		(
+			(ConesScore(s) == CONES_MAXSCORE) ||
+			(prev(ConesTime(s)) > 0 && ConesTime(s) == 0)
+		)
+	)),
+	cancel=always_false(),
+	submit=always_true(),
+
+	value=max_of(
+		measured(ConesScore(PROCESS_START) + ConesTime(PROCESS_START), when=ProcessStartsAt(PROCESS_START)),
+		measured(ConesScore(PROCESS_START2) + ConesTime(PROCESS_START2), when=ProcessStartsAt(PROCESS_START2))
+	),
+	format="SCORE",
+	lower_is_better=false
+)
