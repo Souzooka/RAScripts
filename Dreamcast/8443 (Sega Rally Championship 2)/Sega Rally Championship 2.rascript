@@ -425,81 +425,6 @@ assert(
 ALWAYS_SUBMIT = false
 _EXTRA = if_else(ALWAYS_SUBMIT, "", " Submits when achieving a new best in-game time.")
 
-LeaderboardParamsFLAP = [
-    {
-        "id": 0,
-        "track_id": TRACK_DESERTSS1,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_DESERTSS2,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_DESERTSS3,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_MOUNTAINSS1,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_MOUNTAINSS2,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_MOUNTAINSS3,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_SNOWYSS1,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_SNOWYSS1,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_SNOWYSS2,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_SNOWYSS3,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_RIVERIA,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_MUDDYSS1,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_MUDDYSS2,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_MUDDYSS3,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_ISLESS1,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_ISLESS2,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_ISLESS3,
-    },
-    {
-        "id": 0,
-        "track_id": TRACK_SUPERSS,
-    },
-]
-
 function FLAP_Value(addr)
 {
     if ALWAYS_SUBMIT
@@ -512,11 +437,19 @@ function FLAP_Value(addr)
     return FastestLap(addr) / 10
 }
 
-for params in LeaderboardParamsFLAP
+// TODO: Assert contiguous IDs when uploading leaderboards
+LapRecordID = 0
+CourseRecordID = 0
+
+for i in range(0, length(ALL_TRACKS) - 1)
 {
+    track = ALL_TRACKS[i]
+    id = LapRecordID //+ i
+
     leaderboard(
-        title=format("{0} - Best Lap", TrackLookup[params["track_id"]]),
-        description=format("In Time Attack, complete a lap on the {0} stage within the fastest time!{1}", TrackLookup[params["track_id"]], _EXTRA),
+        id=id,
+        title=format("{0} - Best Lap", TrackLookup[track]),
+        description=format("In Time Attack, complete a lap on the {0} stage within the fastest time!{1}", TrackLookup[track], _EXTRA),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
                 // New fastest lap
@@ -524,7 +457,7 @@ for params in LeaderboardParamsFLAP
                 // Correct mode
                 GameMode(s) == GAMEMODE_TIME_ATTACK &&
                 // Correct track
-                TrackID(s) == params["track_id"] &&
+                TrackID(s) == track &&
                 // Lap counter increments or race is over
                 (
                     (RaceOver(s) && !RaceOver(s, prev)) ||
@@ -545,17 +478,20 @@ for params in LeaderboardParamsFLAP
     )
 }
 
-for params in LeaderboardParamsFLAP
+for i in range(0, length(ALL_TRACKS) - 1)
 {
+    track = ALL_TRACKS[i]
+    id = CourseRecordID //+ i
+    
     leaderboard(
-        title=format("{0} - Course Record", TrackLookup[params["track_id"]]),
-        description=format("In Time Attack, complete a 3 Laps run on the {0} stage within the fastest time!{1}", TrackLookup[params["track_id"]], _EXTRA),
+        title=format("{0} - Course Record", TrackLookup[track]),
+        description=format("In Time Attack, complete a 3 Laps run on the {0} stage within the fastest time!{1}", TrackLookup[track], _EXTRA),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_TIME_ATTACK &&
                 // Correct track
-                TrackID(s) == params["track_id"] &&
+                TrackID(s) == track &&
                 // Race is over
                 RaceOver(s) && !RaceOver(s, prev) &&
                 // The event timer is less than the course record
