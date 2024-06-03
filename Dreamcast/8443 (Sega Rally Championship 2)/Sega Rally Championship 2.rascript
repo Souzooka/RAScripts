@@ -95,8 +95,6 @@ function array_index(arr, val)
 
 // If the game is paused or not (0=not paused, 1=paused)
 GamePaused      = (addr) => dword(0xc5810c - PROCESS_START + addr)
-// The player's current position in the event, 0-based
-RacePosition    = (addr) => dword(0xcce260 - PROCESS_START + addr)
 // The current lap the player is on, 0-based
 CurrentLap      = (addr) => dword(0xd5f3f0 - PROCESS_START + addr)
 // Array of 8(?) 32-bit values for lap times, in milliseconds
@@ -107,7 +105,7 @@ FastestLap      = (addr) => dword(0xd5f44c - PROCESS_START + addr)
 CarRecord       = (addr) => dword(0xd5f450 - PROCESS_START + addr)
 // Course Record (in Time Attack)
 CourseRecord     = (addr) => dword(0xd5f460 - PROCESS_START + addr)
-// Array of 8(?) 32-bit values for area segment times, in milliseconds, fore free run Time Attack mode
+// Array of 8(?) 32-bit values for area segment times, in milliseconds, for free run Time Attack mode
 AreaTimes       = (addr) => 0xd5f468 - PROCESS_START + addr
 // Remaining time for the cones minigame in Riviera in arcade mode
 ConesTime       = (addr) => dword(0xd5f4c0 - PROCESS_START + addr)
@@ -148,6 +146,8 @@ Brakes          = (addr) => dword(0xd7aa08 - PROCESS_START + addr)
 // Current progress through the current lap -- max progress varies by track, Desert SS1's max progress is about 360
 LapProgressPtr  = (addr) => dword(0xd88c30 - PROCESS_START + addr) // NULL when not in a race (or demo, or replay), so good to check
 LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, process_start=addr)
+// The player's current position in the event, 0-based
+RacePosition    = (addr) => ptr(LapProgressPtr(addr), [0x20], dword, process_start=addr)
 // Array of arcade (and 10year) stage times
 StageTimes      = (addr) => 0xd88c7C - PROCESS_START + addr
 
