@@ -343,6 +343,63 @@ TrackLookup = {
     TRACK_SUPERSS: "Super S.S.",
 }
 
+CarLookup = {
+    CAR_COROLLA_WRC: "Toyota Corolla WRC",
+    CAR_306_MAXI: "Peugeot 306 Maxi",
+    CAR_PEUGEOT_206: "Peugeot 206 WRC",
+    CAR_IMPREZA_WRC: "Subaru Impreza WRC",
+    CAR_LANCER_EVOLUTION: "Mitsubishi Lancer Evolution",
+    CAR_STRATOS: "Lancia Stratos",
+    CAR_CELICA_ST_205: "Toyota Celica GT-Four ST 205",
+    CAR_DELTA_HF: "Lancia Delta HF integrale",
+    CAR_037_RALLY: "Lancia 037 Rally",
+    CAR_DELTA_16V: "Lancia Delta integrale 16v",
+    CAR_131_ABARTH_RALLY: "Fiat 131 Abarth Rally",
+    CAR_205_TURBO_16: "Peugeot 205 Turbo 16",
+    CAR_SEICENTO: "Fiat Seicento Sporting",
+    CAR_ALPINE_A110: "Renault Alpine",
+    CAR_MAXI_MEGANE: "Renault Maxi Megane",
+    CAR_CELICA_ST_185_94: "Toyota Celica GT-Four ST 185",
+    CAR_LANCER_EVO_III: "Mitsubishi Lancer Evo III",
+    CAR_LANCER_EVO_IV: "Mitsubishi Lancer Evo IV",
+    CAR_LANCER_EVO_V: "Mitsubishi Lancer Evo V",
+    CAR_IMPREZA_555: "Subaru Impreza 555",
+    CAR_CELICA_ST_185_92: "Toyota Celica GT-Four ST 185",
+    CAR_STRATOS_75: "Lancia Stratos",
+    CAR_COROLLA_WRC_TEIN: "Toyota Corolla WRC",
+}
+
+OrdinalSuffixLookup = {
+    1: "st",
+    2: "nd",
+    3: "rd",
+    4: "th",
+}
+
+for s in PROCESS_STARTS
+{
+    rp_car_name = rich_presence_lookup("Car", CarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
+    rp_track_name = rich_presence_lookup("Track", TrackID(s), TrackLookup, fallback=TrackLookup[TRACK_RIVERIA])
+
+    rp_race_position = rich_presence_value("_Number", RacePosition(s), "VALUE")
+    rp_race_position_suffix = rich_presence_lookup("Suffix", RacePosition(s), OrdinalSuffixLookup, fallback="th")
+    rp_time_remaining = rich_presence_value("_Number", RemainingTime(s)/60, "VALUE")
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE,
+        "Arcade | 🚩 {0} ({4}) | 🚗 {1} | {2}{3}/12",
+        rp_car_name, rp_track_name,
+        rp_race_position, rp_race_position_suffix,
+        rp_time_remaining
+    )
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE_PRACTICE,
+        "Arcade (Practice) | 🚩 {0} | 🚗 {1}",
+        rp_car_name, rp_track_name
+    )
+}
+
+rich_presence_display("Playing Sega Rally Championship 2")
+
 // ACHIEVEMENTS
 
 // Test achievement -- should hopefully work regardless of CPU overclocking state
