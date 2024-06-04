@@ -145,6 +145,8 @@ Steering        = (addr) => dword(0xd7aa04 - PROCESS_START + addr)
 // Range [-5 soft, 5 hard]
 Brakes          = (addr) => dword(0xd7aa08 - PROCESS_START + addr)
 
+// Current year in 10YC mode
+CurrentYear     = (addr) => dword(0xd7a92c - PROCESS_START + addr)
 // Current progress through the current lap -- max progress varies by track, Desert SS1's max progress is about 360
 LapProgressPtr  = (addr) => dword(0xd88c30 - PROCESS_START + addr) // NULL when not in a race (or demo, or replay), so good to check
 LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, process_start=addr)
@@ -244,13 +246,13 @@ TRANSMISSION_MT6 = 0x5
 TRANSMISSION_AT7 = 0x6
 TRANSMISSION_MT7 = 0x7
 
-function IsAT()
+function IsAT(addr)
 {
-    return Transmission & 2 == 0
+    return Transmission(addr) & 2 == 0
 }
-function IsMT()
+function IsMT(addr)
 {
-    return Transmission & 2 == 1
+    return Transmission(addr) & 2 == 1
 }
 
 TIRE_TYPE_ASPHALT = 0x0
@@ -386,40 +388,47 @@ OrdinalSuffixLookup = {
     4: "th",
 }
 
+TransmissionLookup = {
+    0: "AT",
+    1: "MT",
+}
+
 for s in PROCESS_STARTS
 {
     rp_car_name = rich_presence_lookup("Car", CarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
     rp_track_name = rich_presence_lookup("Track", TrackID(s), TrackLookup, fallback=TrackLookup[TRACK_RIVERIA])
+    rp_trans_rights = rich_presence_lookup("Transmission", Transmission(s) & 1, TransmissionLookup, fallback=TransmissionLookup[0])
 
     rp_race_position = rich_presence_value("_Number", RacePosition(s)+1, "VALUE")
     rp_race_position_suffix = rich_presence_lookup("Suffix", RacePosition(s)+1, OrdinalSuffixLookup, fallback="th")
     rp_time_remaining = rich_presence_value("_Number", RemainingTime(s)/60, "VALUE")
 
+    rp_10yc_year = rich_presence_value("_Number", CurrentYear(s)+1, "VALUE")
     rp_tuning_car_name = rich_presence_lookup("Car", TuningCarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE,
-        "🕹️ Arcade | 🚩 {0} ({4}s left) | 🚗 {1} | {2}{3}/16",
-        rp_track_name, rp_car_name,
+        "🕹️ Arcade | 🚩 {0} ({5}s left) | 🚗 {1} ({2}) | {3}{4}/16",
+        rp_track_name, rp_car_name, rp_trans_rights,
         rp_race_position, rp_race_position_suffix,
         rp_time_remaining
     )
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE_PRACTICE,
-        "🕹️ Arcade | 🚩 Practicing {0} | 🚗 {1}",
-        rp_track_name, rp_car_name
+        "🕹️ Arcade | 🚩 Practicing {0} | 🚗 {1} ({2})",
+        rp_track_name, rp_car_name, rp_trans_rights
     )
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR,
-        "🏆 10 Year Championship | 🗓️ Year {2} | 🚩 {0} ({5}s left) | 🚗 {1} | {3}{4}/16",
-        rp_track_name, rp_car_name,
-        rp_race_position, // placeholder - NEED YEAR NUMBER
+        "🏆 10 Year Championship | 🗓️ Year {3} | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {4}{5}/16",
+        rp_track_name, rp_car_name, rp_trans_rights,
+        rp_10yc_year,
         rp_race_position, rp_race_position_suffix,
         rp_time_remaining
     )
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_TIME_ATTACK,
-        "⏱️ Time Attack | 🚩 Grinding {0} | 🚗 {1}",
-        rp_track_name, rp_car_name
+        "⏱️ Time Attack | 🚩 Grinding {0} | 🚗 {1} ({2})",
+        rp_track_name, rp_car_name, rp_trans_rights
     )
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_2PBATTLE,
