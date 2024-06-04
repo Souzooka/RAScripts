@@ -147,6 +147,8 @@ Brakes          = (addr) => dword(0xd7aa08 - PROCESS_START + addr)
 
 // Current year in 10YC mode
 CurrentYear     = (addr) => dword(0xd7a92c - PROCESS_START + addr)
+// Current race leg (0-indexed) [0-3]
+CurrentLeg      = (addr) => dword(0xd7a930 - PROCESS_START + addr)
 // Current progress through the current lap -- max progress varies by track, Desert SS1's max progress is about 360
 LapProgressPtr  = (addr) => dword(0xd88c30 - PROCESS_START + addr) // NULL when not in a race (or demo, or replay), so good to check
 LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, process_start=addr)
@@ -154,6 +156,8 @@ LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, proces
 RacePosition    = (addr) => ptr(LapProgressPtr(addr), [0x20], dword, process_start=addr)
 // Array of arcade (and 10year) stage times
 StageTimes      = (addr) => 0xd88c7C - PROCESS_START + addr
+// Arcade Difficulty (0=Easy, 1=Normal, 2=Hard)
+ArcDifficulty   = (addr) => dword(0xd88fc5 - PROCESS_START + addr)
 
 // GAME ENUMERATIONS
 
@@ -301,6 +305,10 @@ NAVIGATOR_FEMALE = 0x1
 
 CONES_MAXSCORE = 28400
 
+DIFF_EASY = 0
+DIFF_NORMAL = 1
+DIFF_HARD = 2
+
 // GAME FUNCTIONS
 
 function AntiCheat(addr)
@@ -363,9 +371,9 @@ CarLookup = {
     CAR_LANCER_EVOLUTION: "Mitsubishi Lancer Evolution",
     CAR_STRATOS: "Lancia Stratos",
     CAR_CELICA_ST_205: "Toyota Celica GT-Four ST 205",
-    CAR_DELTA_HF: "Lancia Delta HF integrale",
+    CAR_DELTA_HF: "Lancia Delta HF Integrale",
     CAR_037_RALLY: "Lancia 037 Rally",
-    CAR_DELTA_16V: "Lancia Delta integrale 16v",
+    CAR_DELTA_16V: "Lancia Delta Integrale 16v",
     CAR_131_ABARTH_RALLY: "Fiat 131 Abarth Rally",
     CAR_205_TURBO_16: "Peugeot 205 Turbo 16",
     CAR_SEICENTO: "Fiat Seicento Sporting",
@@ -381,6 +389,10 @@ CarLookup = {
     CAR_COROLLA_WRC_TEIN: "Toyota Corolla WRC",
 }
 
+// these values inexplicably change when racing
+CarLookup[0x17] = CarLookup[CAR_037_RALLY]
+CarLookup[0x19] = CarLookup[CAR_STRATOS]
+
 OrdinalSuffixLookup = {
     1: "st",
     2: "nd",
@@ -388,9 +400,22 @@ OrdinalSuffixLookup = {
     4: "th",
 }
 
+function MakeOrdinal(n)
+{
+    ordinal = "th"
+    if (n < 4) ordinal = OrdinalSuffixLookup[n]
+    return format("{0}{1}", n, ordinal)
+}
+
 TransmissionLookup = {
     0: "AT",
     1: "MT",
+}
+
+DifficultyLookup = {
+    DIFF_EASY: "Easy",
+    DIFF_NORMAL: "Normal",
+    DIFF_HARD: "Hard",
 }
 
 for s in PROCESS_STARTS
@@ -404,19 +429,22 @@ for s in PROCESS_STARTS
     rp_num_rivals = rich_presence_lookup("RivalCount", TrackID(s), { TRACK_SUPERSS: "2" }, fallback="16")
     rp_time_remaining = rich_presence_value("_Number", RemainingTime(s)/60, "VALUE")
 
+    rp_arc_difficulty = rich_presence_lookup("Difficulty", ArcDifficulty(s), DifficultyLookup, fallback=DifficultyLookup[DIFF_NORMAL])
     rp_10yc_year = rich_presence_value("_Number", CurrentYear(s)+1, "VALUE")
     rp_tuning_car_name = rich_presence_lookup("Car", TuningCarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE,
-        "🕹️ Arcade | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {3}{4}/{5}",
+        "🕹️ Arcade ({7}) | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {3}{4}/{5}",
         rp_track_name, rp_car_name, rp_trans_rights,
         rp_race_position, rp_race_position_suffix, rp_num_rivals,
-        rp_time_remaining
+        rp_time_remaining,
+        rp_arc_difficulty
     )
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE_PRACTICE,
-        "🕹️ Arcade | 🚩 Practicing {0} | 🚗 {1} ({2})",
-        rp_track_name, rp_car_name, rp_trans_rights
+        "🕹️ Arcade ({3}) | 🚩 Practicing {0} | 🚗 {1} ({2})",
+        rp_track_name, rp_car_name, rp_trans_rights,
+        rp_arc_difficulty
     )
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR,
@@ -469,6 +497,16 @@ achievement(
     points=0,
     trigger=any_of(PROCESS_STARTS, start => ProcessStartsAt(start) && LapProgress(start) >= 5 && prev(LapProgress(start) < 5))
 )
+TenYCAchievementID = 104069
+
+TenYCAchievements = [
+    {"name": "", "pts": 3},
+]
+
+for i in range(0, 10 - 1)
+{
+    
+}
 
 // LEADERBOARDS
 
@@ -609,7 +647,9 @@ for i in range(0, length(ARCADE_TRACKS) - 1)
                 // Correct track
                 TrackID(s) == track &&
                 // Race is over
-                RaceOver(s) && !RaceOver(s, prev)
+                RaceOver(s) && !RaceOver(s, prev) &&
+                // Time remaining
+                RemainingTime(s) > 0
             )
         ),
         cancel=always_false(),
@@ -631,10 +671,12 @@ leaderboard(
             ProcessStartsAt(s) &&
             // Correct mode
             GameMode(s) == GAMEMODE_ARCADE &&
-            // Correct track
-            TrackID(s) == TRACK_RIVERIA &&
+            // End of the race
+            CurrentLeg(s) == 3 &&
             // Race is over
-            RaceOver(s) && !RaceOver(s, prev)
+            RaceOver(s) && !RaceOver(s, prev) &&
+            // Time remaining
+            RemainingTime(s) > 0
         )
     ),
     cancel=always_false(),
@@ -647,7 +689,39 @@ leaderboard(
     lower_is_better=true
 )
 
+TenYCLeaderboardID = 104069
+
+for i in range(0, 10 - 1)
+{
+    leaderboard(
+        id=TenYCLeaderboardID + i,
+        title=format("{0} Year - Ten Year Championship Record", MakeOrdinal(i+1)),
+        description=format("In Ten Year Championship, complete the {0} Year as fast as possible!", MakeOrdinal(i+1)),
+        start=any_of(PROCESS_STARTS, s => (
+                ProcessStartsAt(s) &&
+                // Correct mode
+                GameMode(s) == GAMEMODE_10YEAR &&
+                // End of the race
+                CurrentLeg(s) == 3 &&
+                // Race is over
+                RaceOver(s) && !RaceOver(s, prev) &&
+                // Time remaining
+                RemainingTime(s) > 0
+            )
+        ),
+        cancel=always_false(),
+        submit=always_true(),
+        value=max_of(
+            measured(EventTime(PROCESS_START) / 10, when=ProcessStartsAt(PROCESS_START)),
+            measured(EventTime(PROCESS_START2) / 10, when=ProcessStartsAt(PROCESS_START2))
+        ),
+        format="CENTISECS",
+        lower_is_better=true
+    )
+}
+
 leaderboard(
+    id=104068,
     title="Riviera Cones Minigame",
     description="Knock over as many cones as you can in the cones minigame in Riviera in arcade mode. Score maxout will earn bonus points for remaining time.",
 
