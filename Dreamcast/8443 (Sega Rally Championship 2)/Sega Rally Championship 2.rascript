@@ -401,15 +401,16 @@ for s in PROCESS_STARTS
 
     rp_race_position = rich_presence_value("_Number", RacePosition(s)+1, "VALUE")
     rp_race_position_suffix = rich_presence_lookup("Suffix", RacePosition(s)+1, OrdinalSuffixLookup, fallback="th")
+    rp_num_rivals = rich_presence_lookup("RivalCount", TrackID(s), { TRACK_SUPERSS: "2" }, fallback="16")
     rp_time_remaining = rich_presence_value("_Number", RemainingTime(s)/60, "VALUE")
 
     rp_10yc_year = rich_presence_value("_Number", CurrentYear(s)+1, "VALUE")
     rp_tuning_car_name = rich_presence_lookup("Car", TuningCarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE,
-        "🕹️ Arcade | 🚩 {0} ({5}s left) | 🚗 {1} ({2}) | {3}{4}/16",
+        "🕹️ Arcade | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {3}{4}/{5}",
         rp_track_name, rp_car_name, rp_trans_rights,
-        rp_race_position, rp_race_position_suffix,
+        rp_race_position, rp_race_position_suffix, rp_num_rivals,
         rp_time_remaining
     )
 
@@ -419,10 +420,10 @@ for s in PROCESS_STARTS
     )
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR,
-        "🏆 10 Year Championship | 🗓️ Year {3} | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {4}{5}/16",
+        "🏆 10 Year Championship | 🗓️ Year {3} | 🚩 {0} ({7}s left) | 🚗 {1} ({2}) | {4}{5}/{6}",
         rp_track_name, rp_car_name, rp_trans_rights,
         rp_10yc_year,
-        rp_race_position, rp_race_position_suffix,
+        rp_race_position, rp_race_position_suffix, rp_num_rivals,
         rp_time_remaining
     )
 
@@ -456,7 +457,8 @@ for s in PROCESS_STARTS
     )
 }
 
-rich_presence_display("Playing Sega Rally Championship 2")
+// remember Souzooka, the dumb Blomby Car meme was actually *your* idea
+rich_presence_display("Preparing for this Infernal Raid")
 
 // ACHIEVEMENTS
 
