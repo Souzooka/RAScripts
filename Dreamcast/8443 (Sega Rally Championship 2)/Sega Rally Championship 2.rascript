@@ -581,7 +581,7 @@ for i in range(0, length(ArcadeStageAchievements) - 1)
         trigger=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
                 // Correct difficulty
-                ArcDifficulty(s) >= 1 &&
+                ArcDifficulty(s) >= DIFF_NORMAL &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_ARCADE &&
                 // Correct track
@@ -602,7 +602,7 @@ achievement(
     trigger=any_of(PROCESS_STARTS, s => (
             ProcessStartsAt(s) &&
             // Correct difficulty
-            ArcDifficulty(s) >= 1 &&
+            ArcDifficulty(s) >= DIFF_HARD &&
             // Correct mode
             GameMode(s) == GAMEMODE_ARCADE &&
             // Correct track
@@ -620,8 +620,6 @@ achievement(
     points=25,
     trigger=any_of(PROCESS_STARTS, s => (
             ProcessStartsAt(s) &&
-            // Correct difficulty
-            ArcDifficulty(s) >= 1 &&
             // Correct mode
             GameMode(s) == GAMEMODE_ARCADE &&
             // Correct track
