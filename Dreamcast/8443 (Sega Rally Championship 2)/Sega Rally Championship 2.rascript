@@ -162,6 +162,8 @@ LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, proces
 RacePosition    = (addr) => ptr(LapProgressPtr(addr), [0x20], dword, process_start=addr)
 // Array of arcade (and 10year) stage times
 StageTimes      = (addr) => 0xd88c7C - PROCESS_START + addr
+// Graphics mode, see GRAPHICS enum below
+GraphicsMode    = (addr) => dword(0xd88ce0 - PROCESS_START + addr)
 // Arcade Difficulty (0=Easy, 1=Normal, 2=Hard)
 ArcDifficulty   = (addr) => dword(0xd88fc8 - PROCESS_START + addr)
 
@@ -316,6 +318,10 @@ NAVIGATOR_MALE = 0x0
 NAVIGATOR_FEMALE = 0x1
 
 CONES_MAXSCORE = 28400
+
+GRAPHICS_NORMAL = 0
+GRAPHICS_60FPS = 0x00000001
+GRAPHICS_30FPS = 0x80000000
 
 DIFF_EASY = 0
 DIFF_NORMAL = 1
