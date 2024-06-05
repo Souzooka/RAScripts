@@ -163,7 +163,7 @@ RacePosition    = (addr) => ptr(LapProgressPtr(addr), [0x20], dword, process_sta
 // Array of arcade (and 10year) stage times
 StageTimes      = (addr) => 0xd88c7C - PROCESS_START + addr
 // Arcade Difficulty (0=Easy, 1=Normal, 2=Hard)
-ArcDifficulty   = (addr) => dword(0xd88fc5 - PROCESS_START + addr)
+ArcDifficulty   = (addr) => dword(0xd88fc8 - PROCESS_START + addr)
 
 // GAME ENUMERATIONS
 
