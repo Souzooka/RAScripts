@@ -490,13 +490,6 @@ rich_presence_display("Preparing for this Infernal Raid")
 
 // ACHIEVEMENTS
 
-// Test achievement -- should hopefully work regardless of CPU overclocking state
-achievement(
-    title="TEST",
-    description="TEST",
-    points=0,
-    trigger=any_of(PROCESS_STARTS, start => ProcessStartsAt(start) && LapProgress(start) >= 5 && prev(LapProgress(start) < 5))
-)
 TenYCAchievementID = 104069
 
 TenYCAchievements = [
