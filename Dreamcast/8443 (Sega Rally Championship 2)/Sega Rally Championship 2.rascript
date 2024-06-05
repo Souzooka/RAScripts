@@ -518,7 +518,7 @@ rich_presence_display("Preparing for this Infernal Raid")
 
 // 10Year Championship
 
-TenYCAchievementID = 0
+TenYCAchievementID = 435707
 TenYCAchievements = [
     {"name": "Tommi Makinen", "pts": 3},
     {"name": "Juha Kankkunen", "pts": 3},
@@ -536,7 +536,7 @@ for i in range(0, length(TenYCAchievements)-1)
 {
     a = TenYCAchievements[i]
     achievement(
-        //id=TenYCAchievementID+i,
+        id=TenYCAchievementID+i,
         title=a["name"],
         description=format("Finish 1st during the {0} Year in 10 Year Championship", MakeOrdinal(i+1)),
         points=a["pts"],
@@ -561,7 +561,7 @@ for i in range(0, length(TenYCAchievements)-1)
 }
 
 achievement(
-    //id=TenYCAchievementID+i,
+    id=435717,
     title="Searchin' For My Dreams",
     description="Finish 1st in the Special Stage after 10 Year Championship",
     points=10,
