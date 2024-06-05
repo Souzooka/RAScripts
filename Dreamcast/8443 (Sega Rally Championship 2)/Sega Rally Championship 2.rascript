@@ -741,10 +741,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
         submit=always_true(),
         // NOTE: Unfortunately for the last lap, the game doesn't seems to store the value too early into the lap times array so there's a very small discrepancy
         // of about .25 in that case. Fortunately, we can also prevent the discrepancy in the leaderboards by only submitting when the player obtains a new fastest lap.
-        value=max_of(
-            measured(FLAP_Value(PROCESS_START), when=ProcessStartsAt(PROCESS_START)),
-            measured(FLAP_Value(PROCESS_START2), when=ProcessStartsAt(PROCESS_START2))
-        ),
+        value=max_of(array_map(PROCESS_STARTS, (s) => measured(FLAP_Value(s), when=ProcessStartsAt(s)))),
         format="CENTISECS",
         lower_is_better=true
     )
@@ -773,10 +770,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
         ),
         cancel=always_false(),
         submit=always_true(),
-        value=max_of(
-            measured(EventTime(PROCESS_START) / 10, when=ProcessStartsAt(PROCESS_START)),
-            measured(EventTime(PROCESS_START2) / 10, when=ProcessStartsAt(PROCESS_START2))
-        ),
+        value=max_of(array_map(PROCESS_STARTS, (s) => measured(EventTime(s) / 10, when=ProcessStartsAt(s)))),
         format="CENTISECS",
         lower_is_better=true
     )
@@ -828,10 +822,7 @@ for i in range(0, length(ARCADE_TRACKS) - 1)
         ),
         cancel=always_false(),
         submit=always_true(),
-        value=max_of(
-            measured(GetStageTime(PROCESS_START, i), when=ProcessStartsAt(PROCESS_START)),
-            measured(GetStageTime(PROCESS_START2, i), when=ProcessStartsAt(PROCESS_START2))
-        ),
+        value=max_of(array_map(PROCESS_STARTS, (s) => measured(GetStageTime(s, i), when=ProcessStartsAt(s)))),
         format="CENTISECS",
         lower_is_better=true
     )
@@ -855,10 +846,7 @@ leaderboard(
     ),
     cancel=always_false(),
     submit=always_true(),
-    value=max_of(
-        measured(EventTime(PROCESS_START) / 10, when=ProcessStartsAt(PROCESS_START)),
-        measured(EventTime(PROCESS_START2) / 10, when=ProcessStartsAt(PROCESS_START2))
-    ),
+    value=max_of(array_map(PROCESS_STARTS, (s) => measured(EventTime(s) / 10, when=ProcessStartsAt(s)))),
     format="CENTISECS",
     lower_is_better=true
 )
@@ -887,10 +875,7 @@ for i in range(0, 10 - 1)
         ),
         cancel=always_false(),
         submit=always_true(),
-        value=max_of(
-            measured(EventTime(PROCESS_START) / 10, when=ProcessStartsAt(PROCESS_START)),
-            measured(EventTime(PROCESS_START2) / 10, when=ProcessStartsAt(PROCESS_START2))
-        ),
+        value=max_of(array_map(PROCESS_STARTS, (s) => measured(EventTime(s) / 10, when=ProcessStartsAt(s)))),
         format="CENTISECS",
         lower_is_better=true
     )
@@ -911,10 +896,7 @@ leaderboard(
     cancel=always_false(),
     submit=always_true(),
 
-    value=max_of(
-        measured(ConesScore(PROCESS_START) + ConesTime(PROCESS_START), when=ProcessStartsAt(PROCESS_START)),
-        measured(ConesScore(PROCESS_START2) + ConesTime(PROCESS_START2), when=ProcessStartsAt(PROCESS_START2))
-    ),
+    value=max_of(array_map(PROCESS_STARTS, (s) => measured(ConesScore(s) + ConesTime(s), when=ProcessStartsAt(s)))),
     format="SCORE",
     lower_is_better=false
 )
