@@ -153,6 +153,9 @@ YearsUnlocked   = (addr) => dword(0xd7a928 - PROCESS_START + addr)
 CurrentYear     = (addr) => dword(0xd7a92c - PROCESS_START + addr)
 // Current race leg (0-indexed) [0-3]
 CurrentLeg      = (addr) => dword(0xd7a930 - PROCESS_START + addr)
+// Current gear
+CarPointer      = (addr) => dword(0xd760e8 - PROCESS_START + addr)
+CurrentGear     = (addr) => ptr(CarPointer(addr), [0x010, 0x02C], dword, process_start=addr)
 // Bitset of unlocked cars (24-bit; indexed by car ID)
 CarsUnlocked    = (addr) => 0xd7a934 - PROCESS_START + addr
 // Current progress through the current lap -- max progress varies by track, Desert SS1's max progress is about 360
