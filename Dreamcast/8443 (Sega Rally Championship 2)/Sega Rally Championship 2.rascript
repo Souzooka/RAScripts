@@ -495,6 +495,8 @@ rich_presence_display("Preparing for this Infernal Raid")
 
 // ACHIEVEMENTS
 
+// 10Year Championship
+
 TenYCAchievementID = 0
 TenYCAchievements = [
     {"name": "Tommi Makinen", "pts": 3},
@@ -534,6 +536,103 @@ for i in range(0, length(TenYCAchievements)-1)
         )
     )
 }
+
+// Arcade
+
+ArcadeStageID = 433505
+
+ArcadeStageAchievements = [
+    {
+        "name": "Soul on Desert",
+        "track_name": "Desert",
+        "track_id": TRACK_DESERTSS1,
+        "points": 2,
+    },
+    {
+        "name": "Euro Fight",
+        "track_name": "Mountain",
+        "track_id": TRACK_MOUNTAINSS2,
+        "points": 3,
+    },
+    {
+        "name": "Slippin'",
+        "track_name": "Snowy",
+        "track_id": TRACK_SNOWYSS3,
+        "points": 5,
+    },
+    {
+        "name": "Night Groovin'",
+        "track_name": "Riveria",
+        "track_id": TRACK_RIVERIA,
+        "points": 10,
+    },
+]
+
+for i in range(0, length(ArcadeStageAchievements) - 1)
+{
+    params = ArcadeStageAchievements[i]    
+    id = ArcadeStageID + i
+    
+    achievement(
+        id=id,
+        title=params["name"],
+        description=format("Clear the {0} stage on Arcade mode on Normal difficulty or higher", params["track_name"]),
+        points=params["points"],
+        trigger=any_of(PROCESS_STARTS, s => (
+                ProcessStartsAt(s) &&
+                // Correct difficulty
+                ArcDifficulty(s) >= 1 &&
+                // Correct mode
+                GameMode(s) == GAMEMODE_ARCADE &&
+                // Correct track
+                TrackID(s) == params["track_id"] &&
+                // Race is over
+                RaceOver(s)
+            )
+        ),
+        type="progression"
+    )
+}
+
+achievement(
+    id=435509,
+    title="Drive Me Mad",
+    description="Clear the Riveria Stage on Arcade mode on Hard difficulty",
+    points=10,
+    trigger=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) &&
+            // Correct difficulty
+            ArcDifficulty(s) >= 1 &&
+            // Correct mode
+            GameMode(s) == GAMEMODE_ARCADE &&
+            // Correct track
+            TrackID(s) == TRACK_RIVERIA &&
+            // Race is over
+            RaceOver(s)
+        )
+    )
+)
+
+achievement(
+    id=435510,
+    title="Go Go! Sega Rally",
+    description="Finish the rally in 1st place on Arcade mode on any difficulty",
+    points=25,
+    trigger=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) &&
+            // Correct difficulty
+            ArcDifficulty(s) >= 1 &&
+            // Correct mode
+            GameMode(s) == GAMEMODE_ARCADE &&
+            // Correct track
+            TrackID(s) == TRACK_RIVERIA &&
+            // 1st place
+            RacePosition(s) == 0 &&
+            // Race is over
+            RaceOver(s)
+        )
+    )
+)
 
 // LEADERBOARDS
 
