@@ -118,6 +118,8 @@ RemainingTime   = (addr) => dword(0xd7a908 - PROCESS_START + addr)
 // Some sort of enumeration for race state (?) -- there's another byte at 0x....11 which may be helpful too
 // See RACESTATE enum
 RaceState       = (addr) => byte(0xd7a910 - PROCESS_START + addr)
+// See RACESTATE2 enum
+RaceState2      = (addr) => byte(0xd7a911 - PROCESS_START + addr)
 // Total time for current event, in millseconds
 EventTime       = (addr) => dword(0xd7a914 - PROCESS_START + addr)
 // Range [0, 0x10], see TRACK enum below
@@ -178,6 +180,9 @@ RACESTATE_RACING = 0x0
 RACESTATE_COUNTDOWN = 0x1
 RACESTATE_LOADING = 0x9
 RACESTATE_FINISHED = 0xA
+
+RACESTATE2_RACEFAIL = 0x6
+RACESTATE2_RACESUCCESS = 0xA
 
 TRACK_DESERTSS1 = 0x0
 TRACK_DESERTSS2 = 0x4
@@ -324,9 +329,9 @@ function InRace(addr)
     return LapProgressPtr(addr) != NULL
 }
 
-function RaceOver(addr, pred=v=>v)
+function RaceOver(addr)
 {
-    return InRace(addr) && pred(RaceState(addr)) == RACESTATE_FINISHED
+    return InRace(addr) && RaceState2(addr) == RACESTATE2_RACESUCCESS && prev(RaceState2(addr)) != RACESTATE2_RACESUCCESS
 }
 
 function GetLapTime(addr, lap)
@@ -569,7 +574,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
                 TrackID(s) == track &&
                 // Lap counter increments or race is over
                 (
-                    (RaceOver(s) && !RaceOver(s, prev)) ||
+                    RaceOver(s) ||
                     (CurrentLap(s) > prev(CurrentLap(s)))
                 )
             )
@@ -603,9 +608,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
                 // Correct track
                 TrackID(s) == track &&
                 // Race is over
-                RaceOver(s) && !RaceOver(s, prev) &&
-                // The event timer is less than the course record
-                EventTime(s) < CourseRecord(s)
+                RaceOver(s)
             )
         ),
         cancel=always_false(),
@@ -658,9 +661,7 @@ for i in range(0, length(ARCADE_TRACKS) - 1)
                 // Correct track
                 TrackID(s) == track &&
                 // Race is over
-                RaceOver(s) && !RaceOver(s, prev) &&
-                // Time remaining
-                RemainingTime(s) > 0
+                RaceOver(s)
             )
         ),
         cancel=always_false(),
@@ -685,9 +686,7 @@ leaderboard(
             // End of the race
             CurrentLeg(s) == 3 &&
             // Race is over
-            RaceOver(s) && !RaceOver(s, prev) &&
-            // Time remaining
-            RemainingTime(s) > 0
+            RaceOver(s)
         )
     ),
     cancel=always_false(),
@@ -715,9 +714,7 @@ for i in range(0, 10 - 1)
                 // End of the race
                 CurrentLeg(s) == 3 &&
                 // Race is over
-                RaceOver(s) && !RaceOver(s, prev) &&
-                // Time remaining
-                RemainingTime(s) > 0
+                RaceOver(s)
             )
         ),
         cancel=always_false(),
