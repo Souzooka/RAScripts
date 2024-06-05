@@ -557,6 +557,28 @@ for i in range(0, length(TenYCAchievements)-1)
     )
 }
 
+achievement(
+    //id=TenYCAchievementID+i,
+    title="Searchin' For My Dreams",
+    description="Finish 1st in the Special Stage after 10 Year Championship",
+    points=10,
+    type="win_condition",
+    trigger=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) &&
+            // Anti-cheat
+            AntiCheat(s) &&
+            // Correct mode
+            GameMode(s) == GAMEMODE_10YEAR &&
+            // Correct track
+            TrackID(s) == TRACK_SUPERSS &&
+            // Race is over
+            RaceOver(s) &&
+            // Finished in first place
+            RacePosition(s) == 0
+        )
+    )
+)
+
 // Arcade
 
 ArcadeStageID = 435505
