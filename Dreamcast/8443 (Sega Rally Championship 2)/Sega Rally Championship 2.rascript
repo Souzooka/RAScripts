@@ -249,6 +249,9 @@ CAR_IMPREZA_555 = 0x13
 CAR_CELICA_ST_185_92 = 0x14
 CAR_STRATOS_75 = 0x15
 CAR_COROLLA_WRC_TEIN = 0x16
+// These cars can change to these consistent values, for whatever reason
+CAR_STRATOS2 = 0x17
+CAR_037_RALLY2 = 0x19
 
 TRANSMISSION_AT4 = 0x0
 TRANSMISSION_MT4 = 0x1
@@ -401,8 +404,8 @@ CarLookup = {
 }
 
 // these values inexplicably change when racing
-CarLookup[0x17] = CarLookup[CAR_037_RALLY]
-CarLookup[0x19] = CarLookup[CAR_STRATOS]
+CarLookup[CAR_STRATOS2] = CarLookup[CAR_STRATOS]
+CarLookup[CAR_037_RALLY2] = CarLookup[CAR_037_RALLY]
 
 OrdinalSuffixLookup = {
     1: "st",
