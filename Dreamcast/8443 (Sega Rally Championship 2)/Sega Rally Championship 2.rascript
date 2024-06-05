@@ -682,13 +682,6 @@ achievement(
 
 // LEADERBOARDS
 
-MAX_OF_VARARGS_ARITY = 2
-assert(
-    length(PROCESS_STARTS) == MAX_OF_VARARGS_ARITY,
-    "Hey! max_of can't accept an array for leaderboard values; if you add new potential memory locations " +
-    "for game memory, please make sure to update the leaderboards' value cases appropriately! Thanks!"
-)
-
 // Should time attack leaderboards always submit, even if the player hasn't achieved a new fastest time in game?
 // Yes for now for testing purposes
 // TODO: Find addresses for time records in game
