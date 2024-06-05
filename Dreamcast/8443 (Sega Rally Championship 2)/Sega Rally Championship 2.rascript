@@ -496,7 +496,6 @@ rich_presence_display("Preparing for this Infernal Raid")
 // ACHIEVEMENTS
 
 TenYCAchievementID = 0
-
 TenYCAchievements = [
     {"name": "Tommi Makinen", "pts": 3},
     {"name": "Juha Kankkunen", "pts": 3},
@@ -510,18 +509,30 @@ TenYCAchievements = [
     {"name": "Sebastien Ogier", "pts": 25},
 ]
 
-i = 0
-for a in TenYCAchievements
+for i in range(0, length(TenYCAchievements)-1)
 {
+    a = TenYCAchievements[i]
     achievement(
-        id=TenYCAchievementID+i,
+        //id=TenYCAchievementID+i,
         title=a["name"],
-        description=format("Finish 1st during {0} Year in 10 Year Championship", MakeOrdinal(i+1)),
+        description=format("Finish 1st during the {0} Year in 10 Year Championship", MakeOrdinal(i+1)),
         points=a["pts"],
         type="progression",
-        trigger=always_false()
+        trigger=any_of(PROCESS_STARTS, s => (
+                ProcessStartsAt(s) &&
+                // Correct mode
+                GameMode(s) == GAMEMODE_10YEAR &&
+                // Correct year
+                CurrentYear(s) == i &&
+                // End of the race
+                CurrentLeg(s) == 3 &&
+                // Race is over
+                RaceOver(s) &&
+                // Finished in first place
+                RacePosition(s) == 0
+            )
+        )
     )
-    i = i + 1
 }
 
 // LEADERBOARDS
@@ -711,6 +722,8 @@ for i in range(0, 10 - 1)
                 ProcessStartsAt(s) &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_10YEAR &&
+                // Correct year
+                CurrentYear(s) == i &&
                 // End of the race
                 CurrentLeg(s) == 3 &&
                 // Race is over
