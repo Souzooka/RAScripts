@@ -147,10 +147,14 @@ Steering        = (addr) => dword(0xd7aa04 - PROCESS_START + addr)
 // Range [-5 soft, 5 hard]
 Brakes          = (addr) => dword(0xd7aa08 - PROCESS_START + addr)
 
+// How many years unlocked for 10YC mode (0-based)
+YearsUnlocked   = (addr) => dword(0xd7a928 - PROCESS_START + addr)
 // Current year in 10YC mode
 CurrentYear     = (addr) => dword(0xd7a92c - PROCESS_START + addr)
 // Current race leg (0-indexed) [0-3]
 CurrentLeg      = (addr) => dword(0xd7a930 - PROCESS_START + addr)
+// Bitset of unlocked cars (24-bit; indexed by car ID)
+CarsUnlocked    = (addr) => 0xd7a934 - PROCESS_START + addr
 // Current progress through the current lap -- max progress varies by track, Desert SS1's max progress is about 360
 LapProgressPtr  = (addr) => dword(0xd88c30 - PROCESS_START + addr) // NULL when not in a race (or demo, or replay), so good to check
 LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, process_start=addr)
@@ -318,9 +322,11 @@ DIFF_HARD = 2
 
 function AntiCheat(addr)
 {
-    // TODO: Check if player has year 10 car without completing year 10
-    // (or just a specific car if some are accessible??) to combat unlock all cars code
-    return true
+    // Doesn't seem to be a working cheat to unlock all 10year tracks on NA
+    // No internal measure for 10years completed (cars unlocked indicate the year is "completed")
+    // but if there is a code, we could perhaps make sure the top record for the year 10 course isn't default
+    // If year 10 isn't unlocked, but we have the Lancia 037 Rally, then someone cheated.
+    return !(YearsUnlocked(addr) < 9 && bit(CAR_037_RALLY, CarsUnlocked(addr)) == 1)
 }
 
 function InRace(addr)
@@ -438,6 +444,9 @@ for s in PROCESS_STARTS
     rp_10yc_year = rich_presence_value("_Number", CurrentYear(s)+1, "VALUE")
     rp_tuning_car_name = rich_presence_lookup("Car", TuningCarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
 
+    rich_presence_conditional_display(ProcessStartsAt(s) && !AntiCheat(s),
+        "⚠️ Cheated to unlock all cars"
+    )
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE,
         "🕹️ Arcade ({7}) | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {3}{4}/{5}",
         rp_track_name, rp_car_name, rp_trans_rights,
@@ -522,6 +531,8 @@ for i in range(0, length(TenYCAchievements)-1)
         type="progression",
         trigger=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
+                // Anti-cheat
+                AntiCheat(s) &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_10YEAR &&
                 // Correct year
@@ -539,7 +550,7 @@ for i in range(0, length(TenYCAchievements)-1)
 
 // Arcade
 
-ArcadeStageID = 433505
+ArcadeStageID = 435505
 
 ArcadeStageAchievements = [
     {
@@ -580,6 +591,8 @@ for i in range(0, length(ArcadeStageAchievements) - 1)
         points=params["points"],
         trigger=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
+                // Anti-cheat
+                AntiCheat(s) &&
                 // Correct difficulty
                 ArcDifficulty(s) >= DIFF_NORMAL &&
                 // Correct mode
@@ -601,6 +614,8 @@ achievement(
     points=10,
     trigger=any_of(PROCESS_STARTS, s => (
             ProcessStartsAt(s) &&
+            // Anti-cheat
+            AntiCheat(s) &&
             // Correct difficulty
             ArcDifficulty(s) >= DIFF_HARD &&
             // Correct mode
@@ -620,6 +635,8 @@ achievement(
     points=25,
     trigger=any_of(PROCESS_STARTS, s => (
             ProcessStartsAt(s) &&
+            // Anti-cheat
+            AntiCheat(s) &&
             // Correct mode
             GameMode(s) == GAMEMODE_ARCADE &&
             // Correct track
@@ -674,6 +691,8 @@ for i in range(0, length(ALL_TRACKS) - 1)
         description=format("In Time Attack, complete a lap on the {0} stage within the fastest time!{1}", TrackLookup[track], _EXTRA),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
+                // Anti-cheat
+                AntiCheat(s) &&
                 // New fastest lap
                 ((FastestLap(s) < prev(FastestLap(s))) || ALWAYS_SUBMIT) &&
                 // Correct mode
@@ -711,6 +730,8 @@ for i in range(0, length(ALL_TRACKS) - 1)
         description=format("In Time Attack, complete a 3 Laps run on the {0} stage within the fastest time!{1}", TrackLookup[track], _EXTRA),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
+                // Anti-cheat
+                AntiCheat(s) &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_TIME_ATTACK &&
                 // Correct track
@@ -764,6 +785,8 @@ for i in range(0, length(ARCADE_TRACKS) - 1)
         description=format("In Arcade, complete the {0} stage as fast as possible!", name),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
+                // Anti-cheat
+                AntiCheat(s) &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_ARCADE &&
                 // Correct track
@@ -789,6 +812,8 @@ leaderboard(
     description="Complete the arcade mode as fast as possible!",
     start=any_of(PROCESS_STARTS, s => (
             ProcessStartsAt(s) &&
+            // Anti-cheat
+            AntiCheat(s) &&
             // Correct mode
             GameMode(s) == GAMEMODE_ARCADE &&
             // End of the race
@@ -817,6 +842,8 @@ for i in range(0, 10 - 1)
         description=format("In Ten Year Championship, complete the {0} Year as fast as possible!", MakeOrdinal(i+1)),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
+                // Anti-cheat
+                AntiCheat(s) &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_10YEAR &&
                 // Correct year
