@@ -490,15 +490,30 @@ rich_presence_display("Preparing for this Infernal Raid")
 
 // ACHIEVEMENTS
 
-TenYCAchievementID = 104069
+TenYCAchievementID = 0
 
 TenYCAchievements = [
-    {"name": "", "pts": 3},
+    {"name": "Tommi Makinen", "pts": 3},
+    {"name": "Juha Kankkunen", "pts": 3},
+    {"name": "Walter Rohrl", "pts": 4},
+    {"name": "Marcus Gronholm", "pts": 4},
+    {"name": "Richard Burns", "pts": 5},
+    {"name": "Miki Biasion", "pts": 10},
+    {"name": "Petter Solberg", "pts": 10},
+    {"name": "Sebastien Loeb", "pts": 25},
+    {"name": "Carlos Sainz", "pts": 25},
+    {"name": "Sebastien Ogier", "pts": 25},
 ]
 
-for i in range(0, 10 - 1)
+i = 0
+for a in TenYCAchievements
 {
-    
+    achievement(
+        id=TenYCAchievementID+i,
+        title=a["name"],
+        description=format("Finish 1st during {0} Year in 10 Year Championship", MakeOrdinal(i+1))
+    )
+    i = i + 1
 }
 
 // LEADERBOARDS
