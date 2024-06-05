@@ -683,6 +683,92 @@ achievement(
     )
 )
 
+// TIME TRIALS
+
+// BONUS
+
+achievement(
+    id=435718,
+    title="A Woman's Touch",
+    description="Change the copilot voice to Female",
+    points=1,
+    trigger=any_of(PROCESS_STARTS, s => (ProcessStartsAt(s) && InRace(s) && Navigator(s) == NAVIGATOR_FEMALE))
+)
+
+achievement(
+    id=435719,
+    title="Take it for a Spin",
+    description="Adjust the tuning on any car and then take it for a spin around the track in test drive mode",
+    points=2,
+    trigger=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) &&
+            // test drive mode
+            InRace(s) && GameMode(s) == GAMEMODE_CAR_SETTINGS &&
+            // some modification has been made to the car
+            (
+                Tires(s) != 0 ||
+                GearRatio(s) != 0 ||
+                FrontSuspension(s) != 0 ||
+                RearSuspension(s) != 0 ||
+                Steering(s) != 0 ||
+                Brakes(s) != 0
+            ) &&
+            // trigger when once around the track
+            trigger_when(prev(CurrentLap(s)) == 0 && CurrentLap(s) == 1)
+        )
+    )
+)
+
+achievement(
+    id=435720,
+    title="Powered by Windows CE",
+    description="Input either the 30fps or \"60fps\" cheat code to get better in-game performance (Warning: will not make you a better driver)",
+    points=1,
+    trigger=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) &&
+            // change graphics mode
+            GraphicsMode(s) != GRAPHICS_NORMAL
+        )
+    )
+)
+
+CONES_SCORE_THRESHOLD = 18000
+achievement(
+    id=435721,
+    title="Reckless Endangerment",
+    description="Earn 18,000 or more points in the cones minigame on Riviera in Arcade mode",
+    points=5,
+    trigger=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) &&
+            // Correct mode
+            (GameMode(s) == GAMEMODE_ARCADE || GameMode(s) == GAMEMODE_ARCADE_PRACTICE) &&
+            // Correct stage
+            TrackID(s) == TRACK_RIVERIA &&
+            // Minigame is active
+            ConesTime(s) > 0 &&
+            // Score less than threshold
+            prev(ConesScore(s)) < CONES_SCORE_THRESHOLD &&
+            // Trigger on a score over threshold
+            trigger_when(ConesScore(s) >= CONES_SCORE_THRESHOLD)
+        )
+    )
+)
+
+achievement(
+    id=435722,
+    title="The Todd Rogers Special",
+    description="Start a race in 2nd gear",
+    points=1,
+    trigger=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) && InRace(s) &&
+            // Countdown ends
+            prev(RaceState(s)) == RACESTATE_COUNTDOWN && RaceState(s) == RACESTATE_RACING &&
+            // 2nd gear
+            CurrentGear(s) == 2
+        )
+    )
+)
+
 // LEADERBOARDS
 
 // Should time attack leaderboards always submit, even if the player hasn't achieved a new fastest time in game?
