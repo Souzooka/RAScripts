@@ -511,7 +511,10 @@ for a in TenYCAchievements
     achievement(
         id=TenYCAchievementID+i,
         title=a["name"],
-        description=format("Finish 1st during {0} Year in 10 Year Championship", MakeOrdinal(i+1))
+        description=format("Finish 1st during {0} Year in 10 Year Championship", MakeOrdinal(i+1)),
+        points=a["pts"],
+        type="progression",
+        trigger=always_false()
     )
     i = i + 1
 }
