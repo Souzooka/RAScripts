@@ -685,6 +685,192 @@ achievement(
 
 // TIME TRIALS
 
+function Time2MS(minutes, seconds, millisecs)
+{
+    return (minutes * (60 * 1000)) +
+           (seconds * 1000) +
+           millisecs
+}
+
+TimeAttackAchievements = [
+    {
+        "name": "Ignition '98",
+        "points": 10,
+        "track_id": TRACK_DESERTSS1,
+        "car_ids": [CAR_CELICA_ST_205], // Have to use a list since some cars change IDs :(
+        "time": Time2MS(2, 46, 926),
+    },
+    {
+        "name": "Deja Vu",
+        "points": 10,
+        "track_id": TRACK_DESERTSS2,
+        "car_ids": [CAR_CELICA_ST_185_94],
+        "time": Time2MS(2, 35, 827),
+    },
+    {
+        "name": "Estrada Nova",
+        "points": 10,
+        "track_id": TRACK_DESERTSS3,
+        "car_ids": [CAR_IMPREZA_555],
+        "time": Time2MS(3, 51, 897),
+    },
+    {
+        "name": "Route 246",
+        "points": 10,
+        "track_id": TRACK_MOUNTAINSS1,
+        "car_ids": [CAR_SEICENTO],
+        "time": Time2MS(2, 55, 2),
+    },
+    {
+        "name": "Power Games",
+        "points": 10,
+        "track_id": TRACK_MOUNTAINSS2,
+        "car_ids": [CAR_DELTA_HF],
+        "time": Time2MS(3, 15, 13),
+    },
+    {
+        "name": "End Road of Monaco",
+        "points": 10,
+        "track_id": TRACK_MOUNTAINSS3,
+        "car_ids": [CAR_131_ABARTH_RALLY],
+        "time": Time2MS(3, 33, 110),
+    },
+    {
+        "name": "Put Up a Sign",
+        "points": 10,
+        "track_id": TRACK_SNOWYSS1,
+        "car_ids": [CAR_PEUGEOT_206],
+        "time": Time2MS(1, 58, 416),
+    },
+    {
+        "name": "Boosted",
+        "points": 10,
+        "track_id": TRACK_SNOWYSS2,
+        "car_ids": [CAR_LANCER_EVO_III],
+        "time": Time2MS(2, 34, 415),
+    },
+    {
+        "name": "Verges on the Edge",
+        "points": 10,
+        "track_id": TRACK_SNOWYSS3,
+        "car_ids": [CAR_COROLLA_WRC],
+        "time": Time2MS(3, 11, 326),
+    },
+    {
+        "name": "MNF",
+        "points": 10,
+        "track_id": TRACK_RIVERIA,
+        "car_ids": [CAR_STRATOS, CAR_STRATOS2],
+        "time": Time2MS(1, 44, 763),
+    },
+    {
+        "name": "Insert Jungle",
+        "points": 10,
+        "track_id": TRACK_MUDDYSS1,
+        "car_ids": [CAR_IMPREZA_WRC],
+        "time": Time2MS(2, 46, 311),
+    },
+    {
+        "name": "Around a Letter",
+        "points": 10,
+        "track_id": TRACK_MUDDYSS2,
+        "car_ids": [CAR_LANCER_EVO_IV],
+        "time": Time2MS(3, 33, 187),
+    },
+    {
+        "name": "Rumble Along",
+        "points": 10,
+        "track_id": TRACK_MUDDYSS3,
+        "car_ids": [CAR_DELTA_16V],
+        "time": Time2MS(4, 32, 719),
+    },
+    {
+        "name": "Evolution",
+        "points": 10,
+        "track_id": TRACK_ISLESS1,
+        "car_ids": [CAR_LANCER_EVOLUTION],
+        "time": Time2MS(2, 31, 777),
+    },
+    {
+        "name": "Temptation of Speed",
+        "points": 10,
+        "track_id": TRACK_ISLESS2,
+        "car_ids": [CAR_MAXI_MEGANE],
+        "time": Time2MS(3, 31, 404),
+    },
+    {
+        "name": "King of Island",
+        "points": 10,
+        "track_id": TRACK_ISLESS3,
+        "car_ids": [CAR_306_MAXI],
+        "time": Time2MS(3, 15, 175),
+    },
+    {
+        "name": "Until You See the Dawn",
+        "points": 10,
+        "track_id": TRACK_SUPERSS,
+        "car_ids": [CAR_037_RALLY, CAR_037_RALLY2],
+        "time": Time2MS(2, 37, 689),
+    },
+]
+
+function MakeTimeString(ms)
+{
+    minutes = ms / (60 * 1000)
+    seconds = (ms % (60 * 1000)) / 1000
+    millisecs = ms % 1000
+    
+    return format(
+        "{0}:{1}{2}.{3}{4}{5}",
+        // minutes
+        minutes,
+        // seconds + zero pad
+        if_else(seconds < 10, "0", ""),
+        seconds,
+        // millisecs + zero pad
+        if_else(millisecs < 100, "0", ""),
+        if_else(millisecs < 10, "0", ""),
+        millisecs
+    )
+}
+
+TimeAttackID = 435964
+
+for i in range(0, length(TimeAttackAchievements) - 1)
+{
+    params = TimeAttackAchievements[i]
+    title = params["name"]
+    track = params["track_id"]
+    cars = params["car_ids"]
+    time = params["time"]
+    points = params["points"]
+    achievement(
+        id=TimeAttackID+i,
+        title=title,
+        description=format(
+            "In Time Attack, complete 3 laps of {0} driving the {1} in a time of {2} or under",
+            TrackLookup[track],
+            CarLookup[cars[0]],
+            MakeTimeString(time)
+        ),
+        points=points,
+        // TODO: I realized we need to find a distinction between Free Run and 3 Laps modes
+        trigger=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) &&
+            // Time Attack mode
+            InRace(s) && GameMode(s) == GAMEMODE_TIME_ATTACK &&
+            // Correct track
+            TrackID(s) == track &&
+            // Correct car
+            any_of(cars, car => CarID(s) == car) &&
+            // Under par time
+            EventTime(s) <= time &&
+            // Trigger for race completion
+            trigger_when(RaceOver(s))
+        ))
+    )
+}
+
 // BONUS
 
 achievement(
@@ -789,7 +975,6 @@ function FLAP_Value(addr)
     return FastestLap(addr) / 10
 }
 
-// TODO: Assert contiguous IDs when uploading leaderboards
 LapRecordID = 103983
 CourseRecordID = 104000
 
