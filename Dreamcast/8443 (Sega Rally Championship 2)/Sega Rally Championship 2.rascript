@@ -877,9 +877,16 @@ for i in range(0, length(TimeAttackAchievements) - 1)
 achievement(
     id=435718,
     title="A Woman's Touch",
-    description="Change the copilot voice to Female",
+    description="Complete a stage with the Female navigator",
     points=1,
-    trigger=any_of(PROCESS_STARTS, s => (ProcessStartsAt(s) && InRace(s) && Navigator(s) == NAVIGATOR_FEMALE))
+    trigger=any_of(PROCESS_STARTS, s => (
+            ProcessStartsAt(s) && InRace(s) &&
+            // Correct navigator
+            Navigator(s) == NAVIGATOR_FEMALE &&
+            // Trigger for race completion
+            trigger_when(RaceOver(s))
+        )
+    )
 )
 
 achievement(
