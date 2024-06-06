@@ -522,10 +522,10 @@ rich_presence_display("Preparing for this Infernal Raid")
 
 TenYCAchievementID = 435707
 TenYCAchievements = [
-    {"name": "Tommi Makinen", "pts": 3},
-    {"name": "Juha Kankkunen", "pts": 3},
-    {"name": "Walter Rohrl", "pts": 4},
-    {"name": "Marcus Gronholm", "pts": 4},
+    {"name": "Tommi Makinen", "pts": 5},
+    {"name": "Juha Kankkunen", "pts": 5},
+    {"name": "Walter Rohrl", "pts": 5},
+    {"name": "Marcus Gronholm", "pts": 5},
     {"name": "Richard Burns", "pts": 5},
     {"name": "Miki Biasion", "pts": 10},
     {"name": "Petter Solberg", "pts": 10},
