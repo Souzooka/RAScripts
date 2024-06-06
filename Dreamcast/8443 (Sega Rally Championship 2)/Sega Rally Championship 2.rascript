@@ -700,127 +700,141 @@ TimeAttackAchievements = [
         "points": 10,
         "track_id": TRACK_DESERTSS1,
         "car_ids": [CAR_CELICA_ST_205], // Have to use a list since some cars change IDs :(
-        "time": Time2MS(2, 46, 926),
+        "time": Time2MS(2, 47, 0),
     },
     {
         "name": "Deja Vu",
         "points": 10,
         "track_id": TRACK_DESERTSS2,
         "car_ids": [CAR_CELICA_ST_185_94],
-        "time": Time2MS(2, 35, 827),
+        "time": Time2MS(2, 36, 0),
     },
     {
         "name": "Estrada Nova",
         "points": 10,
         "track_id": TRACK_DESERTSS3,
         "car_ids": [CAR_IMPREZA_555],
-        "time": Time2MS(3, 51, 897),
+        "time": Time2MS(3, 52, 0),
     },
     {
         "name": "Route 246",
         "points": 10,
         "track_id": TRACK_MOUNTAINSS1,
         "car_ids": [CAR_SEICENTO],
-        "time": Time2MS(2, 55, 2),
+        "time": Time2MS(2, 56, 0),
     },
     {
         "name": "Power Games",
         "points": 10,
         "track_id": TRACK_MOUNTAINSS2,
         "car_ids": [CAR_DELTA_HF],
-        "time": Time2MS(3, 15, 13),
+        "time": Time2MS(3, 16, 0),
     },
     {
         "name": "End Road of Monaco",
         "points": 10,
         "track_id": TRACK_MOUNTAINSS3,
         "car_ids": [CAR_131_ABARTH_RALLY],
-        "time": Time2MS(3, 33, 110),
+        "time": Time2MS(3, 34, 0),
     },
     {
         "name": "Put Up a Sign",
         "points": 10,
         "track_id": TRACK_SNOWYSS1,
         "car_ids": [CAR_PEUGEOT_206],
-        "time": Time2MS(1, 58, 416),
+        "time": Time2MS(1, 59, 0),
     },
     {
         "name": "Boosted",
         "points": 10,
         "track_id": TRACK_SNOWYSS2,
         "car_ids": [CAR_LANCER_EVO_III],
-        "time": Time2MS(2, 34, 415),
+        "time": Time2MS(2, 35, 0),
     },
     {
         "name": "Verges on the Edge",
         "points": 10,
         "track_id": TRACK_SNOWYSS3,
         "car_ids": [CAR_COROLLA_WRC],
-        "time": Time2MS(3, 11, 326),
+        "time": Time2MS(3, 12, 0),
     },
     {
         "name": "MNF",
         "points": 10,
         "track_id": TRACK_RIVERIA,
         "car_ids": [CAR_STRATOS, CAR_STRATOS2],
-        "time": Time2MS(1, 44, 763),
+        "time": Time2MS(1, 46, 0),
     },
     {
         "name": "Insert Jungle",
         "points": 10,
         "track_id": TRACK_MUDDYSS1,
         "car_ids": [CAR_IMPREZA_WRC],
-        "time": Time2MS(2, 46, 311),
+        "time": Time2MS(2, 47, 0),
     },
     {
         "name": "Around a Letter",
         "points": 10,
         "track_id": TRACK_MUDDYSS2,
         "car_ids": [CAR_LANCER_EVO_IV],
-        "time": Time2MS(3, 33, 187),
+        "time": Time2MS(3, 34, 0),
     },
     {
         "name": "Rumble Along",
         "points": 10,
         "track_id": TRACK_MUDDYSS3,
         "car_ids": [CAR_DELTA_16V],
-        "time": Time2MS(4, 32, 719),
+        "time": Time2MS(4, 33, 0),
     },
     {
         "name": "Evolution",
         "points": 10,
         "track_id": TRACK_ISLESS1,
         "car_ids": [CAR_LANCER_EVOLUTION],
-        "time": Time2MS(2, 31, 777),
+        "time": Time2MS(2, 32, 0),
     },
     {
         "name": "Temptation of Speed",
         "points": 10,
         "track_id": TRACK_ISLESS2,
         "car_ids": [CAR_MAXI_MEGANE],
-        "time": Time2MS(3, 31, 404),
+        "time": Time2MS(3, 32, 0),
     },
     {
         "name": "King of Island",
         "points": 10,
         "track_id": TRACK_ISLESS3,
         "car_ids": [CAR_306_MAXI],
-        "time": Time2MS(3, 15, 175),
+        "time": Time2MS(3, 16, 0),
     },
     {
         "name": "Until You See the Dawn",
         "points": 10,
         "track_id": TRACK_SUPERSS,
         "car_ids": [CAR_037_RALLY, CAR_037_RALLY2],
-        "time": Time2MS(2, 37, 689),
+        "time": Time2MS(2, 38, 0),
     },
 ]
 
 function MakeTimeString(ms)
 {
+    // If all times have 0 ms, just ignore it in the time string
+    ALL_ZERO_MS = !any_of(TimeAttackAchievements, a => a["time"] % 1000 != 0)
+
     minutes = ms / (60 * 1000)
     seconds = (ms % (60 * 1000)) / 1000
     millisecs = ms % 1000
+    
+    if ALL_ZERO_MS
+    {
+        return format(
+            "{0} minute{1} and {2} second{3}",
+            minutes,
+            if_else(minutes != 1, "s", ""),
+            seconds,
+            if_else(seconds != 1, "s", "")
+        )    
+    }
     
     return format(
         "{0}:{1}{2}.{3}{4}{5}",
@@ -850,7 +864,7 @@ for i in range(0, length(TimeAttackAchievements) - 1)
         id=TimeAttackID+i,
         title=title,
         description=format(
-            "In Time Attack, complete 3 laps of {0} driving the {1} in a time of {2} or under",
+            "In Time Attack, complete a 3 Laps run of {0} driving the {1} in less than {2}",
             TrackLookup[track],
             CarLookup[cars[0]],
             MakeTimeString(time)
@@ -865,7 +879,7 @@ for i in range(0, length(TimeAttackAchievements) - 1)
             // Correct car
             any_of(cars, car => CarID(s) == car) &&
             // Under par time
-            EventTime(s) <= time &&
+            EventTime(s) < time &&
             // Trigger for race completion
             trigger_when(RaceOver(s))
         ))
