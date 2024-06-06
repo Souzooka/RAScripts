@@ -124,6 +124,8 @@ RaceState2      = (addr) => byte(0xd7a911 - PROCESS_START + addr)
 EventTime       = (addr) => dword(0xd7a914 - PROCESS_START + addr)
 // Range [0, 0x10], see TRACK enum below
 TrackID         = (addr) => dword(0xd7a920 - PROCESS_START + addr)
+// Target number of laps (correct for Arcade/10YC, 3=3Lap, -1=Free Run in time trial)
+TargetLaps      = (addr) => dword(0xd7a970 - PROCESS_START + addr)
 // Range [0, 0x16], see CAR enum below
 CarID           = (addr) => dword(0xd7a9e0 - PROCESS_START + addr)
 // Same as CarID, only set during Car Settings
@@ -854,11 +856,10 @@ for i in range(0, length(TimeAttackAchievements) - 1)
             MakeTimeString(time)
         ),
         points=points,
-        // TODO: I realized we need to find a distinction between Free Run and 3 Laps modes
         trigger=any_of(PROCESS_STARTS, s => (
             ProcessStartsAt(s) &&
             // Time Attack mode
-            InRace(s) && GameMode(s) == GAMEMODE_TIME_ATTACK &&
+            InRace(s) && GameMode(s) == GAMEMODE_TIME_ATTACK && TargetLaps(s) == 3 &&
             // Correct track
             TrackID(s) == track &&
             // Correct car
