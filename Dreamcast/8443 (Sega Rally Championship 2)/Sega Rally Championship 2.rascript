@@ -380,9 +380,9 @@ TrackLookup = {
     TRACK_MUDDYSS1: "Muddy SS1",
     TRACK_MUDDYSS2: "Muddy SS2",
     TRACK_MUDDYSS3: "Muddy SS3",
-    TRACK_ISLESS1: "Isles SS1",
-    TRACK_ISLESS2: "Isles SS2",
-    TRACK_ISLESS3: "Isles SS3",
+    TRACK_ISLESS1: "Isle SS1",
+    TRACK_ISLESS2: "Isle SS2",
+    TRACK_ISLESS3: "Isle SS3",
     TRACK_SUPERSS: "Super S.S.",
 }
 
