@@ -1372,7 +1372,9 @@ achievement(
         // We have all exhibits
         CheckAllExhibitsPurchased() &&
         // we didn't last frame
-        !CheckAllExhibitsPurchased(prev)
+        !CheckAllExhibitsPurchased(prev) &&
+        // Sanity check that we're in game
+        GameMode == MODE_INGAME
     )
 )
 
