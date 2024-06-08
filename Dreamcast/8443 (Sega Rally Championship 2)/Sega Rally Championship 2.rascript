@@ -950,7 +950,7 @@ for i in range(0, length(TimeAttackAchievements) - 1)
 achievement(
     id=435718,
     title="A Woman's Touch",
-    description="Complete a stage with the Female navigator",
+    description="Complete a stage with the Female co-driver",
     points=1,
     trigger=any_of(PROCESS_STARTS, s => (
             ProcessStartsAt(s) && InRace(s) &&
