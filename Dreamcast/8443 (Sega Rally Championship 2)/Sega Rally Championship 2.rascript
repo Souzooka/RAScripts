@@ -443,12 +443,6 @@ DifficultyLookup = {
     DIFF_HARD: "Hard",
 }
 
-// Game memory isn't where we expect it to be :(
-rich_presence_conditional_display(
-    !any_of(PROCESS_STARTS, s => ProcessStartsAt(s)),
-    "⚠️ Achievements not supported on this core or with set core settings, contact the developer for more information ⚠️"
-)
-
 for s in PROCESS_STARTS
 {
     rp_car_name = rich_presence_lookup("Car", CarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
@@ -520,7 +514,59 @@ for s in PROCESS_STARTS
 }
 
 // remember Souzooka, the dumb Blomby Car meme was actually *your* idea
-rich_presence_display("Preparing for this Infernal Raid")
+rich_presence_conditional_display(
+    any_of(PROCESS_STARTS, ProcessStartsAt),
+    "Preparing for this Infernal Raid"
+)
+
+// GAME MEMORY DEBUG
+
+function hex(num)
+{
+    int2hex = {
+        0: "0",
+        1: "1",
+        2: "2",
+        3: "3",
+        4: "4",
+        5: "5",
+        6: "6",
+        7: "7",
+        8: "8",
+        9: "9",
+        10: "A",
+        11: "B",
+        12: "C",
+        13: "D",
+        14: "E",
+        15: "F",
+    }
+    
+    str = ""
+    for i in range(0, 5)
+    {
+        str = format("{0}{1}", int2hex[num % 16], str)
+        num = num / 16
+    }
+    
+    return "0x" + str
+}
+
+// Try an extensive search of pages around where we expect game memory to start to see if we can just get a guessed start to print out in RP, if the set is broken
+SEARCH_RANGE = 400
+for i in range(SEARCH_RANGE * -1, SEARCH_RANGE) // NOTE: -SEARCH_RANGE causes syntax error, make GitHub issue later
+{
+    start = PROCESS_START + (i * 0x1000)
+    rich_presence_conditional_display(
+        ProcessStartsAt(start),
+        format("⚠️ RALLY2.EXE={0} -- Add to RAScript!!", hex(start))
+    )
+}
+
+// Game memory isn't where we expect it to be -- and it's not any where around where it was??? WHERE IS IT!? :(
+rich_presence_display(
+    "⚠️ Achievements not supported on this core or with set core settings, contact the developer for more information. ⚠️"
+)
 
 // ACHIEVEMENTS
 
