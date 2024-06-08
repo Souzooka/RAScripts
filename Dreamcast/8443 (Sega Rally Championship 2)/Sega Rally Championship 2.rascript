@@ -572,7 +572,7 @@ for i in range(SEARCH_RANGE * -1, SEARCH_RANGE) // NOTE: -SEARCH_RANGE causes sy
 
 // Game memory isn't where we expect it to be -- and it's not any where around where it was??? WHERE IS IT!? :(
 rich_presence_display(
-    "⚠️ Achievements not supported on this core or with set core settings, contact the developer for more information. ⚠️"
+    "⚠️⚠️⚠️ TRIPLE CAUTION! You're breaking the car, Samir!"
 )
 
 // ACHIEVEMENTS
