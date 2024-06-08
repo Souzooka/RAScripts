@@ -475,12 +475,19 @@ for s in PROCESS_STARTS
         rp_arc_difficulty
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR,
-        "🏆 10 Year Championship | 🗓️ Year {3} | 🚩 {0} ({7}s left) | 🚗 {1} ({2}) | {4}{5}/{6}",
+    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR && CurrentYear(s) >= 10,
+        "🏆 10 Year Championship | 🗓️ Special Stage | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {3}{4}/{5}",
         rp_track_name, rp_car_name, rp_trans_rights,
-        rp_10yc_year,
         rp_race_position, rp_race_position_suffix, rp_num_rivals,
         rp_time_remaining
+    )
+
+    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR,
+        "🏆 10 Year Championship | 🗓️ Year {7} | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {3}{4}/{5}",
+        rp_track_name, rp_car_name, rp_trans_rights,
+        rp_race_position, rp_race_position_suffix, rp_num_rivals,
+        rp_time_remaining,
+        rp_10yc_year
     )
 
     rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_TIME_ATTACK,
