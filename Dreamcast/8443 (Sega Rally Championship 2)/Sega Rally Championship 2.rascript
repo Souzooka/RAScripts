@@ -443,6 +443,12 @@ DifficultyLookup = {
     DIFF_HARD: "Hard",
 }
 
+// Game memory isn't where we expect it to be :(
+rich_presence_conditional_display(
+    !any_of(PROCESS_STARTS, s => ProcessStartsAt(s)),
+    "⚠️ Achievements not supported on this core or with set core settings, contact the developer for more information ⚠️"
+)
+
 for s in PROCESS_STARTS
 {
     rp_car_name = rich_presence_lookup("Car", CarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
