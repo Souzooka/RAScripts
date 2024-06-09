@@ -1071,8 +1071,6 @@ for i in range(0, length(ALL_TRACKS) - 1)
         description=format("In Time Attack, complete a lap on the {0} stage within the fastest time!{1}", TrackLookup[track], _EXTRA),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
-                // Anti-cheat
-                AntiCheat(s) &&
                 // New fastest lap
                 ((FastestLap(s) < prev(FastestLap(s))) || ALWAYS_SUBMIT) &&
                 // Correct mode
@@ -1107,8 +1105,6 @@ for i in range(0, length(ALL_TRACKS) - 1)
         description=format("In Time Attack, complete a 3 Laps run on the {0} stage within the fastest time!{1}", TrackLookup[track], _EXTRA),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
-                // Anti-cheat
-                AntiCheat(s) &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_TIME_ATTACK &&
                 // Correct track
@@ -1159,8 +1155,6 @@ for i in range(0, length(ARCADE_TRACKS) - 1)
         description=format("In Arcade, complete the {0} stage as fast as possible!", name),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
-                // Anti-cheat
-                AntiCheat(s) &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_ARCADE &&
                 // Correct track
@@ -1183,8 +1177,6 @@ leaderboard(
     description="Complete the arcade mode as fast as possible!",
     start=any_of(PROCESS_STARTS, s => (
             ProcessStartsAt(s) &&
-            // Anti-cheat
-            AntiCheat(s) &&
             // Correct mode
             GameMode(s) == GAMEMODE_ARCADE &&
             // End of the race
@@ -1210,8 +1202,6 @@ for i in range(0, 10 - 1)
         description=format("In Ten Year Championship, complete the {0} Year as fast as possible!", MakeOrdinal(i+1)),
         start=any_of(PROCESS_STARTS, s => (
                 ProcessStartsAt(s) &&
-                // Anti-cheat
-                AntiCheat(s) &&
                 // Correct mode
                 GameMode(s) == GAMEMODE_10YEAR &&
                 // Correct year
