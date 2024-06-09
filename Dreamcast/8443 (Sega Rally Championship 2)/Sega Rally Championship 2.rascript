@@ -16,10 +16,25 @@ function if_else(cond, v1, v2)
     return v2
 }
 
+function assert(cond, msg="No Message")
+{
+    if cond == false
+    {
+        // This won't compile, causing an error to appear if evaluated
+        l = {}
+        return l[msg]
+    }
+    
+    return true
+}
+
 PROCESS_START = 0xA98000 // Where RALLY2.exe memory *should* exist in memory. Thanks Windows CE, very cool!
 
 // Where RALLY2.exe memory *could* exist in memory due to CPU timing differences.
 PROCESS_STARTS = [PROCESS_START, 0xA99000, 0xA9A000, 0xA9B000, 0xA9C000]
+// Process starts associated with players using the LLE DC BIOS -- these need special handling both for resolving static
+// addresses and for pointers
+LLE = [0xA9A000, 0xA9B000]
 
 function ProcessStartsAt(addr)
 {
@@ -29,10 +44,25 @@ function ProcessStartsAt(addr)
     return ascii_string_equals(LAP_TIME, "LAP TIME", 4) // Checking only one dword is probably fine
 }
 
+function ConvertAddress(addr, start)
+{
+    // bruh I dunno I'm done with this Windows CE shit, addresses are a further 0x1000 off if using dreamcast bios
+    is_lle = any_of(LLE, s => s == start)
+    if (is_lle) { addr = addr + 0x1000 }
+    
+    return addr - PROCESS_START + start
+}
+assert(ConvertAddress(0xd7a908, PROCESS_START) == 0xd7a908)
+assert(ConvertAddress(0xd7a908, 0xA9A000) == 0xd7d908)
+
 addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
 function ptr(base, offsets, accessor=dword, process_start=PROCESS_START)
 {
     val = base
+    // bruh I dunno I'm done with this Windows CE shit, addresses are a further 0x1000 off if using dreamcast bios
+    // (yes, below here -- while it is above in ConvertAddress)
+    is_lle = any_of(LLE, s => s == process_start)
+    if (is_lle) { process_start = process_start - 0x1000 }
     
     for i in range(0, length(offsets) - 1)
     {
@@ -48,18 +78,6 @@ function ptr(base, offsets, accessor=dword, process_start=PROCESS_START)
     }
     
     return val
-}
-
-function assert(cond, msg="No Message")
-{
-    if cond == false
-    {
-        // This won't compile, causing an error to appear if evaluated
-        l = {}
-        return l[msg]
-    }
-    
-    return true
 }
 
 function _arr2String(arr)
@@ -95,83 +113,83 @@ function array_index(arr, val)
 // GAME VARIABLES
 
 // If the game is paused or not (0=not paused, 1=paused)
-GamePaused      = (addr) => dword(0xc5810c - PROCESS_START + addr)
+GamePaused      = (addr) => dword(ConvertAddress(0xc5810c, addr))
 // The current lap the player is on, 0-based
-CurrentLap      = (addr) => dword(0xd5f3f0 - PROCESS_START + addr)
+CurrentLap      = (addr) => dword(ConvertAddress(0xd5f3f0, addr))
 // Array of 8(?) 32-bit values for lap times, in milliseconds
-LapTimes        = (addr) => 0xd5f3f8 - PROCESS_START + addr
+LapTimes        = (addr) => ConvertAddress(0xd5f3f8, addr)
 // Fastest lap (in Time Attack)
-FastestLap      = (addr) => dword(0xd5f44c - PROCESS_START + addr)
+FastestLap      = (addr) => dword(ConvertAddress(0xd5f44c, addr))
 // Car Record (in Time Attack)
-CarRecord       = (addr) => dword(0xd5f450 - PROCESS_START + addr)
+CarRecord       = (addr) => dword(ConvertAddress(0xd5f450, addr))
 // Course Record (in Time Attack)
-CourseRecord     = (addr) => dword(0xd5f460 - PROCESS_START + addr)
+CourseRecord     = (addr) => dword(ConvertAddress(0xd5f460, addr))
 // Array of 8(?) 32-bit values for area segment times, in milliseconds, for free run Time Attack mode
-AreaTimes       = (addr) => 0xd5f468 - PROCESS_START + addr
+AreaTimes       = (addr) => ConvertAddress(0xd5f468, addr)
 // Remaining time for the cones minigame in Riviera in arcade mode
-ConesTime       = (addr) => dword(0xd5f4c0 - PROCESS_START + addr)
+ConesTime       = (addr) => dword(ConvertAddress(0xd5f4c0, addr))
 // Score for cones minigame (28400 max score)
-ConesScore      = (addr) => dword(0xd5f4c8 - PROCESS_START + addr)
+ConesScore      = (addr) => dword(ConvertAddress(0xd5f4c8, addr))
 // Range [0, 0xB], see GAMEMODE enum below -- indicates current active game mode
-GameMode        = (addr) => dword(0xd7a904 - PROCESS_START + addr)
+GameMode        = (addr) => dword(ConvertAddress(0xd7a904, addr))
 // Remaining time for arcade, 10year in milliseconds; -1 in time attack
-RemainingTime   = (addr) => dword(0xd7a908 - PROCESS_START + addr)
+RemainingTime   = (addr) => dword(ConvertAddress(0xd7a908, addr))
 // Some sort of enumeration for race state (?) -- there's another byte at 0x....11 which may be helpful too
 // See RACESTATE enum
-RaceState       = (addr) => byte(0xd7a910 - PROCESS_START + addr)
+RaceState       = (addr) => byte(ConvertAddress(0xd7a910, addr))
 // See RACESTATE2 enum
-RaceState2      = (addr) => byte(0xd7a911 - PROCESS_START + addr)
+RaceState2      = (addr) => byte(ConvertAddress(0xd7a911, addr))
 // Total time for current event, in millseconds
-EventTime       = (addr) => dword(0xd7a914 - PROCESS_START + addr)
+EventTime       = (addr) => dword(ConvertAddress(0xd7a914, addr))
 // Range [0, 0x10], see TRACK enum below
-TrackID         = (addr) => dword(0xd7a920 - PROCESS_START + addr)
+TrackID         = (addr) => dword(ConvertAddress(0xd7a920, addr))
 // Target number of laps (correct for Arcade/10YC, 3=3Lap, -1=Free Run in time trial)
-TargetLaps      = (addr) => dword(0xd7a970 - PROCESS_START + addr)
+TargetLaps      = (addr) => dword(ConvertAddress(0xd7a970, addr))
 // Range [0, 0x16], see CAR enum below
-CarID           = (addr) => dword(0xd7a9e0 - PROCESS_START + addr)
+CarID           = (addr) => dword(ConvertAddress(0xd7a9e0, addr))
 // Same as CarID, only set during Car Settings
-TuningCarID     = (addr) => dword(0xc8763c - PROCESS_START + addr)
+TuningCarID     = (addr) => dword(ConvertAddress(0xc8763c, addr))
 
 // Car Tuning Values
 // Range [0, 7], see TRANSMISSION enum below
-Transmission    = (addr) => dword(0xd7a9e4 - PROCESS_START + addr)
+Transmission    = (addr) => dword(ConvertAddress(0xd7a9e4, addr))
 // Range [0, A], see TIRE enum below
-Tires           = (addr) => dword(0xd7a9f0 - PROCESS_START + addr)
+Tires           = (addr) => dword(ConvertAddress(0xd7a9f0, addr))
 // Range [0, 1], see NAVIGATOR enum below
-Navigator       = (addr) => dword(0xd7a9f4 - PROCESS_START + addr)
+Navigator       = (addr) => dword(ConvertAddress(0xd7a9f4, addr))
 // Range [-5 low, 5 high]
-GearRatio       = (addr) => dword(0xd7a9f8 - PROCESS_START + addr)
+GearRatio       = (addr) => dword(ConvertAddress(0xd7a9f8, addr))
 // Range [-5 soft, 5 hard]
-FrontSuspension = (addr) => dword(0xd7a9fc - PROCESS_START + addr)
+FrontSuspension = (addr) => dword(ConvertAddress(0xd7a9fc, addr))
 // Range [-5 soft, 5 hard]
-RearSuspension  = (addr) => dword(0xd7aa00 - PROCESS_START + addr)
+RearSuspension  = (addr) => dword(ConvertAddress(0xd7aa00, addr))
 // Range [-5 slow, 5 quick]
-Steering        = (addr) => dword(0xd7aa04 - PROCESS_START + addr)
+Steering        = (addr) => dword(ConvertAddress(0xd7aa04, addr))
 // Range [-5 soft, 5 hard]
-Brakes          = (addr) => dword(0xd7aa08 - PROCESS_START + addr)
+Brakes          = (addr) => dword(ConvertAddress(0xd7aa08, addr))
 
 // How many years unlocked for 10YC mode (0-based)
-YearsUnlocked   = (addr) => dword(0xd7a928 - PROCESS_START + addr)
+YearsUnlocked   = (addr) => dword(ConvertAddress(0xd7a928, addr))
 // Current year in 10YC mode
-CurrentYear     = (addr) => dword(0xd7a92c - PROCESS_START + addr)
+CurrentYear     = (addr) => dword(ConvertAddress(0xd7a92c, addr))
 // Current race leg (0-indexed) [0-3]
-CurrentLeg      = (addr) => dword(0xd7a930 - PROCESS_START + addr)
+CurrentLeg      = (addr) => dword(ConvertAddress(0xd7a930, addr))
 // Current gear
-CarPointer      = (addr) => dword(0xd760e8 - PROCESS_START + addr)
+CarPointer      = (addr) => dword(ConvertAddress(0xd760e8, addr))
 CurrentGear     = (addr) => ptr(CarPointer(addr), [0x010, 0x02C], dword, process_start=addr)
 // Bitset of unlocked cars (24-bit; indexed by car ID)
-CarsUnlocked    = (addr) => 0xd7a934 - PROCESS_START + addr
+CarsUnlocked    = (addr) => ConvertAddress(0xd7a934, addr)
 // Current progress through the current lap -- max progress varies by track, Desert SS1's max progress is about 360
-LapProgressPtr  = (addr) => dword(0xd88c30 - PROCESS_START + addr) // NULL when not in a race (or demo, or replay), so good to check
+LapProgressPtr  = (addr) => dword(ConvertAddress(0xd88c30, addr)) // NULL when not in a race (or demo, or replay), so good to check
 LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, process_start=addr)
 // The player's current position in the event, 0-based
 RacePosition    = (addr) => ptr(LapProgressPtr(addr), [0x20], dword, process_start=addr)
 // Array of arcade (and 10year) stage times
-StageTimes      = (addr) => 0xd88c7C - PROCESS_START + addr
+StageTimes      = (addr) => ConvertAddress(0xd88c7C, addr)
 // Graphics mode, see GRAPHICS enum below
-GraphicsMode    = (addr) => dword(0xd88ce0 - PROCESS_START + addr)
+GraphicsMode    = (addr) => dword(ConvertAddress(0xd88ce0, addr))
 // Arcade Difficulty (0=Easy, 1=Normal, 2=Hard)
-ArcDifficulty   = (addr) => dword(0xd88fc8 - PROCESS_START + addr)
+ArcDifficulty   = (addr) => dword(ConvertAddress(0xd88fc8, addr))
 
 // GAME ENUMERATIONS
 
