@@ -17,8 +17,9 @@ function if_else(cond, v1, v2)
 }
 
 PROCESS_START = 0xA98000 // Where RALLY2.exe memory *should* exist in memory. Thanks Windows CE, very cool!
-PROCESS_START2 = 0xA99000 // Where RALLY2.exe memory *could* exist in memory due to CPU timing differences.
-PROCESS_STARTS = [PROCESS_START, PROCESS_START2]
+
+// Where RALLY2.exe memory *could* exist in memory due to CPU timing differences.
+PROCESS_STARTS = [PROCESS_START, 0xA99000, 0xA9A000, 0xA9B000, 0xA9C000]
 
 function ProcessStartsAt(addr)
 {
@@ -560,7 +561,7 @@ function hex(num)
 }
 
 // Try an extensive search of pages around where we expect game memory to start to see if we can just get a guessed start to print out in RP, if the set is broken
-SEARCH_RANGE = 400
+SEARCH_RANGE = 300
 for i in range(SEARCH_RANGE * -1, SEARCH_RANGE) // NOTE: -SEARCH_RANGE causes syntax error, make GitHub issue later
 {
     start = PROCESS_START + (i * 0x1000)
