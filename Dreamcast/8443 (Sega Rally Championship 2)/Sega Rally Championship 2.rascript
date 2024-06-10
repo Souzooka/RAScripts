@@ -28,13 +28,24 @@ function assert(cond, msg="No Message")
     return true
 }
 
+function dict_get(dict, key, default=0)
+{
+    for _k in dict
+    {
+        if _k == key
+        {
+            return dict[key]
+        }
+    }
+    return default
+}
+
 PROCESS_START = 0xA98000 // Where RALLY2.exe memory *should* exist in memory. Thanks Windows CE, very cool!
 
 // Where RALLY2.exe memory *could* exist in memory due to CPU timing differences.
-PROCESS_STARTS = [PROCESS_START, 0xA99000, 0xA9A000, 0xA9B000, 0xA9C000]
-// Process starts associated with players using the LLE DC BIOS -- these need special handling both for resolving static
-// addresses and for pointers
-LLE = [0xA9A000, 0xA9B000]
+PROCESS_STARTS = [PROCESS_START, 0xA99000, 0xA9A000, 0xA9B000]
+// for tininstellian
+TEST_DYNAMIC_OFFSETS = [0, -0x1000]
 
 function ProcessStartsAt(addr)
 {
@@ -44,29 +55,72 @@ function ProcessStartsAt(addr)
     return ascii_string_equals(LAP_TIME, "LAP TIME", 4) // Checking only one dword is probably fine
 }
 
+function StaticVarsStartsAt(addr)
+{
+    // Figuring out where static variables that we use (which must be in a different region than the "LAP TIME" string)
+    // start -- thanks tininsteelian for somehow provoking the Windows CE beast in a special way
+    DESERT = 0xd7ada4 - PROCESS_START + addr
+    
+    return unicode_string_equals(DESERT, "Desert")
+}
+
+function DynamicVarsStartsAt(static_addr, dynamic_addr, for_rp=false)
+{
+    // NOTE: Only works if LapProgressPtr isn't NULL, so don't check this for things which don't require dynamic vars
+    // All dynamic conditions we have now require the player to be in a race, so this should work
+    // It works by doing heuristic analysis on the pointed-to struct so it's convoluted as hell
+    
+    if for_rp
+    {
+        // sorry tininstellian your nonsense can't fit inside RP so you'll forever be stuck with crazy race positions
+        return true
+    }
+           // 3 bytes above race position should be 0
+    return tbyte(LapProgressPtr(static_addr) + dynamic_addr + 0x21) == 0 &&
+           // These are non-NULL pointers
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x4) >= 0x180000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x4) <= 0x300000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x8) >= 0x180000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x8) <= 0x300000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x10) >= 0x180000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x10) <= 0x300000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x14) >= 0x180000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x14) <= 0x300000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x18) >= 0x180000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x18) <= 0x300000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x1C) >= 0x180000 &&
+           dword(LapProgressPtr(static_addr) + dynamic_addr + 0x1C) <= 0x300000
+}
+
 function ConvertAddress(addr, start)
 {
-    // bruh I dunno I'm done with this Windows CE shit, addresses are a further 0x1000 off if using dreamcast bios
-    is_lle = any_of(LLE, s => s == start)
-    if (is_lle) { addr = addr + 0x1000 }
-    
     return addr - PROCESS_START + start
 }
-assert(ConvertAddress(0xd7a908, PROCESS_START) == 0xd7a908)
-assert(ConvertAddress(0xd7a908, 0xA9A000) == 0xd7d908)
+
+function GameCond(cond, dynamic=false, for_rp=false)
+{
+    if dynamic
+    {
+        return any_of(PROCESS_STARTS, s => 
+                    any_of(TEST_DYNAMIC_OFFSETS, o => 
+                        StaticVarsStartsAt(s) &&
+                        DynamicVarsStartsAt(s, s + o, for_rp) &&
+                        cond(s, o)
+                    )
+               )
+    }
+    
+    return any_of(PROCESS_STARTS, s => StaticVarsStartsAt(s) && cond(s))
+}
 
 addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
-function ptr(base, offsets, accessor=dword, process_start=PROCESS_START)
+function ptr(base, offsets, accessor=dword, process_start=PROCESS_START, dynamic_offset=0)
 {
     val = base
-    // bruh I dunno I'm done with this Windows CE shit, addresses are a further 0x1000 off if using dreamcast bios
-    // (yes, below here -- while it is above in ConvertAddress)
-    is_lle = any_of(LLE, s => s == process_start)
-    if (is_lle) { process_start = process_start - 0x1000 }
     
     for i in range(0, length(offsets) - 1)
     {
-        addr = val + offsets[i] + process_start
+        addr = val + offsets[i] + process_start + dynamic_offset
         if (i == length(offsets) - 1)
         {
             val = accessor(addr)
@@ -176,14 +230,14 @@ CurrentYear     = (addr) => dword(ConvertAddress(0xd7a92c, addr))
 CurrentLeg      = (addr) => dword(ConvertAddress(0xd7a930, addr))
 // Current gear
 CarPointer      = (addr) => dword(ConvertAddress(0xd760e8, addr))
-CurrentGear     = (addr) => ptr(CarPointer(addr), [0x010, 0x02C], dword, process_start=addr)
+CurrentGear     = (addr, offset) => ptr(CarPointer(addr), [0x010, 0x02C], dword, process_start=addr, dynamic_offset=offset)
 // Bitset of unlocked cars (24-bit; indexed by car ID)
 CarsUnlocked    = (addr) => ConvertAddress(0xd7a934, addr)
 // Current progress through the current lap -- max progress varies by track, Desert SS1's max progress is about 360
 LapProgressPtr  = (addr) => dword(ConvertAddress(0xd88c30, addr)) // NULL when not in a race (or demo, or replay), so good to check
-LapProgress     = (addr) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, process_start=addr)
+LapProgress     = (addr, offset) => ptr(LapProgressPtr(addr), [0x8, 0x10], dword, process_start=addr, dynamic_offset=offset)
 // The player's current position in the event, 0-based
-RacePosition    = (addr) => ptr(LapProgressPtr(addr), [0x20], dword, process_start=addr)
+RacePosition    = (addr, offset) => ptr(LapProgressPtr(addr), [0x20], dword, process_start=addr, dynamic_offset=offset)
 // Array of arcade (and 10year) stage times
 StageTimes      = (addr) => ConvertAddress(0xd88c7C, addr)
 // Graphics mode, see GRAPHICS enum below
@@ -468,8 +522,8 @@ for s in PROCESS_STARTS
     rp_track_name = rich_presence_lookup("Track", TrackID(s), TrackLookup, fallback=TrackLookup[TRACK_RIVERIA])
     rp_trans_rights = rich_presence_lookup("Transmission", Transmission(s) & 1, TransmissionLookup, fallback=TransmissionLookup[0])
 
-    rp_race_position = rich_presence_value("_Number", RacePosition(s)+1, "VALUE")
-    rp_race_position_suffix = rich_presence_lookup("Suffix", RacePosition(s)+1, OrdinalSuffixLookup, fallback="th")
+    rp_race_position = rich_presence_value("_Number", RacePosition(s,0)+1, "VALUE")
+    rp_race_position_suffix = rich_presence_lookup("Suffix", RacePosition(s,0)+1, OrdinalSuffixLookup, fallback="th")
     rp_num_rivals = rich_presence_lookup("RivalCount", TrackID(s), { TRACK_SUPERSS: "2" }, fallback="16")
     rp_time_remaining = rich_presence_value("_Number", RemainingTime(s)/60, "VALUE")
 
@@ -477,10 +531,10 @@ for s in PROCESS_STARTS
     rp_10yc_year = rich_presence_value("_Number", CurrentYear(s)+1, "VALUE")
     rp_tuning_car_name = rich_presence_lookup("Car", TuningCarID(s), CarLookup, fallback=CarLookup[CAR_COROLLA_WRC])
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && !AntiCheat(s),
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && !AntiCheat(s),
         "⚠️ Cheated to unlock all cars"
     )
-    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE,
         "🕹️ Arcade ({7}) | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {3}{4}/{5}",
         rp_track_name, rp_car_name, rp_trans_rights,
         rp_race_position, rp_race_position_suffix, rp_num_rivals,
@@ -488,20 +542,20 @@ for s in PROCESS_STARTS
         rp_arc_difficulty
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE_PRACTICE,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_ARCADE_PRACTICE,
         "🕹️ Arcade ({3}) | 🚩 Practicing {0} | 🚗 {1} ({2})",
         rp_track_name, rp_car_name, rp_trans_rights,
         rp_arc_difficulty
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR && CurrentYear(s) >= 10,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR && CurrentYear(s) >= 10,
         "🏆 10 Year Championship | 🗓️ Special Stage | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {3}{4}/{5}",
         rp_track_name, rp_car_name, rp_trans_rights,
         rp_race_position, rp_race_position_suffix, rp_num_rivals,
         rp_time_remaining
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_10YEAR,
         "🏆 10 Year Championship | 🗓️ Year {7} | 🚩 {0} ({6}s left) | 🚗 {1} ({2}) | {3}{4}/{5}",
         rp_track_name, rp_car_name, rp_trans_rights,
         rp_race_position, rp_race_position_suffix, rp_num_rivals,
@@ -509,31 +563,31 @@ for s in PROCESS_STARTS
         rp_10yc_year
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_TIME_ATTACK,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_TIME_ATTACK,
         "⏱️ Time Attack | 🚩 Grinding {0} | 🚗 {1} ({2})",
         rp_track_name, rp_car_name, rp_trans_rights
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_2PBATTLE,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_2PBATTLE,
         "👥 2P Battle | 🚩 {0}",
         rp_track_name
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && GameMode(s) == GAMEMODE_RECORDS,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && GameMode(s) == GAMEMODE_RECORDS,
         "📋 Viewing Records"
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_CAR_PROFILES,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_CAR_PROFILES,
         "📖 Car Profile | 🚗 Learning about {0}",
         rp_car_name
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && !InRace(s) && GameMode(s) == GAMEMODE_CAR_SETTINGS,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && !InRace(s) && GameMode(s) == GAMEMODE_CAR_SETTINGS,
         "🛠️ Tuning up the 🚗 {0}",
         rp_tuning_car_name
     )
 
-    rich_presence_conditional_display(ProcessStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_CAR_SETTINGS,
+    rich_presence_conditional_display(StaticVarsStartsAt(s) && InRace(s) && GameMode(s) == GAMEMODE_CAR_SETTINGS,
         "🔰 Test driving the 🚗 {0}",
         rp_tuning_car_name
     )
@@ -541,7 +595,7 @@ for s in PROCESS_STARTS
 
 // remember Souzooka, the dumb Blomby Car meme was actually *your* idea
 rich_presence_conditional_display(
-    any_of(PROCESS_STARTS, ProcessStartsAt),
+    any_of(PROCESS_STARTS, StaticVarsStartsAt),
     "Preparing for this Infernal Raid"
 )
 
@@ -579,12 +633,12 @@ function hex(num)
 }
 
 // Try an extensive search of pages around where we expect game memory to start to see if we can just get a guessed start to print out in RP, if the set is broken
-SEARCH_RANGE = 300
+SEARCH_RANGE = 150
 for i in range(SEARCH_RANGE * -1, SEARCH_RANGE) // NOTE: -SEARCH_RANGE causes syntax error, make GitHub issue later
 {
     start = PROCESS_START + (i * 0x1000)
     rich_presence_conditional_display(
-        ProcessStartsAt(start),
+        StaticVarsStartsAt(start),
         format("⚠️ RALLY2.EXE={0} -- Add to RAScript!!", hex(start))
     )
 }
@@ -621,8 +675,7 @@ for i in range(0, length(TenYCAchievements)-1)
         description=format("Finish 1st during the {0} Year in 10 Year Championship", MakeOrdinal(i+1)),
         points=a["pts"],
         type="progression",
-        trigger=any_of(PROCESS_STARTS, s => (
-                ProcessStartsAt(s) &&
+        trigger=GameCond((s, o) => (
                 // Anti-cheat
                 AntiCheat(s) &&
                 // Correct mode
@@ -634,8 +687,9 @@ for i in range(0, length(TenYCAchievements)-1)
                 // Race is over
                 RaceOver(s) &&
                 // Finished in first place
-                RacePosition(s) == 0
-            )
+                RacePosition(s, o) == 0
+            ),
+            dynamic=true
         )
     )
 }
@@ -646,8 +700,7 @@ achievement(
     description="Finish 1st in the Special Stage after 10 Year Championship",
     points=10,
     type="win_condition",
-    trigger=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) &&
+    trigger=GameCond((s, o) => (
             // Anti-cheat
             AntiCheat(s) &&
             // Correct mode
@@ -657,8 +710,9 @@ achievement(
             // Race is over
             RaceOver(s) &&
             // Finished in first place
-            RacePosition(s) == 0
-        )
+            RacePosition(s, o) == 0
+        ),
+        dynamic=true
     )
 )
 
@@ -703,8 +757,7 @@ for i in range(0, length(ArcadeStageAchievements) - 1)
         title=params["name"],
         description=format("Clear the {0} stage on Arcade mode on Normal difficulty or higher", params["track_name"]),
         points=params["points"],
-        trigger=any_of(PROCESS_STARTS, s => (
-                ProcessStartsAt(s) &&
+        trigger=GameCond(s => (
                 // Anti-cheat
                 AntiCheat(s) &&
                 // Correct difficulty
@@ -726,8 +779,7 @@ achievement(
     title="Drive Me Mad",
     description="Clear the Riveria Stage on Arcade mode on Hard difficulty",
     points=10,
-    trigger=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) &&
+    trigger=GameCond(s => (
             // Anti-cheat
             AntiCheat(s) &&
             // Correct difficulty
@@ -747,8 +799,7 @@ achievement(
     title="Go Go! Sega Rally",
     description="Finish the rally in 1st place on Arcade mode on any difficulty",
     points=25,
-    trigger=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) &&
+    trigger=GameCond((s,o) => (
             // Anti-cheat
             AntiCheat(s) &&
             // Correct mode
@@ -756,10 +807,11 @@ achievement(
             // Correct track
             TrackID(s) == TRACK_RIVERIA &&
             // 1st place
-            RacePosition(s) == 0 &&
+            RacePosition(s,o) == 0 &&
             // Race is over
             RaceOver(s)
-        )
+        ),
+        dynamic=true
     )
 )
 
@@ -948,8 +1000,7 @@ for i in range(0, length(TimeAttackAchievements) - 1)
             MakeTimeString(time)
         ),
         points=points,
-        trigger=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) &&
+        trigger=GameCond(s => (
             // Time Attack mode
             InRace(s) && GameMode(s) == GAMEMODE_TIME_ATTACK && TargetLaps(s) == 3 &&
             // Correct track
@@ -971,8 +1022,8 @@ achievement(
     title="A Woman's Touch",
     description="Complete a stage with the Female co-driver",
     points=1,
-    trigger=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) && InRace(s) &&
+    trigger=GameCond(s => (
+            InRace(s) &&
             // Correct navigator
             Navigator(s) == NAVIGATOR_FEMALE &&
             // Trigger for race completion
@@ -986,8 +1037,7 @@ achievement(
     title="Take it for a Spin",
     description="Adjust the tuning on any car and then take it for a spin around the track in test drive mode",
     points=2,
-    trigger=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) &&
+    trigger=GameCond(s => (
             // test drive mode
             InRace(s) && GameMode(s) == GAMEMODE_CAR_SETTINGS &&
             // some modification has been made to the car
@@ -1010,8 +1060,7 @@ achievement(
     title="Powered by Windows CE",
     description="Input either the 30fps or \"60fps\" cheat code to get better in-game performance (Warning: will not make you a better driver)",
     points=1,
-    trigger=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) &&
+    trigger=GameCond(s => (
             // change graphics mode
             GraphicsMode(s) != GRAPHICS_NORMAL
         )
@@ -1024,8 +1073,7 @@ achievement(
     title="Reckless Endangerment",
     description="Earn 18,000 or more points in the cones minigame on Riviera in Arcade mode",
     points=5,
-    trigger=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) &&
+    trigger=GameCond(s => (
             // Correct mode
             (GameMode(s) == GAMEMODE_ARCADE || GameMode(s) == GAMEMODE_ARCADE_PRACTICE) &&
             // Correct stage
@@ -1045,13 +1093,14 @@ achievement(
     title="The Todd Rogers Special",
     description="Start a race in 2nd gear",
     points=1,
-    trigger=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) && InRace(s) &&
+    trigger=GameCond((s, o) => (
+            InRace(s) &&
             // Countdown ends
             prev(RaceState(s)) == RACESTATE_COUNTDOWN && RaceState(s) == RACESTATE_RACING &&
             // 2nd gear
-            CurrentGear(s) == 2
-        )
+            CurrentGear(s, o) == 2
+        ),
+        dynamic=true
     )
 )
 
@@ -1087,8 +1136,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
         id=id,
         title=format("{0} - Best Lap", TrackLookup[track]),
         description=format("In Time Attack, complete a lap on the {0} stage within the fastest time!{1}", TrackLookup[track], _EXTRA),
-        start=any_of(PROCESS_STARTS, s => (
-                ProcessStartsAt(s) &&
+        start=GameCond(s => (
                 // New fastest lap
                 ((FastestLap(s) < prev(FastestLap(s))) || ALWAYS_SUBMIT) &&
                 // Correct mode
@@ -1106,7 +1154,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
         submit=always_true(),
         // NOTE: Unfortunately for the last lap, the game doesn't seems to store the value too early into the lap times array so there's a very small discrepancy
         // of about .25 in that case. Fortunately, we can also prevent the discrepancy in the leaderboards by only submitting when the player obtains a new fastest lap.
-        value=max_of(array_map(PROCESS_STARTS, (s) => measured(FLAP_Value(s), when=ProcessStartsAt(s)))),
+        value=max_of(array_map(PROCESS_STARTS, (s) => measured(FLAP_Value(s), when=StaticVarsStartsAt(s)))),
         format="CENTISECS",
         lower_is_better=true
     )
@@ -1121,8 +1169,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
         id=id,
         title=format("{0} - Course Record", TrackLookup[track]),
         description=format("In Time Attack, complete a 3 Laps run on the {0} stage within the fastest time!{1}", TrackLookup[track], _EXTRA),
-        start=any_of(PROCESS_STARTS, s => (
-                ProcessStartsAt(s) &&
+        start=GameCond(s => (
                 // Correct mode
                 GameMode(s) == GAMEMODE_TIME_ATTACK &&
                 // Correct track
@@ -1133,7 +1180,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
         ),
         cancel=always_false(),
         submit=always_true(),
-        value=max_of(array_map(PROCESS_STARTS, (s) => measured(EventTime(s) / 10, when=ProcessStartsAt(s)))),
+        value=max_of(array_map(PROCESS_STARTS, (s) => measured(EventTime(s) / 10, when=StaticVarsStartsAt(s)))),
         format="CENTISECS",
         lower_is_better=true
     )
@@ -1171,8 +1218,7 @@ for i in range(0, length(ARCADE_TRACKS) - 1)
         id=id,
         title=format("{0} - Arcade Stage Record", name),
         description=format("In Arcade, complete the {0} stage as fast as possible!", name),
-        start=any_of(PROCESS_STARTS, s => (
-                ProcessStartsAt(s) &&
+        start=GameCond(s => (
                 // Correct mode
                 GameMode(s) == GAMEMODE_ARCADE &&
                 // Correct track
@@ -1183,7 +1229,7 @@ for i in range(0, length(ARCADE_TRACKS) - 1)
         ),
         cancel=always_false(),
         submit=always_true(),
-        value=max_of(array_map(PROCESS_STARTS, (s) => measured(GetStageTime(s, i), when=ProcessStartsAt(s)))),
+        value=max_of(array_map(PROCESS_STARTS, (s) => measured(GetStageTime(s, i), when=StaticVarsStartsAt(s)))),
         format="CENTISECS",
         lower_is_better=true
     )
@@ -1193,8 +1239,7 @@ leaderboard(
     id=103982,
     title=format("Arcade Record"),
     description="Complete the arcade mode as fast as possible!",
-    start=any_of(PROCESS_STARTS, s => (
-            ProcessStartsAt(s) &&
+    start=GameCond(s => (
             // Correct mode
             GameMode(s) == GAMEMODE_ARCADE &&
             // End of the race
@@ -1205,7 +1250,7 @@ leaderboard(
     ),
     cancel=always_false(),
     submit=always_true(),
-    value=max_of(array_map(PROCESS_STARTS, (s) => measured(EventTime(s) / 10, when=ProcessStartsAt(s)))),
+    value=max_of(array_map(PROCESS_STARTS, (s) => measured(EventTime(s) / 10, when=StaticVarsStartsAt(s)))),
     format="CENTISECS",
     lower_is_better=true
 )
@@ -1218,8 +1263,7 @@ for i in range(0, 10 - 1)
         id=TenYCLeaderboardID + i,
         title=format("{0} Year - Ten Year Championship Record", MakeOrdinal(i+1)),
         description=format("In Ten Year Championship, complete the {0} Year as fast as possible!", MakeOrdinal(i+1)),
-        start=any_of(PROCESS_STARTS, s => (
-                ProcessStartsAt(s) &&
+        start=GameCond(s => (
                 // Correct mode
                 GameMode(s) == GAMEMODE_10YEAR &&
                 // Correct year
@@ -1232,7 +1276,7 @@ for i in range(0, 10 - 1)
         ),
         cancel=always_false(),
         submit=always_true(),
-        value=max_of(array_map(PROCESS_STARTS, (s) => measured(EventTime(s) / 10, when=ProcessStartsAt(s)))),
+        value=max_of(array_map(PROCESS_STARTS, (s) => measured(EventTime(s) / 10, when=StaticVarsStartsAt(s)))),
         format="CENTISECS",
         lower_is_better=true
     )
@@ -1243,8 +1287,8 @@ leaderboard(
     title="Riviera Cones Minigame",
     description="Knock over as many cones as you can in the cones minigame in Riviera in arcade mode. Score maxout will earn bonus points for remaining time.",
 
-    start=any_of(PROCESS_STARTS, s => (
-        ProcessStartsAt(s) && TrackID(s) == TRACK_RIVERIA && 
+    start=GameCond(s => (
+        TrackID(s) == TRACK_RIVERIA && 
         (
             (ConesScore(s) == CONES_MAXSCORE) ||
             (prev(ConesTime(s)) > 0 && ConesTime(s) == 0)
@@ -1253,7 +1297,7 @@ leaderboard(
     cancel=always_false(),
     submit=always_true(),
 
-    value=max_of(array_map(PROCESS_STARTS, (s) => measured(ConesScore(s) + ConesTime(s), when=ProcessStartsAt(s)))),
+    value=max_of(array_map(PROCESS_STARTS, (s) => measured(ConesScore(s) + ConesTime(s), when=StaticVarsStartsAt(s)))),
     format="SCORE",
     lower_is_better=false
 )
