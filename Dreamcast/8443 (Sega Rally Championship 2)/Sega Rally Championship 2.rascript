@@ -423,9 +423,12 @@ function InRace(addr)
     return LapProgressPtr(addr) != NULL
 }
 
-function RaceOver(addr)
+function RaceOver(addr, now=true)
 {
-    return InRace(addr) && RaceState2(addr) == RACESTATE2_RACESUCCESS && prev(RaceState2(addr)) != RACESTATE2_RACESUCCESS
+    if now
+        return InRace(addr) && RaceState2(addr) == RACESTATE2_RACESUCCESS && prev(RaceState2(addr)) != RACESTATE2_RACESUCCESS
+        
+    return InRace(addr) && RaceState2(addr) == RACESTATE2_RACESUCCESS
 }
 
 function GetLapTime(addr, lap)
@@ -1146,7 +1149,7 @@ for i in range(0, length(ALL_TRACKS) - 1)
                 TrackID(s) == track &&
                 // Lap counter increments or race is over
                 (
-                    RaceOver(s) ||
+                    RaceOver(s, now=false) ||
                     (CurrentLap(s) > prev(CurrentLap(s)))
                 )
             )
