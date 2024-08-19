@@ -71,14 +71,27 @@ function TimeToCentiseconds(minutes=0, seconds=0, frames=0)
 
 // GAME VARIABLES
 
-// Temp 32-bit pointer check which is non-NULL when in-game; TODO: see if there's a better way of
-// determining game vs. menu state
-inGameCheck = {
-    US: dword(0x549B90),
-    EU: NO_ADDR,
-    JP: NO_ADDR,
+inRace = {
+    US: dword(0x359a4c),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
 }
 
+SKY_PALM = 0x71
+SKY_LAKE = 0x72
+SKY_INDU = 0x73
+SKY_ALPI = 0x74
+SKY_SNOW = 0x75
+SKY_CLOU = 0x76
+SKY_CAST = 0x77
+SKY_GHOS = 0x78
+SKY_FORE = 0x79
+SKY_DESE = 0x7A
+SKY_TULI = 0x7B
+SKY_METR = 0x7C
+SKY_RUIN = 0x7D
+SKY_CAPE = 0x7E
+SKY_IMPE = 0x7F
 SKY_GRAN = 0x10D
 SKY_SEQU = 0x10E
 SKY_SANF = 0x10F
@@ -96,15 +109,15 @@ SKY_FLOR = 0x11A
 SKY_EAST = 0x11B
 currSky = {
     US: dword(0x549B74),
-    EU: NO_ADDR,
-    JP: NO_ADDR,
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
 }
 
 // GAME FUNCTIONS
 
 function IsInGame(region)
 {
-    return inGameCheck[region] != NULL
+    return inRace[region] == True
 }
 
 // RICH PRESENCE
@@ -116,6 +129,21 @@ region_lookup = {
 }
 
 track_lookup = {
+    SKY_PALM: "Palm Beach",
+    SKY_LAKE: "Deep Lake",
+    SKY_INDU: "Industrial Complex",
+    SKY_ALPI: "Alpine",
+    SKY_SNOW: "Snow Mountain",
+    SKY_CLOU: "Cloudy Highland",
+    SKY_CAST: "Castle Wall",
+    SKY_GHOS: "Ghost Forest",
+    SKY_FORE: "Coniferous Forest",
+    SKY_DESE: "Desert",
+    SKY_TULI: "Tulip Garden",
+    SKY_METR: "Metropolis",
+    SKY_RUIN: "Ancient Ruins",
+    SKY_CAPE: "Cape Way",
+    SKY_IMPE: "Imperial Avenue",
     SKY_GRAN: "Canyon",
     SKY_SEQU: "Big Forest",
     SKY_SANF: "Bay Area",
