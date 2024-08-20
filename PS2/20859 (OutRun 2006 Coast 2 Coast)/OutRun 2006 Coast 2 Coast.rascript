@@ -107,8 +107,47 @@ SKY_LASV = 0x118
 SKY_PRIN = 0x119
 SKY_FLOR = 0x11A
 SKY_EAST = 0x11B
+// The filename idx for the currently-used sky, used for zone detection
 currSky = {
     US: dword(0x549B74),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
+// The currently-selected car
+CAR_F50 = 0
+CAR_DINO = 1
+CAR_288GTO = 2
+CAR_512BB = 3
+CAR_365GTS = 4
+CAR_ENZO = 5
+CAR_TESTA = 6
+CAR_SPIDER = 7
+CAR_F40 = 8
+CAR_250GTO = 9
+car = {
+    US: byte(0x369BE8),
+    EU: byte(NO_ADDR),
+    JP: byte(NO_ADDR),
+}
+
+// Transmission type
+TRANS_AUTO = 0x0
+TRANS_MANUAL = 0x1
+transmission = {
+    US: byte(0x369BEA),
+    EU: byte(NO_ADDR),
+    JP: byte(NO_ADDR),
+}
+
+// The type of active event
+EVENT_TIME_ATTACK = 0
+EVENT_OUTRUN = 1
+EVENT_HEART_ATTACK = 2
+EVENT_GIRLFRIEND = 5
+EVENT_FLAGMAN = 6
+eventType = {
+    US: dword(0x443F08),
     EU: dword(NO_ADDR),
     JP: dword(NO_ADDR),
 }
@@ -161,21 +200,53 @@ track_lookup = {
     SKY_EAST: "Giant Statues",
 }
 
+trans_lookup = {
+    TRANS_AUTO: "AT",
+    TRANS_MANUAL: "MT",
+}
+
+car_lookup = {
+    CAR_F50: "F50",
+    CAR_DINO: "Dino 246 GTS",
+    CAR_288GTO: "288 GTO",
+    CAR_512BB: "512 BB",
+    CAR_365GTS: "365 GTS/4 Daytona",
+    CAR_ENZO: "Enzo Ferrari",
+    CAR_TESTA: "Testarossa",
+    CAR_SPIDER: "360 Spider",
+    CAR_F40: "F40",
+    CAR_250GTO: "250 GTO",
+}
+
+event_lookup = {
+    EVENT_TIME_ATTACK: "Time Attack Mode",
+    EVENT_OUTRUN: "OutRun Mode",
+    EVENT_HEART_ATTACK: "Heart Attack Mode",
+    EVENT_GIRLFRIEND: "Girlfriend Event",
+    EVENT_FLAGMAN: "Flagman Event",
+}
+
 for region in Regions
 {
-    region_val = rich_presence_lookup("REGION", RegionByte, region_lookup, region_lookup[US])
-    track_val = rich_presence_lookup("TRACK", currSky[region], track_lookup, "Unknown Zone")
+    rp_region = rich_presence_lookup("REGION", RegionByte, region_lookup, region_lookup[US])
+    rp_track = rich_presence_lookup("TRACK", currSky[region], track_lookup, "Unknown Zone")
+    rp_trans = rich_presence_lookup("TRANS", transmission[region], trans_lookup, "Unknown Transmission")
+    rp_car = rich_presence_lookup("CAR", car[region], car_lookup, "Unknown Car")
+    rp_event = rich_presence_lookup("EVENT", eventType[region], event_lookup, "Unknown Event")
 
     rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region),
-        "{0} OutRunning in {1}!",
-        region_val,
-        track_val
+        "{0} OutRunning | {1} | {2} ({3}) | {4}",
+        rp_region,
+        rp_event,
+        rp_car,
+        rp_trans,
+        rp_track
     )
     rich_presence_conditional_display(
         IsRegion(region),
         "{0} In menu or loading screen",
-        region_val
+        rp_region
     )
 }
 
