@@ -152,11 +152,35 @@ eventType = {
     JP: dword(NO_ADDR),
 }
 
+EVENT_SUB_NORMAL_SP = 0x0
+EVENT_SUB_NORMAL = 0x1
+EVENT_SUB_CONTINUOUS_SP = 0x2
+EVENT_SUB_CONTINUOUS = 0x3
+eventSubType = {
+    US: dword(0x443F0C),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
+STATE_ARCADE_MODE = 0xA
+STATE_GOAL = 0x13
+gameState = {
+    US: dword(0x443F10),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
 // GAME FUNCTIONS
 
 function IsInGame(region)
 {
-    return inRace[region] == True
+    // NOTE: inRace is 1 when choosing car/mode/music for arcade mode
+    return inRace[region] == True && gameState[region] != STATE_ARCADE_MODE
+}
+
+function HitGoal(region)
+{
+    return prev(gameState[region]) != STATE_GOAL && gameState[region] == STATE_GOAL
 }
 
 // RICH PRESENCE
@@ -226,6 +250,11 @@ event_lookup = {
     EVENT_FLAGMAN: "Flagman Event",
 }
 
+event_sub_lookup = {
+    EVENT_SUB_CONTINUOUS_SP: " (15 Continuous Course)",
+    EVENT_SUB_CONTINUOUS: " (15 Continuous Course)",
+}
+
 for region in Regions
 {
     rp_region = rich_presence_lookup("REGION", RegionByte, region_lookup, region_lookup[US])
@@ -233,12 +262,14 @@ for region in Regions
     rp_trans = rich_presence_lookup("TRANS", transmission[region], trans_lookup, "Unknown Transmission")
     rp_car = rich_presence_lookup("CAR", car[region], car_lookup, "Unknown Car")
     rp_event = rich_presence_lookup("EVENT", eventType[region], event_lookup, "Unknown Event")
+    rp_event_sub = rich_presence_lookup("EVENT_SUB", eventSubType[region], event_sub_lookup, "")
 
     rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region),
-        "{0} OutRunning | {1} | {2} ({3}) | {4}",
+        "{0} OutRunning | {1}{2} | {3} ({4}) | {5}",
         rp_region,
         rp_event,
+        rp_event_sub,
         rp_car,
         rp_trans,
         rp_track
@@ -251,3 +282,138 @@ for region in Regions
 }
 
 rich_presence_display("Playing OutRun 2006: Coast 2 Coast")
+
+// ACHIEVEMENTS
+
+// OutRun Mode
+
+outrun_params = [
+    {
+        "id": 0,
+        "title": "OutRun2SP OutRun Continuous",
+        "points": 25,
+        "mode": EVENT_SUB_CONTINUOUS_SP,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2 OutRun Continuous",
+        "points": 25,
+        "mode": EVENT_SUB_CONTINUOUS,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2SP Goal A",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "A",
+        "zone": SKY_EAST,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2SP Goal B",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "B",
+        "zone": SKY_MAYA,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2SP Goal C",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "C",
+        "zone": SKY_PRIN,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2SP Goal D",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "D",
+        "zone": SKY_FLOR,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2SP Goal E",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "E",
+        "zone": SKY_NEWY,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2 Goal A",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "A",
+        "zone": SKY_TULI,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2 Goal B",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "B",
+        "zone": SKY_METR,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2 Goal C",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "C",
+        "zone": SKY_RUIN,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2 Goal D",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "D",
+        "zone": SKY_IMPE,
+    },
+    {
+        "id": 0,
+        "title": "OutRun2 Goal E",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "E",
+        "zone": SKY_CAPE,
+    },
+]
+
+for params in outrun_params
+{
+    name = "OutRun2SP"
+    if (any_of([EVENT_SUB_NORMAL, EVENT_SUB_CONTINUOUS], mode => mode == params["mode"]))
+    {
+        name = "OutRun2"
+    }
+    
+    if (any_of([EVENT_SUB_CONTINUOUS, EVENT_SUB_CONTINUOUS_SP], mode => mode == params["mode"]))
+    {
+        zone_check = always_true()
+        description = format("Reach the goal in 15 continuous course OutRun Mode for {0}.", name)
+    }
+    else
+    {
+        zone_check = any_of(Regions, region => IsRegion(region) && currSky[region] == params["zone"])
+        description = format("Reach Goal {0} in OutRun Mode for {1}.", params["goal"], name)
+    }
+    
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=description,
+        points=params["points"],
+        trigger=any_of(Regions, region => 
+            IsRegion(region) &&
+            eventType[region] == EVENT_OUTRUN &&
+            eventSubType[region] == params["mode"] &&
+            zone_check &&
+            HitGoal(region)
+        )
+    )
+}
+
+//
