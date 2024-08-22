@@ -162,12 +162,21 @@ eventSubType = {
     JP: dword(NO_ADDR),
 }
 
-STATE_ARCADE_MODE = 0xA
+STATE_ARCADE_MODE = 0x0A
+STATE_DRIVING = 0x10
 STATE_GOAL = 0x13
+STATE_MENU = 0x20
+STATE_CONGRATULATIONS = 0x24
 gameState = {
     US: dword(0x443F10),
     EU: dword(NO_ADDR),
     JP: dword(NO_ADDR),
+}
+
+flagmanRanks = {
+    US: 0x00589245,
+    EU: NO_ADDR,
+    JP: NO_ADDR,
 }
 
 // GAME FUNCTIONS
@@ -181,6 +190,23 @@ function IsInGame(region)
 function HitGoal(region)
 {
     return prev(gameState[region]) != STATE_GOAL && gameState[region] == STATE_GOAL
+}
+
+EVENT_RATINGS = ["E", "D", "C", "B", "A", "AA", "AAA", "-"]
+
+// pass a list of addresses for 0-7 bytes
+function AverageRatingIsBetter(list, threshold)
+{
+    trigger = sum_of(list, x => x) >= threshold * length(list)
+    for a in list
+        trigger = trigger && (a != 0x07) // all events must be completed
+    return trigger
+}
+
+function flagmanAddresses(region, event, count)
+{
+    return array_map(range(0, count-1), 
+        (i) => byte(flagmanRanks[region] + 5 * (event-1) + i))
 }
 
 // RICH PRESENCE
@@ -284,6 +310,352 @@ for region in Regions
 rich_presence_display("Playing OutRun 2006: Coast 2 Coast")
 
 // ACHIEVEMENTS
+
+challenge_description = {
+    "race": "Race the Rivals!",
+    "girlfriend": "Don't lose your Girlfriend!",
+    "slipstream": "Test your Slipstream!",
+    "knockout": "Avoid the Knockout!",
+    "drift": "Test your Drift!",
+}
+
+// Flagman Mode
+
+flagman_levels = [
+    {
+        "group": 4,
+        "name": "OUTRUN",
+        "last": 40,
+    },
+    {
+        "group": 3,
+        "name": "PROFESSIONAL",
+        "last": 25,
+    },
+    {
+        "group": 2,
+        "name": "INTERMEDIATE",
+        "last": 14,
+    },
+    {
+        "group": 1,
+        "name": "NOVICE",
+        "last": 5,
+    },
+]
+
+flagman_events = [
+    {
+        "id": 0,
+        "event": 1,
+        "ach_title": "",
+        "count": 3,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 2,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 3,
+        "ach_title": "",
+        "count": 1,
+        "type": "drift",
+    },
+    {
+        "id": 0,
+        "event": 4,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 5,
+        "ach_title": "",
+        "count": 1,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 6,
+        "ach_title": "",
+        "count": 1,
+        "type": "girlfriend",
+    },
+    {
+        "id": 0,
+        "event": 7,
+        "ach_title": "",
+        "count": 3,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 8,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 9,
+        "ach_title": "",
+        "count": 1,
+        "type": "slipstream",
+    },
+    {
+        "id": 0,
+        "event": 10,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 11,
+        "ach_title": "",
+        "count": 3,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 12,
+        "ach_title": "",
+        "count": 1,
+        "type": "knockout",
+    },
+    {
+        "id": 0,
+        "event": 13,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 14,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 15,
+        "ach_title": "",
+        "count": 2,
+        "type": "drift",
+    },
+    {
+        "id": 0,
+        "event": 16,
+        "ach_title": "",
+        "count": 4,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 17,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 18,
+        "ach_title": "",
+        "count": 2,
+        "type": "slipstream",
+    },
+    {
+        "id": 0,
+        "event": 19,
+        "ach_title": "",
+        "count": 3,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 20,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 21,
+        "ach_title": "",
+        "count": 1,
+        "type": "knockout",
+    },
+    {
+        "id": 0,
+        "event": 22,
+        "ach_title": "",
+        "count": 4,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 23,
+        "ach_title": "",
+        "count": 3,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 24,
+        "ach_title": "",
+        "count": 1,
+        "type": "girlfriend",
+    },
+    {
+        "id": 0,
+        "event": 25,
+        "ach_title": "",
+        "count": 5,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 26,
+        "ach_title": "",
+        "count": 5,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 27,
+        "ach_title": "",
+        "count": 2,
+        "type": "slipstream",
+    },
+    {
+        "id": 0,
+        "event": 28,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 29,
+        "ach_title": "",
+        "count": 5,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 30,
+        "ach_title": "",
+        "count": 2,
+        "type": "drift",
+    },
+    {
+        "id": 0,
+        "event": 31,
+        "ach_title": "",
+        "count": 3,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 32,
+        "ach_title": "",
+        "count": 5,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 33,
+        "ach_title": "",
+        "count": 1,
+        "type": "knockout",
+    },
+    {
+        "id": 0,
+        "event": 34,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 35,
+        "ach_title": "",
+        "count": 3,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 36,
+        "ach_title": "",
+        "count": 1,
+        "type": "girlfriend",
+    },
+    {
+        "id": 0,
+        "event": 37,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 38,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+    {
+        "id": 0,
+        "event": 39,
+        "ach_title": "",
+        "count": 2,
+        "type": "drift",
+    },
+    {
+        "id": 0,
+        "event": 40,
+        "ach_title": "",
+        "count": 2,
+        "type": "race",
+    },
+]
+
+target_rank = 0x06
+for event in flagman_events
+{
+    fgroup = 0
+    fgroupname = ""
+    for x in flagman_levels
+        if (event["event"] <= x["last"])
+        {
+            fgroup = x["group"]
+            fgroupname = x["name"]
+        }
+
+    achievement(
+        id=event["id"],
+        title=format("{0} {1}", event["event"], fgroupname), // <-- PLACEHOLDER - event["ach_title"],
+        description=format("{0} In Flagman {1}, complete all events in {2} {3} with an average ranking of {4}",
+            challenge_description[event["type"]], fgroup, event["event"], fgroupname, EVENT_RATINGS[target_rank]),
+        points=event["count"],
+        trigger=any_of(Regions, region => 
+            IsRegion(region) &&
+            eventType[region] == EVENT_FLAGMAN &&
+            gameState[region] != STATE_MENU &&
+            AverageRatingIsBetter(flagmanAddresses(region, event["event"], event["count"]), target_rank) &&
+            __ornext(!AverageRatingIsBetter(array_map(flagmanAddresses(region, event["event"], event["count"]), (x) => prev(x)), target_rank))
+        )
+    )
+}
+
+// Girlfriend Mode
 
 // OutRun Mode
 
