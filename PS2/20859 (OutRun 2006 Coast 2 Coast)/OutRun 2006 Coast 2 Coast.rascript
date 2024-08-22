@@ -203,10 +203,22 @@ function AverageRatingIsBetter(list, threshold)
     return trigger
 }
 
-function flagmanAddresses(region, event, count)
+// pass a list of addresses for 0-7 bytes
+function AAARating(list)
+{
+    return measured(tally_of(list, length(list), (x) => once(x == 0x06 && never(x != 0x06)))) &&
+        __ornext(any_of(list, (x) => prev(x) != 0x06))
+}
+
+function FlagmanAddresses(region, event, count)
 {
     return array_map(range(0, count-1), 
         (i) => byte(flagmanRanks[region] + 5 * (event-1) + i))
+}
+
+function UsedENTIRETY(region)
+{
+    return byte(flagmanRanks[region] + 4) != 0x07
 }
 
 // RICH PRESENCE
@@ -218,36 +230,36 @@ region_lookup = {
 }
 
 track_lookup = {
-    SKY_PALM: "Palm Beach",
-    SKY_LAKE: "Deep Lake",
-    SKY_INDU: "Industrial Complex",
-    SKY_ALPI: "Alpine",
-    SKY_SNOW: "Snow Mountain",
-    SKY_CLOU: "Cloudy Highland",
-    SKY_CAST: "Castle Wall",
-    SKY_GHOS: "Ghost Forest",
-    SKY_FORE: "Coniferous Forest",
-    SKY_DESE: "Desert",
-    SKY_TULI: "Tulip Garden",
-    SKY_METR: "Metropolis",
-    SKY_RUIN: "Ancient Ruins",
-    SKY_CAPE: "Cape Way",
-    SKY_IMPE: "Imperial Avenue",
-    SKY_GRAN: "Canyon",
-    SKY_SEQU: "Big Forest",
-    SKY_SANF: "Bay Area",
-    SKY_NEWY: "Skyscrapers",
-    SKY_MACH: "Lost City",
-    SKY_YOSE: "National Park",
-    SKY_MAYA: "Legend",
-    SKY_NIAG: "Water Falls",
-    SKY_ALAS: "Ice Scape",
-    SKY_AMAZ: "Jungle",
-    SKY_BEAC: "Sunny Beach",
-    SKY_LASV: "Casino Town",
-    SKY_PRIN: "Floral Village",
-    SKY_FLOR: "Milky Way",
-    SKY_EAST: "Giant Statues",
+    SKY_PALM: "🌴 Palm Beach",
+    SKY_LAKE: "🚣 Deep Lake",
+    SKY_INDU: "🏭 Industrial Complex",
+    SKY_ALPI: "🏔️ Alpine",
+    SKY_SNOW: "🏔️ Snow Mountain",
+    SKY_CLOU: "☁️ Cloudy Highland",
+    SKY_CAST: "🏰 Castle Wall",
+    SKY_GHOS: "👻 Ghost Forest",
+    SKY_FORE: "🌲 Coniferous Forest",
+    SKY_DESE: "🏜️ Desert",
+    SKY_TULI: "🌷 Tulip Garden",
+    SKY_METR: "🌁 Metropolis",
+    SKY_RUIN: "🧭 Ancient Ruins",
+    SKY_CAPE: "🛣️ Cape Way",
+    SKY_IMPE: "🏛️ Imperial Avenue",
+    SKY_GRAN: "🌄 Canyon",
+    SKY_SEQU: "🌲 Big Forest",
+    SKY_SANF: "🌉 Bay Area",
+    SKY_NEWY: "🏙️ Skyscrapers",
+    SKY_MACH: "🏺 Lost City",
+    SKY_YOSE: "🏞️ National Park",
+    SKY_MAYA: "🏛️ Legend",
+    SKY_NIAG: "🏞️ Water Falls",
+    SKY_ALAS: "❄️ Ice Scape",
+    SKY_AMAZ: "🦁 Jungle",
+    SKY_BEAC: "🏖️ Sunny Beach",
+    SKY_LASV: "🌆 Casino Town",
+    SKY_PRIN: "🌸 Floral Village",
+    SKY_FLOR: "🌌 Milky Way",
+    SKY_EAST: "🗿 Giant Statues",
 }
 
 trans_lookup = {
@@ -269,11 +281,11 @@ car_lookup = {
 }
 
 event_lookup = {
-    EVENT_TIME_ATTACK: "Time Attack Mode",
-    EVENT_OUTRUN: "OutRun Mode",
-    EVENT_HEART_ATTACK: "Heart Attack Mode",
-    EVENT_GIRLFRIEND: "Girlfriend Event",
-    EVENT_FLAGMAN: "Flagman Event",
+    EVENT_TIME_ATTACK: "⏱️ Time Attack Mode",
+    EVENT_OUTRUN: "🚗 OutRun Mode",
+    EVENT_HEART_ATTACK: "❤️ Heart Attack Mode",
+    EVENT_GIRLFRIEND: "💋 Girlfriend Event",
+    EVENT_FLAGMAN: "🎌 Flagman Event",
 }
 
 event_sub_lookup = {
@@ -285,11 +297,16 @@ for region in Regions
 {
     rp_region = rich_presence_lookup("REGION", RegionByte, region_lookup, region_lookup[US])
     rp_track = rich_presence_lookup("TRACK", currSky[region], track_lookup, "Unknown Zone")
-    rp_trans = rich_presence_lookup("TRANS", transmission[region], trans_lookup, "Unknown Transmission")
+    rp_trans = rich_presence_lookup("TRANS", transmission[region], trans_lookup, "??")
     rp_car = rich_presence_lookup("CAR", car[region], car_lookup, "Unknown Car")
     rp_event = rich_presence_lookup("EVENT", eventType[region], event_lookup, "Unknown Event")
     rp_event_sub = rich_presence_lookup("EVENT_SUB", eventSubType[region], event_sub_lookup, "")
 
+    rich_presence_conditional_display(
+        IsRegion(region) && UsedENTIRETY(region),
+        "{0} ⚠️ Clarissa would not approve of cheating!",
+        rp_region
+    )
     rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region),
         "{0} OutRunning | {1}{2} | {3} ({4}) | {5}",
@@ -649,8 +666,9 @@ for event in flagman_events
             IsRegion(region) &&
             eventType[region] == EVENT_FLAGMAN &&
             gameState[region] != STATE_MENU &&
-            AverageRatingIsBetter(flagmanAddresses(region, event["event"], event["count"]), target_rank) &&
-            __ornext(!AverageRatingIsBetter(array_map(flagmanAddresses(region, event["event"], event["count"]), (x) => prev(x)), target_rank))
+            // AverageRatingIsBetter(FlagmanAddresses(region, event["event"], event["count"]), target_rank) &&
+            // __ornext(!AverageRatingIsBetter(array_map(FlagmanAddresses(region, event["event"], event["count"]), (x) => prev(x)), target_rank))
+            AAARating(FlagmanAddresses(region, event["event"], event["count"]))
         )
     )
 }
