@@ -173,6 +173,22 @@ gameState = {
     JP: dword(NO_ADDR),
 }
 
+CONGRATS_NONE = -1
+CONGRATS_FLAG1 = 0 // Flagman 2 unlocked (impressed)
+CONGRATS_FLAG2 = 1 // Flagman 3 unlocked (amazed)
+CONGRATS_FLAG3 = 2 // Flagman 4 unlocked (thrilled)
+CONGRATS_FLAG4 = 3 // Flagman complete (got chills)
+CONGRATS_GIRL1 = 4 // Clarissa is thrilled; Jennifer is available
+CONGRATS_GIRL2 = 5 // Jennifer loves your technique; Holly is available
+CONGRATS_GIRL3 = 6 // Holly likes your thinking
+CONGRATS_CLEAR = 7 // You have cleared Coast 2 Coast
+CONGRATS_PERFECT = 8 // Perfect! (All events perfected)
+congratsType = {
+    US: dword(0x35D244),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
 flagmanRanks = {
     US: 0x00589245,
     EU: NO_ADDR,
@@ -206,6 +222,7 @@ function AverageRatingIsBetter(list, threshold)
 // pass a list of addresses for 0-7 bytes
 function AAARating(list)
 {
+    if (length(list) == 1) return list[0] == 0x06 && prev(list[0]) != 0x06
     return measured(tally_of(list, length(list), (x) => once(x == 0x06 && never(x != 0x06)))) &&
         __ornext(any_of(list, (x) => prev(x) != 0x06))
 }
@@ -340,24 +357,28 @@ challenge_description = {
 
 flagman_levels = [
     {
-        "group": 4,
-        "name": "OUTRUN",
-        "last": 40,
-    },
-    {
-        "group": 3,
-        "name": "PROFESSIONAL",
-        "last": 25,
+        "group": 1,
+        "name": "NOVICE",
+        "first": 1,
+        "screens": [CONGRATS_FLAG1],
     },
     {
         "group": 2,
         "name": "INTERMEDIATE",
-        "last": 14,
+        "first": 6,
+        "screens": [CONGRATS_FLAG2],
     },
     {
-        "group": 1,
-        "name": "NOVICE",
-        "last": 5,
+        "group": 3,
+        "name": "PROFESSIONAL",
+        "first": 15,
+        "screens": [CONGRATS_FLAG3],
+    },
+    {
+        "group": 4,
+        "name": "OUTRUN",
+        "first": 26,
+        "screens": [CONGRATS_FLAG4, CONGRATS_CLEAR, CONGRATS_PERFECT],
     },
 ]
 
@@ -604,13 +625,12 @@ flagman_events = [
     },
 ]
 
-target_rank = 0x06
 for event in flagman_events
 {
     fgroup = 0
     fgroupname = ""
     for x in flagman_levels
-        if (event["event"] <= x["last"])
+        if (event["event"] >= x["first"])
         {
             fgroup = x["group"]
             fgroupname = x["name"]
@@ -619,8 +639,8 @@ for event in flagman_events
     achievement(
         id=event["id"],
         title=format("Flagman's Challenge: {0} {1}", event["event"], fgroupname),
-        description=format("{0} In Flagman {1}, complete all events in {2} {3} with an average ranking of {4}",
-            challenge_description[event["type"]], fgroup, event["event"], fgroupname, EVENT_RATINGS[target_rank]),
+        description=format("{0} In Flagman {1}, complete all events in {2} {3} with a ranking of AAA",
+            challenge_description[event["type"]], fgroup, event["event"], fgroupname),
         points=event["count"],
         trigger=any_of(Regions, region => 
             IsRegion(region) &&
@@ -631,6 +651,11 @@ for event in flagman_events
             AAARating(FlagmanAddresses(region, event["event"], event["count"]))
         )
     )
+}
+
+for flevel in flagman_levels
+{
+
 }
 
 // Girlfriend Mode
