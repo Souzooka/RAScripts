@@ -673,6 +673,7 @@ for flevel in flagman_levels
         description=format("Complete all {0} events in Flagman {1} with an average rating of A or higher",
             flevel["name"], flevel["group"]),
         points=10,
+        type="progression",
         trigger=any_of(Regions, region => 
             IsRegion(region) &&
             prev(gameState[region]) != STATE_CONGRATULATIONS &&
