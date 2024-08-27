@@ -360,25 +360,37 @@ flagman_levels = [
         "group": 1,
         "name": "NOVICE",
         "first": 1,
-        "screens": [CONGRATS_FLAG1],
+        
+        "id": 0,
+        "screens": [CONGRATS_FLAG1,],
+        "title": "Flagman is Impressed",
     },
     {
         "group": 2,
         "name": "INTERMEDIATE",
         "first": 6,
-        "screens": [CONGRATS_FLAG2],
+        
+        "id": 0,
+        "screens": [CONGRATS_FLAG2,],
+        "title": "Flagman is Amazed",
     },
     {
         "group": 3,
         "name": "PROFESSIONAL",
         "first": 15,
-        "screens": [CONGRATS_FLAG3],
+        
+        "id": 0,
+        "screens": [CONGRATS_FLAG3,],
+        "title": "Flagman is Thrilled",
     },
     {
         "group": 4,
         "name": "OUTRUN",
         "first": 26,
-        "screens": [CONGRATS_FLAG4, CONGRATS_CLEAR, CONGRATS_PERFECT],
+
+        "id": 0,
+        "screens": [CONGRATS_FLAG4, CONGRATS_CLEAR, CONGRATS_PERFECT,],
+        "title": "Flagman Got Chills",
     },
 ]
 
@@ -655,7 +667,19 @@ for event in flagman_events
 
 for flevel in flagman_levels
 {
-
+    achievement(
+        id=flevel["id"],
+        title=flevel["title"],
+        description=format("Complete all {0} events in Flagman {1} with an average rating of A or higher",
+            flevel["name"], flevel["group"]),
+        points=10,
+        trigger=any_of(Regions, region => 
+            IsRegion(region) &&
+            prev(gameState[region]) != STATE_CONGRATULATIONS &&
+            gameState[region] == STATE_CONGRATULATIONS &&
+            any_of(flevel["screens"], (x) => congratsType[region] == x)
+        )
+    )
 }
 
 // Girlfriend Mode
