@@ -382,7 +382,7 @@ function BackpackTrigger(region, backpack)
     // We'll guard the achievement with a map ID check to prevent this scenario.
     maps = {
         BACKPACK_RESCUEPACK: 0101,
-        BACKPACK_KNAPSACK: 0110,
+        BACKPACK_KNAPSACK: 0109,
         BACKPACK_BACKPACK: 0203,
         BACKPACK_GYMBAG: 0000, // TODO
         BACKPACK_CLOTHBAG: 0403,
@@ -486,7 +486,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Backpack - Knapsack",
+    title="Petty Theft",
     description="Obtain the Knapsack.",
     points=3,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_KNAPSACK))
@@ -494,7 +494,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Backpack - Backpack",
+    title="Urban Explorer Kit",
     description="Obtain the Backpack.",
     points=3,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_BACKPACK))
@@ -502,7 +502,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Backpack - Gym Bag",
+    title="Do You Even Pull-Up, Bro?",
     description="Obtain the Gym Bag.",
     points=3,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_GYMBAG))
@@ -510,7 +510,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Backpack - Cloth Bag",
+    title="Furoshiki Fashion",
     description="Obtain the Cloth Bag.",
     points=3,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_CLOTHBAG))
@@ -518,7 +518,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Backpack - Frame Pack",
+    title="More Backpack Than Man",
     description="Obtain the Frame Pack.",
     points=5,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_FRAMEPACK))
@@ -553,7 +553,7 @@ achievement(
 // Story events
 
 achievement(
-    title="TODO Rescue Karen",
+    title="Not Trained for This",
     description="Rescue the injured woman on the Airport Island Bridge.",
     points=3,
     type="progression",
@@ -585,7 +585,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Find Karen",
+    title="This Whole Wacky World",
     description="Find Karen in the overturned building on Girard Street.",
     points=3,
     type="progression",
@@ -594,7 +594,7 @@ achievement(
 
 achievement(
     id=0,
-    title="The Aspiring Journalist",
+    title="Aspiring Journalist",
     description="Meet a freelance photographer.",
     points=3,
     type="progression",
@@ -603,7 +603,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Escape Construction Site",
+    title="Rapid Deconstruction",
     description="Escape the construction site.",
     points=3,
     type="progression",
@@ -702,7 +702,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Ending 1/2",
+    title="Outside My Window",
     description="Obtain Ending 1 or 2.",
     points=10,
     type="win_condition",
@@ -711,7 +711,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Ending 3",
+    title="Stiver for Her Heart",
     description="Obtain Ending 3.",
     points=25,
     type="win_condition",
@@ -720,7 +720,7 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Ending 4",
+    title="Autumn Memories",
     description="Obtain Ending 4.",
     points=25,
     type="win_condition",
@@ -729,19 +729,17 @@ achievement(
 
 achievement(
     id=0,
-    title="TODO Ending 5/6",
+    title="Windrun Out of Here",
     description="Obtain Ending 5 or 6.",
     points=10,
-    type="win_condition",
     trigger=any_of(Regions, region => EndingTrigger(region, [5, 6]))
 )
 
 achievement(
     id=0,
-    title="TODO Ending 7",
+    title="Get to the Chopper",
     description="Obtain Ending 7.",
     points=10,
-    type="win_condition",
     trigger=any_of(Regions, region => EndingTrigger(region, [7]))
 )
 
