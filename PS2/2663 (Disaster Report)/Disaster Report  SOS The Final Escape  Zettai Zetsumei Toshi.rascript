@@ -477,6 +477,7 @@ function EndingTrigger(region, endings)
 // Backpacks
 
 achievement(
+    id=0,
     title="And Don't Forget Your Backpack",
     description="Obtain the Rescue Pack.",
     points=2,
@@ -484,6 +485,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="TODO Backpack - Knapsack",
     description="Obtain the Knapsack.",
     points=3,
@@ -491,6 +493,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="TODO Backpack - Backpack",
     description="Obtain the Backpack.",
     points=3,
@@ -498,6 +501,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="TODO Backpack - Gym Bag",
     description="Obtain the Gym Bag.",
     points=3,
@@ -505,6 +509,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="TODO Backpack - Cloth Bag",
     description="Obtain the Cloth Bag.",
     points=3,
@@ -512,6 +517,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="TODO Backpack - Frame Pack",
     description="Obtain the Frame Pack.",
     points=5,
@@ -521,6 +527,7 @@ achievement(
 // Compasses
 
 achievement(
+    id=0,
     title="Compass Novice",
     description="Obtain 10 compasses.",
     points=5,
@@ -528,6 +535,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="Compass Enthusiast",
     description="Obtain 20 compasses.",
     points=5,
@@ -535,6 +543,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="Compass Master",
     description="Obtain all 35 compasses.",
     points=25,
@@ -547,6 +556,7 @@ achievement(
     title="TODO Rescue Karen",
     description="Rescue the injured woman on the Airport Island Bridge.",
     points=3,
+    type="progression",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KAREN))
 )
 
@@ -565,30 +575,38 @@ function CrowbarTrigger(region)
 }
 
 achievement(
+    id=0,
     title="Keith Helm, in the Flesh",
     description="Obtain the Crowbar.",
     points=2,
+    type="progression",
     trigger=any_of(Regions, region => CrowbarTrigger(region))
 )
 
 achievement(
+    id=0,
     title="TODO Find Karen",
     description="Find Karen in the overturned building on Girard Street.",
     points=3,
+    type="progression",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_FOUND_KAREN))
 )
 
 achievement(
+    id=0,
     title="The Aspiring Journalist",
     description="Meet a freelance photographer.",
     points=3,
+    type="progression",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_MET_GREG))
 )
 
 achievement(
+    id=0,
     title="TODO Escape Construction Site",
     description="Escape the construction site.",
     points=3,
+    type="progression",
     trigger=any_of(Regions, region => MapTransition(region, 0202, 0203))
 )
 
@@ -602,9 +620,11 @@ function FreshMemoriesTrigger(region)
 }
 
 achievement(
+    id=0,
     title="Fresh Memories",
     description="Try and save an elderly couple trapped in a destroyed building.",
     points=3,
+    type="progression",
     trigger=any_of(Regions, region => FreshMemoriesTrigger(region))
 )
 
@@ -620,6 +640,7 @@ function CyclistTrigger(region)
 }
 
 achievement(
+    id=0,
     title="Capital City Cyclist",
     description="Arrive at the amusement park by bicycle.",
     points=2,
@@ -627,6 +648,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="I Want to Get Off Mr. Bones' Wild Ride",
     description="Save a trapped teenage girl in the amusement park.",
     points=3,
@@ -634,6 +656,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="Don't Forget",
     description="Give John Patton Greg's File at the Santa Katrina Hospital.",
     points=4,
@@ -650,6 +673,7 @@ function RawDangerTrigger(region)
 }
 
 achievement(
+    id=0,
     title="Raw Danger",
     description="Escape the submerged area around the Santa Katrina Hospital.",
     points=5,
@@ -659,6 +683,7 @@ achievement(
 // Karen route
 
 achievement(
+    id=0,
     title="Adventures of Keith Helm",
     description="Sail down the Dmitri Canal on a makeshift raft.",
     points=3,
@@ -666,6 +691,7 @@ achievement(
 )
 
 achievement(
+    id=0,
     title="Peeping Keith",
     description="Eavesdrop on Karen talking to herself while she is in her room.",
     points=2,
@@ -675,37 +701,47 @@ achievement(
 // Endings
 
 achievement(
+    id=0,
     title="TODO Ending 1/2",
     description="Obtain Ending 1 or 2.",
     points=10,
+    type="win_condition",
     trigger=any_of(Regions, region => EndingTrigger(region, [1, 2]))
 )
 
 achievement(
+    id=0,
     title="TODO Ending 3",
     description="Obtain Ending 3.",
     points=25,
+    type="win_condition",
     trigger=any_of(Regions, region => EndingTrigger(region, [3]))
 )
 
 achievement(
+    id=0,
     title="TODO Ending 4",
     description="Obtain Ending 4.",
     points=25,
+    type="win_condition",
     trigger=any_of(Regions, region => EndingTrigger(region, [4]))
 )
 
 achievement(
+    id=0,
     title="TODO Ending 5/6",
     description="Obtain Ending 5 or 6.",
     points=10,
+    type="win_condition",
     trigger=any_of(Regions, region => EndingTrigger(region, [5, 6]))
 )
 
 achievement(
+    id=0,
     title="TODO Ending 7",
     description="Obtain Ending 7.",
     points=10,
+    type="win_condition",
     trigger=any_of(Regions, region => EndingTrigger(region, [7]))
 )
 
