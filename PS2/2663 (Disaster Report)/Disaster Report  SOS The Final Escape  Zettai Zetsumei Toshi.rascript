@@ -154,13 +154,13 @@ GameEndingState = {
 }
 Letterbox = {
     US: dword(0x391308),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x3B7B08),
+    JP: dword(0x392E08),
 }
 CameraZoom = {
     US: float(0x3696A4),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: float(0x390EA4),
+    JP: float(0x36B6A4),
 }
 
 // Game State
