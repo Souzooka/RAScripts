@@ -2,6 +2,7 @@
 // #ID = 2663
 
 NULL = 0
+NO_ADDR = 0x100000
 
 REGION_US = 0
 REGION_EU = 1
@@ -43,6 +44,11 @@ BACKPACK_GYMBAG = 4
 BACKPACK_CLOTHBAG = 5
 
 CHR_ACT_BICYCLE = 0x15
+
+LETTERBOX_HIDDEN = 0x1
+LETTERBOX_MOVEIN = 0x2
+LETTERBOX_MOVEOUT = 0x3
+LETTERBOX_VISIBLE = 0x4
 
 Area = {
     US: dword(0x36bbb0),
@@ -145,6 +151,11 @@ GameEndingState = {
     US: byte(0x414480),
     EU: byte(0x43AE80),
     JP: byte(0x41FF00),
+}
+Letterbox = {
+    US: dword(0x391308),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
 }
 
 // Game State
@@ -371,6 +382,7 @@ FLAG_SAVED_KELLY = 0x2322
 FLAG_GAVE_FILE = 0x5F5B // Giving John Patton Greg's File at the Santa Katrina Hospital
 FLAG_BOAT_RIDE_DONE = 0x2452 // Finished sailing down Dmitri Canal on Karen's route
 FLAG_KAREN_HOME_CONVERSATION = 0x24B2 // Eavesdrop on Karen while she's in her home
+FLAG_FOUND_GEN = 0x24A1 // Set just after Gen (Karen's dog) reunites with Karen at her house
 
 FLAG_COMPASS_START = 9800
 FLAG_COMPASS_END = 9834
@@ -481,6 +493,7 @@ achievement(
     title="And Don't Forget Your Backpack",
     description="Obtain the Rescue Pack.",
     points=2,
+    type="progression",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_RESCUEPACK))
 )
 
@@ -489,6 +502,7 @@ achievement(
     title="Petty Theft",
     description="Obtain the Knapsack.",
     points=3,
+    type="missable",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_KNAPSACK))
 )
 
@@ -497,6 +511,7 @@ achievement(
     title="Urban Explorer Kit",
     description="Obtain the Backpack.",
     points=3,
+    type="missable",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_BACKPACK))
 )
 
@@ -505,6 +520,7 @@ achievement(
     title="Do You Even Pull-Up, Bro?",
     description="Obtain the Gym Bag.",
     points=3,
+    type="missable",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_GYMBAG))
 )
 
@@ -513,6 +529,7 @@ achievement(
     title="Furoshiki Fashion",
     description="Obtain the Cloth Bag.",
     points=3,
+    type="missable",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_CLOTHBAG))
 )
 
@@ -521,6 +538,7 @@ achievement(
     title="More Backpack Than Man",
     description="Obtain the Frame Pack.",
     points=5,
+    type="missable",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_FRAMEPACK))
 )
 
@@ -531,6 +549,7 @@ achievement(
     title="Compass Novice",
     description="Obtain 10 compasses.",
     points=5,
+    type="missable",
     trigger=any_of(Regions, region => CompassMeasuredTrigger(region, 10))
 )
 
@@ -539,6 +558,7 @@ achievement(
     title="Compass Enthusiast",
     description="Obtain 20 compasses.",
     points=5,
+    type="missable",
     trigger=any_of(Regions, region => CompassMeasuredTrigger(region, 20, 10))
 )
 
@@ -547,6 +567,7 @@ achievement(
     title="Compass Master",
     description="Obtain all 35 compasses.",
     points=25,
+    type="missable",
     trigger=any_of(Regions, region => CompassMeasuredTrigger(region, 35, 20))
 )
 
@@ -603,7 +624,7 @@ achievement(
 
 achievement(
     id=0,
-    title="Rapid Deconstruction",
+    title="Rapid Disassembly",
     description="Escape the construction site.",
     points=3,
     type="progression",
@@ -622,7 +643,7 @@ function FreshMemoriesTrigger(region)
 achievement(
     id=0,
     title="Fresh Memories",
-    description="Try and save an elderly couple trapped in a destroyed building.",
+    description="Attempt to save an elderly couple trapped in a destroyed building.",
     points=3,
     type="progression",
     trigger=any_of(Regions, region => FreshMemoriesTrigger(region))
@@ -644,6 +665,7 @@ achievement(
     title="Capital City Cyclist",
     description="Arrive at the amusement park by bicycle.",
     points=2,
+    type="missable",
     trigger=any_of(Regions, region => CyclistTrigger(region))
 )
 
@@ -652,6 +674,7 @@ achievement(
     title="I Want to Get Off Mr. Bones' Wild Ride",
     description="Save a trapped teenage girl in the amusement park.",
     points=3,
+    type="missable",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KELLY))
 )
 
@@ -660,6 +683,7 @@ achievement(
     title="Don't Forget",
     description="Give John Patton Greg's File at the Santa Katrina Hospital.",
     points=4,
+    type="missable",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_GAVE_FILE))
 )
 
@@ -677,6 +701,7 @@ achievement(
     title="Raw Danger",
     description="Escape the submerged area around the Santa Katrina Hospital.",
     points=5,
+    type="missable",
     trigger=any_of(Regions, region => RawDangerTrigger(region))
 )
 
@@ -687,6 +712,7 @@ achievement(
     title="Adventures of Keith Helm",
     description="Sail down the Dmitri Canal on a makeshift raft.",
     points=3,
+    type="missable",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_BOAT_RIDE_DONE))
 )
 
@@ -695,7 +721,38 @@ achievement(
     title="Peeping Keith",
     description="Eavesdrop on Karen talking to herself while she is in her room.",
     points=2,
+    type="missable",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_KAREN_HOME_CONVERSATION))
+)
+
+achievement(
+    id=0,
+    title="Dog's Best Friend",
+    description="Help Karen reunite with her dog, Gen.",
+    points=2,
+    type="missable",
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_FOUND_GEN))
+)
+
+function FlamingAcrobatTrigger(region)
+{
+    // another bit scuffed due to the lack of a flag and save screen
+    return IsRegion(region) &&
+           MapID(region) == 0304 &&
+           // High enough to hit the end cutscene
+           PlayerXYZ[1][region] < 5.0 &&
+           // we had the letterbox, now we don't
+           Letterbox[region] == LETTERBOX_MOVEOUT &&
+           prev(Letterbox[region]) == LETTERBOX_VISIBLE
+}
+
+achievement(
+    id=0,
+    title="Flaming Acrobat",
+    description="Escape Park Avenue Subway with Karen.",
+    points=5,
+    type="missable",
+    trigger=any_of(Regions, FlamingAcrobatTrigger)
 )
 
 // Endings
@@ -737,7 +794,7 @@ achievement(
 
 achievement(
     id=0,
-    title="Get to the Chopper",
+    title="Thank the Air Rangers!",
     description="Obtain Ending 7.",
     points=10,
     trigger=any_of(Regions, region => EndingTrigger(region, [7]))
