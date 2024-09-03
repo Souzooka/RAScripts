@@ -481,14 +481,14 @@ function MapTransition(region, old_maps, new_maps)
 {
     return IsRegion(region) &&
            LoadProtection(region) &&
-           any_of(new_maps, m => m == MapID(region)) &&
-           any_of(old_maps, m => m == MapIDPrev(region))
+           __ornext(any_of(new_maps, m => m == MapID(region))) &&
+           __ornext(any_of(old_maps, m => m == MapIDPrev(region)))
 }
 
 function EndingTrigger(region, endings)
 {
     return IsRegion(region) &&
-           any_of(endings, ending => GameEnding[region] == ending) &&
+           __ornext(any_of(endings, ending => GameEnding[region] == ending)) &&
            GameEndingState[region] >= 3 &&
            prev(GameEndingState[region]) < 3
 }
