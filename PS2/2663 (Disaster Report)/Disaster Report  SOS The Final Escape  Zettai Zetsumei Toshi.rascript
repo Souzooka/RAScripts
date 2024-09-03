@@ -157,6 +157,11 @@ Letterbox = {
     EU: dword(NO_ADDR),
     JP: dword(NO_ADDR),
 }
+CameraZoom = {
+    US: float(0x3696A4),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
 
 // Game State
 MENU_TRANSITION = -1
@@ -383,6 +388,8 @@ FLAG_GAVE_FILE = 0x5F5B // Giving John Patton Greg's File at the Santa Katrina H
 FLAG_BOAT_RIDE_DONE = 0x2452 // Finished sailing down Dmitri Canal on Karen's route
 FLAG_KAREN_HOME_CONVERSATION = 0x24B2 // Eavesdrop on Karen while she's in her home
 FLAG_FOUND_GEN = 0x24A1 // Set just after Gen (Karen's dog) reunites with Karen at her house
+FLAG_ACCEPT_THIEF_RING = 0x1F43 // Accepted ring from jewelry thief near Town Crier News Building
+FLAG_BLACKHAWK_DOWN = 0x3EB // Shot down goon copter
 
 FLAG_COMPASS_START = 9800
 FLAG_COMPASS_END = 9834
@@ -416,12 +423,12 @@ function FlagGet(region, flag)
     return bit(flag % 8, flags + flag / 8)
 }
 
-function FlagSetTrigger(region, flag, map=-1)
+function FlagSetTrigger(region, flag, maps=[])
 {
     map_cond = always_true()
-    if (map != -1)
+    if (length(maps) != 0)
     {
-        map_cond = MapID(region) == map
+        map_cond = any_of(maps, m => MapID(region) == m)
     }
 
     return IsRegion(region) && 
@@ -470,12 +477,12 @@ function CompassMeasuredTrigger(region, new_count, old_count=-1)
     return current > delta && measured(measured_condition, when=when)
 }
 
-function MapTransition(region, old_map, new_map)
+function MapTransition(region, old_maps, new_maps)
 {
     return IsRegion(region) &&
            LoadProtection(region) &&
-           MapID(region) == new_map &&
-           MapIDPrev(region) == old_map
+           any_of(new_maps, m => m == MapID(region)) &&
+           any_of(old_maps, m => m == MapIDPrev(region))
 }
 
 function EndingTrigger(region, endings)
@@ -489,7 +496,7 @@ function EndingTrigger(region, endings)
 // Backpacks
 
 achievement(
-    id=0,
+    id=460875,
     title="And Don't Forget Your Backpack",
     description="Obtain the Rescue Pack.",
     points=2,
@@ -498,82 +505,75 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=460876,
     title="Petty Theft",
     description="Obtain the Knapsack.",
     points=3,
-    type="missable",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_KNAPSACK))
 )
 
 achievement(
-    id=0,
+    id=460877,
     title="Urban Explorer Kit",
     description="Obtain the Backpack.",
     points=3,
-    type="missable",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_BACKPACK))
 )
 
 achievement(
-    id=0,
+    id=460878,
     title="Do You Even Pull-Up, Bro?",
     description="Obtain the Gym Bag.",
     points=3,
-    type="missable",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_GYMBAG))
 )
 
 achievement(
-    id=0,
+    id=460879,
     title="Furoshiki Fashion",
     description="Obtain the Cloth Bag.",
     points=3,
-    type="missable",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_CLOTHBAG))
 )
 
 achievement(
-    id=0,
+    id=460880,
     title="More Backpack Than Man",
     description="Obtain the Frame Pack.",
-    points=5,
-    type="missable",
+    points=4,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_FRAMEPACK))
 )
 
 // Compasses
 
 achievement(
-    id=0,
+    id=460881,
     title="Compass Novice",
     description="Obtain 10 compasses.",
     points=5,
-    type="missable",
     trigger=any_of(Regions, region => CompassMeasuredTrigger(region, 10))
 )
 
 achievement(
-    id=0,
+    id=460882,
     title="Compass Enthusiast",
     description="Obtain 20 compasses.",
     points=5,
-    type="missable",
     trigger=any_of(Regions, region => CompassMeasuredTrigger(region, 20, 10))
 )
 
 achievement(
-    id=0,
+    id=460883,
     title="Compass Master",
     description="Obtain all 35 compasses.",
     points=25,
-    type="missable",
     trigger=any_of(Regions, region => CompassMeasuredTrigger(region, 35, 20))
 )
 
 // Story events
 
 achievement(
+    id=460884,
     title="Not Trained for This",
     description="Rescue the injured woman on the Airport Island Bridge.",
     points=3,
@@ -596,7 +596,7 @@ function CrowbarTrigger(region)
 }
 
 achievement(
-    id=0,
+    id=460885,
     title="Keith Helm, in the Flesh",
     description="Obtain the Crowbar.",
     points=2,
@@ -605,7 +605,7 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=460886,
     title="This Whole Wacky World",
     description="Find Karen in the overturned building on Girard Street.",
     points=3,
@@ -614,7 +614,7 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=460887,
     title="Aspiring Journalist",
     description="Meet a freelance photographer.",
     points=3,
@@ -623,12 +623,12 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=460888,
     title="Rapid Disassembly",
     description="Escape the construction site.",
     points=3,
     type="progression",
-    trigger=any_of(Regions, region => MapTransition(region, 0202, 0203))
+    trigger=any_of(Regions, region => MapTransition(region, [0202], [0203]))
 )
 
 function FreshMemoriesTrigger(region)
@@ -641,7 +641,7 @@ function FreshMemoriesTrigger(region)
 }
 
 achievement(
-    id=0,
+    id=460889,
     title="Fresh Memories",
     description="Attempt to save an elderly couple trapped in a destroyed building.",
     points=3,
@@ -661,29 +661,26 @@ function CyclistTrigger(region)
 }
 
 achievement(
-    id=0,
+    id=460890,
     title="Capital City Cyclist",
     description="Arrive at the amusement park by bicycle.",
     points=2,
-    type="missable",
     trigger=any_of(Regions, region => CyclistTrigger(region))
 )
 
 achievement(
-    id=0,
+    id=460900,
     title="I Want to Get Off Mr. Bones' Wild Ride",
     description="Save a trapped teenage girl in the amusement park.",
     points=3,
-    type="missable",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KELLY))
 )
 
 achievement(
-    id=0,
+    id=460891,
     title="Don't Forget",
     description="Give John Patton Greg's File at the Santa Katrina Hospital.",
     points=4,
-    type="missable",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_GAVE_FILE))
 )
 
@@ -697,40 +694,36 @@ function RawDangerTrigger(region)
 }
 
 achievement(
-    id=0,
+    id=460901,
     title="Raw Danger",
     description="Escape the submerged area around the Santa Katrina Hospital.",
-    points=5,
-    type="missable",
+    points=4,
     trigger=any_of(Regions, region => RawDangerTrigger(region))
 )
 
 // Karen route
 
 achievement(
-    id=0,
+    id=460892,
     title="Adventures of Keith Helm",
     description="Sail down the Dmitri Canal on a makeshift raft.",
     points=3,
-    type="missable",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_BOAT_RIDE_DONE))
 )
 
 achievement(
-    id=0,
+    id=460902,
     title="Peeping Keith",
     description="Eavesdrop on Karen talking to herself while she is in her room.",
     points=2,
-    type="missable",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_KAREN_HOME_CONVERSATION))
 )
 
 achievement(
-    id=0,
+    id=460895,
     title="Dog's Best Friend",
     description="Help Karen reunite with her dog, Gen.",
     points=2,
-    type="missable",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_FOUND_GEN))
 )
 
@@ -747,18 +740,84 @@ function FlamingAcrobatTrigger(region)
 }
 
 achievement(
-    id=0,
+    id=460905,
     title="Flaming Acrobat",
     description="Escape Park Avenue Subway with Karen.",
-    points=5,
-    type="missable",
+    points=4,
     trigger=any_of(Regions, FlamingAcrobatTrigger)
+)
+
+// Shared route part 2
+
+achievement(
+    id=460896,
+    title="Diamonds Are Forever",
+    description="Accept a gift from the jewelry thief near the Town Crier News building.",
+    points=3,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING))
+)
+
+function BlindedByTheLightTrigger(region)
+{
+    // blah blah a bit iffy, triggered by camera zoom on the roof -- don't think anything else changes this
+    return IsRegion(region) &&
+           MapID(region) == 0503 &&
+           PlayerXYZ[1][region] < -78.0 &&
+           CameraZoom[region] <= 900.0 &&
+           prev(CameraZoom[region]) > 900.0
+}
+
+achievement(
+    id=460906,
+    title="Blinded by the Light",
+    description="Escape from a bind on top of the Christophe Construction building by using a lighter.",
+    points=4,
+    trigger=any_of(Regions, BlindedByTheLightTrigger)
+)
+
+achievement(
+    id=460897,
+    title="I Need a Fire Hero",
+    description="Escape the Town Crier News building and head off towards Windrunner Park with William.",
+    points=4,
+    type="progression",
+    trigger=any_of(Regions, region => MapTransition(region, [500, 510], [505]))
+)
+
+achievement(
+    id=460907,
+    title="All Hands on Deck!",
+    description="After escaping May Stadium, flee into Lincoln Plaza.",
+    points=5,
+    type="progression",
+    trigger=any_of(Regions, region => MapTransition(region, [600, 605], [601, 606]))
+)
+
+// Trigger here for cinematic effect
+achievement(
+    id=460898,
+    title="On-Site Procurement",
+    description="Down your first helicopter without using any firearms or explosives.",
+    points=10,
+    type="progression",
+    trigger=any_of(Regions, region =>
+        once(
+            // Witnessed the helicopter approach cutscene (zooms in camera at the end)
+            __ornext(MapID(region) == 603 || MapID(region) == 608) &&
+            PlayerXYZ[region][2] < -58.0 &&
+            prev(CameraZoom[region]) >= 2400.0 &&
+            CameraZoom[region] < 2400.0
+        ) &&
+        // left to menu :(
+        never(CurrentMenu[region] == MENU_TITLE) &&
+        trigger_when(FlagSetTrigger(region, FLAG_BLACKHAWK_DOWN))
+    )
 )
 
 // Endings
 
 achievement(
-    id=0,
+    id=460893,
     title="Outside My Window",
     description="Obtain Ending 1 or 2.",
     points=10,
@@ -767,7 +826,7 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=460903,
     title="Stiver for Her Heart",
     description="Obtain Ending 3.",
     points=25,
@@ -776,7 +835,7 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=460894,
     title="Autumn Memories",
     description="Obtain Ending 4.",
     points=25,
@@ -785,7 +844,7 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=460904,
     title="Windrun Out of Here",
     description="Obtain Ending 5 or 6.",
     points=10,
@@ -793,7 +852,7 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=460899,
     title="Thank the Air Rangers!",
     description="Obtain Ending 7.",
     points=10,
