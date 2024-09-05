@@ -826,7 +826,7 @@ achievement(
         once(
             // Witnessed the helicopter approach cutscene (zooms in camera at the end)
             __ornext(MapID(region) == 603 || MapID(region) == 608) &&
-            PlayerXYZ[region][2] < -58.0 &&
+            PlayerXYZ[2][] < -58.0 &&
             prev(CameraZoom[region]) >= 2400.0 &&
             CameraZoom[region] < 2400.0
         ) &&
