@@ -23,8 +23,11 @@ IsJP = byte(0x135150)
 // the instruction at 0x192F88 (addiu t2, zero, -0x2) has to be changed to (addiu t2, zero, -0x81 (!!!)) for the arrow to show up. The imprecision!
 // Item menu bg depth is at 0x183B10, item tabs at 0x183DC8 -- can just be changed to -0x2F8 and -0x1F8
 // Depth for "Save game?" screen with faucet is in memory at 0x26B978 -- can be changed to 0xFFFFFF70
-// For "Exit game without saving?" backdrop depth is at memory 0x26A120 and can be changed to 0xFFFFFF70;
+// For "Exit game without saving?" backdrop depth is at memory 0x26A128 and can be changed to 0xFFFFFF70;
+// save window bg text depth = 00241A0C (set to -0x81)
 // window backdrop is at code 0x199364; can be changed to -0x81
+// Depth of interact text backdrop at 0x193034, change to 0x1000000 so arrow writes on top
+// (dunno why the depth has to be so low but it should be fine I think?)
 
 function IsRegion(region)
 {
@@ -403,7 +406,7 @@ function BackpackTrigger(region, backpack)
         BACKPACK_RESCUEPACK: 0101,
         BACKPACK_KNAPSACK: 0109,
         BACKPACK_BACKPACK: 0203,
-        BACKPACK_GYMBAG: 0000, // TODO
+        BACKPACK_GYMBAG: 0302,
         BACKPACK_CLOTHBAG: 0403,
         BACKPACK_FRAMEPACK: 0505,
     }
@@ -597,7 +600,7 @@ function CrowbarTrigger(region)
 
 achievement(
     id=460885,
-    title="Keith Helm, in the Flesh",
+    title="In the Flesh",
     description="Obtain the Crowbar.",
     points=2,
     type="progression",
@@ -845,7 +848,7 @@ achievement(
 
 achievement(
     id=460904,
-    title="Windrun Out of Here",
+    title="Windrun Outta Here",
     description="Obtain Ending 5 or 6.",
     points=10,
     trigger=any_of(Regions, region => EndingTrigger(region, [5, 6]))
