@@ -225,15 +225,37 @@ function IsInGame(region)
     return MapObjsLength[region] > 0
 }
 
+// PAL has language select at 0x8, shifting menus up by 1 value
+// JP has no Agetec/localizer logo(?), shifting menus down by 1 value
+MenuOffsets = {EU: -1, US: 0, JP: 1}
+
+function GetPreviousMenu(region)
+{
+    menu = PreviousMenu[region] + MenuOffsets[region]
+    return menu
+}
+
+function GetCurrentMenu(region)
+{
+    menu = CurrentMenu[region] + MenuOffsets[region]
+    return menu
+}
+
+function GetNextMenu(region)
+{
+    menu = NextMenu[region] + MenuOffsets[region]
+    return menu
+}
+
 function LoadProtection(region)
 {
     // Gotta be really careful with this because if we put any ||s in here
     // RA has to think too hard and will refuse to consider the condition valid
-    return prior(PreviousMenu[region]) != MENU_MCMENU &&
-           PreviousMenu[region] != MENU_MCMENU &&
-           CurrentMenu[region] != MENU_MCMENU &&
-           CurrentMenu[region] > MENU_TITLE &&
-           NextMenu[region] > MENU_TITLE
+    return prior(GetPreviousMenu(region)) != MENU_MCMENU &&
+           GetPreviousMenu(region) != MENU_MCMENU &&
+           GetCurrentMenu(region) != MENU_MCMENU &&
+           GetCurrentMenu(region) > MENU_TITLE &&
+           GetNextMenu(region) > MENU_TITLE
 }
 
 // RICH PRESENCE START
@@ -817,8 +839,8 @@ achievement(
 // gonna refactor this into something nicer in the tomorrowyear
 GoonPtr = {
     US: dword(0x34dc10 + 0x4 * 14),
-    EU: dword(0x34fc10 + 0x4 * 14),
-    JP: dword(0x375410 + 0x4 * 14),
+    EU: dword(0x375410 + 0x4 * 14),
+    JP: dword(0x34fc10 + 0x4 * 14),
 }
 
 achievement(
@@ -838,12 +860,12 @@ achievement(
             CameraZoom[region] < 2400.0
         ) &&
         // left to menu :(
-        never(CurrentMenu[region] == MENU_TITLE) &&
+        never(GetCurrentMenu(region) == MENU_TITLE) &&
         trigger_when(
             GoonPtr[region] == NULL &&
             prev(GoonPtr[region]) != NULL &&
             // Prevents the achievement from rewarding when respawning from game over
-            prev(CurrentMenu[region] == MENU_GAME)
+            prev(GetCurrentMenu(region) == MENU_GAME)
         )
     )
 )
