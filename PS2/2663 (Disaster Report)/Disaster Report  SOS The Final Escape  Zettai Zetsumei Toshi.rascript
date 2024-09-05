@@ -821,6 +821,8 @@ achievement(
     points=10,
     type="progression",
     trigger=any_of(Regions, region =>
+        IsRegion(region) &&
+        LoadProtection(region) &&
         once(
             // Witnessed the helicopter approach cutscene (zooms in camera at the end)
             __ornext(MapID(region) == 603 || MapID(region) == 608) &&
@@ -830,7 +832,7 @@ achievement(
         ) &&
         // left to menu :(
         never(CurrentMenu[region] == MENU_TITLE) &&
-        trigger_when(FlagSetTrigger(region, FLAG_BLACKHAWK_DOWN))
+        trigger_when(FlagGet(region, FLAG_BLACKHAWK_DOWN) == 1 && prev(FlagGet(region, FLAG_BLACKHAWK_DOWN)) == 0)
     )
 )
 
