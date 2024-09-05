@@ -81,6 +81,11 @@ Compass = {
     EU: dword(0x4252E0),
     JP: dword(0x40A360),
 }
+FoundCompasses = {
+    US: 0x3FE8EC,
+    EU: 0x4252EC,
+    JP: 0x40A36C,
+}
 Backpack = {
     US: dword(0x3533A0),
     EU: dword(0x37ABA0),
@@ -423,9 +428,6 @@ FLAG_KAREN_HOME_CONVERSATION = 0x24B2 // Eavesdrop on Karen while she's in her h
 FLAG_FOUND_GEN = 0x24A1 // Set just after Gen (Karen's dog) reunites with Karen at her house
 FLAG_ACCEPT_THIEF_RING = 0x1F43 // Accepted ring from jewelry thief near Town Crier News Building
 
-FLAG_COMPASS_START = 9800
-FLAG_COMPASS_END = 9834
-
 function BackpackTrigger(region, backpack)
 {
     // A false trigger can occur if a player picks up a new backpack, dies, and then respawns with their old backpack.
@@ -475,18 +477,15 @@ function CompassCount(region)
     current = 0
     delta = 0
     prior = 0
+    NUM_COMPASSES = 35
     
-    for flag in range(FLAG_COMPASS_START, FLAG_COMPASS_END)
+    for i in range(0, NUM_COMPASSES - 1)
     {
-        current = current + FlagGet(region, flag)
-        delta = delta + prev(FlagGet(region, flag))
-        prior = prior + prior(FlagGet(region, flag))
+        acc = bit(i % 8, FoundCompasses[region] + i / 8)
+        current = current + acc
+        delta = delta + prev(acc)
+        prior = prior + prior(acc)
     }
-    
-    // Compass 0 (standard) is flag 9800, but never seems to get set on.
-    // We'll add 1 (or not, using XOR, if it is on) to count it anyways.
-    current = current + (FlagGet(region, FLAG_COMPASS_START) ^ 1)
-    delta = delta + (FlagGet(region, FLAG_COMPASS_START) ^ 1)
     
     return [current, delta, prior]
 }
