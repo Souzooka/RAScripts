@@ -28,6 +28,9 @@ IsJP = byte(0x135150)
 // window backdrop is at code 0x199364; can be changed to -0x81
 // Depth of interact text backdrop at 0x193034, change to 0x1000000 so arrow writes on top
 // (dunno why the depth has to be so low but it should be fine I think?)
+// change code @ 1300C0 to addiu s1, s1, 0x8; sw s1, 0xD28(at); jal 0x130970; sw s1,0xCA8(at). This prevents the arrow from disappearing in
+// certain select dialogue boxes (like the ending 7 choice), I don't know why
+// Letterbox depth = 1946D0 (is -2, set to -100); change 194718 to addiu a3, a3, -0x80
 
 function IsRegion(region)
 {
@@ -164,6 +167,11 @@ CameraZoom = {
     US: float(0x3696A4),
     EU: float(0x390EA4),
     JP: float(0x36B6A4),
+}
+CreditsTask = {
+    US: dword(0x41B1B0),
+    EU: dword(0x441BB0),
+    JP: dword(0x427050),
 }
 
 // Game State
@@ -354,7 +362,7 @@ MapNameLookup = {
     0707: "Keith and Karen are taking a long, somber walk up the Quinn Building.",
     0716: "Keith and Kelly are taking a long, somber walk up the Quinn Building.",
     0708: "Keith and Karen are continuing to escape the rising waters by climbing the Central Tower Building!",
-    0717: "Keith and Karen are continuing to escape the rising waters by climbing the Central Tower Building!",
+    0717: "Keith and Kelly are continuing to escape the rising waters by climbing the Central Tower Building!",
 }
 
 for region in Regions
@@ -494,6 +502,15 @@ function EndingTrigger(region, endings)
            __ornext(any_of(endings, ending => GameEnding[region] == ending)) &&
            GameEndingState[region] >= 3 &&
            prev(GameEndingState[region]) < 3
+}
+
+function QuickEndingTrigger(region, maps)
+{
+    // Just checks if the credits task is set while in the specified map, so the user doesn't have to sit through the credits
+    return IsRegion(region) &&
+           __ornext(any_of(maps, map => MapID(region) == map)) &&
+           CreditsTask[region] != NULL &&
+           prev(CreditsTask[region]) == NULL
 }
 
 // Backpacks
@@ -825,7 +842,7 @@ achievement(
     description="Obtain Ending 1 or 2.",
     points=10,
     type="win_condition",
-    trigger=any_of(Regions, region => EndingTrigger(region, [1, 2]))
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [707, 716]))
 )
 
 achievement(
@@ -834,7 +851,7 @@ achievement(
     description="Obtain Ending 3.",
     points=25,
     type="win_condition",
-    trigger=any_of(Regions, region => EndingTrigger(region, [3]))
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [708]))
 )
 
 achievement(
@@ -843,7 +860,7 @@ achievement(
     description="Obtain Ending 4.",
     points=25,
     type="win_condition",
-    trigger=any_of(Regions, region => EndingTrigger(region, [4]))
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [717]))
 )
 
 achievement(
@@ -851,7 +868,7 @@ achievement(
     title="Windrun Outta Here",
     description="Obtain Ending 5 or 6.",
     points=10,
-    trigger=any_of(Regions, region => EndingTrigger(region, [5, 6]))
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [505]))
 )
 
 achievement(
@@ -859,7 +876,7 @@ achievement(
     title="Thank the Air Rangers!",
     description="Obtain Ending 7.",
     points=10,
-    trigger=any_of(Regions, region => EndingTrigger(region, [7]))
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [404]))
 )
 
 // ACHIEVEMENTS END
