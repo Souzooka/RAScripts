@@ -400,7 +400,6 @@ FLAG_BOAT_RIDE_DONE = 0x2452 // Finished sailing down Dmitri Canal on Karen's ro
 FLAG_KAREN_HOME_CONVERSATION = 0x24B2 // Eavesdrop on Karen while she's in her home
 FLAG_FOUND_GEN = 0x24A1 // Set just after Gen (Karen's dog) reunites with Karen at her house
 FLAG_ACCEPT_THIEF_RING = 0x1F43 // Accepted ring from jewelry thief near Town Crier News Building
-FLAG_BLACKHAWK_DOWN = 0x3EB // Shot down goon copter
 
 FLAG_COMPASS_START = 9800
 FLAG_COMPASS_END = 9834
@@ -814,6 +813,14 @@ achievement(
 )
 
 // Trigger here for cinematic effect
+// NOTE: Flags don't work so we have to tap into the power of reading the goon -- they f*cking kill (dealloc) him :(
+// gonna refactor this into something nicer in the tomorrowyear
+GoonPtr = {
+    US: dword(0x34dc10 + 0x4 * 14),
+    EU: dword(0x34fc10 + 0x4 * 14),
+    JP: dword(0x375410 + 0x4 * 14),
+}
+
 achievement(
     id=460898,
     title="On-Site Procurement",
@@ -826,13 +833,18 @@ achievement(
         once(
             // Witnessed the helicopter approach cutscene (zooms in camera at the end)
             __ornext(MapID(region) == 603 || MapID(region) == 608) &&
-            PlayerXYZ[2][] < -58.0 &&
+            PlayerXYZ[1][region] < -58.0 &&
             prev(CameraZoom[region]) >= 2400.0 &&
             CameraZoom[region] < 2400.0
         ) &&
         // left to menu :(
         never(CurrentMenu[region] == MENU_TITLE) &&
-        trigger_when(FlagGet(region, FLAG_BLACKHAWK_DOWN) == 1 && prev(FlagGet(region, FLAG_BLACKHAWK_DOWN)) == 0)
+        trigger_when(
+            GoonPtr[region] == NULL &&
+            prev(GoonPtr[region]) != NULL &&
+            // Prevents the achievement from rewarding when respawning from game over
+            prev(CurrentMenu[region] == MENU_GAME)
+        )
     )
 )
 
