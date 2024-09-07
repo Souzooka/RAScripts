@@ -426,7 +426,8 @@ FLAG_GAVE_FILE = 0x5F5B // Giving John Patton Greg's File at the Santa Katrina H
 FLAG_BOAT_RIDE_DONE = 0x2452 // Finished sailing down Dmitri Canal on Karen's route
 FLAG_KAREN_HOME_CONVERSATION = 0x24B2 // Eavesdrop on Karen while she's in her home
 FLAG_FOUND_GEN = 0x24A1 // Set just after Gen (Karen's dog) reunites with Karen at her house
-FLAG_ACCEPT_THIEF_RING = 0x1F43 // Accepted ring from jewelry thief near Town Crier News Building
+FLAG_ACCEPT_THIEF_RING = 0x1F43 // Accepted diamond ring from jewelry thief near Town Crier News Building
+FLAG_ACCEPT_THIEF_RING_NO_SPACE = 0x1435 // Accepted diamond ring (but player had no space in backpack)
 
 function BackpackTrigger(region, backpack)
 {
@@ -467,7 +468,7 @@ function FlagSetTrigger(region, flag, maps=[])
 
     return IsRegion(region) && 
            LoadProtection(region) && 
-           map_cond &&
+           map_cond &&     
            FlagGet(region, flag) == 1 && 
            prev(FlagGet(region, flag)) == 0
 }
@@ -794,7 +795,10 @@ achievement(
     title="Diamonds Are Forever",
     description="Accept a gift from the jewelry thief near the Town Crier News building.",
     points=3,
-    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING))
+    trigger=any_of(Regions, region =>     
+            FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING) || 
+            FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING_NO_SPACE)
+        )
 )
 
 function BlindedByTheLightTrigger(region)
