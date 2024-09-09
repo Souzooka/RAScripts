@@ -427,6 +427,7 @@ FLAG_BOAT_RIDE_DONE = 0x2452 // Finished sailing down Dmitri Canal on Karen's ro
 FLAG_KAREN_HOME_CONVERSATION = 0x24B2 // Eavesdrop on Karen while she's in her home
 FLAG_FOUND_GEN = 0x24A1 // Set just after Gen (Karen's dog) reunites with Karen at her house
 FLAG_ACCEPT_THIEF_RING = 0x1F43 // Accepted diamond ring from jewelry thief near Town Crier News Building
+FLAG_ACCEPT_THIEF_RING_NO_SPACE_EMERALD = 0x1434 // Accepted emerald ring (but player had no space in backpack)
 FLAG_ACCEPT_THIEF_RING_NO_SPACE = 0x1435 // Accepted diamond ring (but player had no space in backpack)
 
 function BackpackTrigger(region, backpack)
@@ -797,7 +798,8 @@ achievement(
     points=3,
     trigger=any_of(Regions, region =>     
             FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING) || 
-            FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING_NO_SPACE)
+            FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING_NO_SPACE) ||
+            FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING_NO_SPACE_EMERALD)
         )
 )
 
