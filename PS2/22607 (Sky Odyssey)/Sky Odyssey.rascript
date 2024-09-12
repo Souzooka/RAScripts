@@ -26,6 +26,17 @@ function if_else(cond, v1, v2)
     return v2
 }
 
+function dict_copy(dict)
+{
+    copy = {}
+    for key in dict
+    {
+        copy[key] = dict[key]
+    }
+    
+    return copy
+}
+
 function dict_in(dict, key)
 {
     for k in dict
@@ -178,7 +189,7 @@ g_mission_time = {
 
 PLANE_BF = 0
 PLANE_SWORDFISH =1
-PLANE_PULSEJET = 2
+PLANE_PULSE_JET = 2
 PLANE_SHINDEN = 3
 PLANE_SHINDEN_KAI = 4
 PLANE_STEALTH_JET = 5
@@ -327,3 +338,42 @@ for mission in Missions
         value=max_of(array_map(Regions, region => measured(g_mission_time[region], when=IsRegion(region))))
     )
 }
+
+// Rich Presence
+
+rp_region_lookup = {
+    US: "ᵘˢ",
+    EU: "ᵉᵘ",
+    JP: "ʲᵖ",
+}
+rp_mission_lookup = dict_copy(Missions)
+rp_plane_lookup = {
+    PLANE_BF: "🛩️ BF-109 Custom",
+    PLANE_SWORDFISH: "🛩️ Swordfish Mk.1 Custom",
+    PLANE_PULSE_JET: "🛩️ Pulse Jet \"Test Type\"",
+    PLANE_SHINDEN: "🛩️ Shinden",
+    PLANE_SHINDEN_KAI: "🛩️ Shinden-Kai",
+    PLANE_STEALTH_JET: "🛩️ Stealth Jet",
+    PLANE_ME: "🛩️ Me-262",
+    PLANE_F4U: "🛩️ F4U Corsair",
+    PLANE_AUTOGYRO: "🛩️ Autogyro XG-1",
+    PLANE_UFO_S: "🛸 UFO \"Type Silver\"",
+    PLANE_UFO_G: "🛸️ UFO \"Type Gold\"",
+}
+
+for region in Regions
+{
+    rp_region = rich_presence_lookup("REGION", RegionByte, rp_region_lookup)
+    rp_mission = rich_presence_lookup("MISSION", g_current_mission[region], rp_mission_lookup, "Unknown Mission")
+    rp_plane = rich_presence_lookup("PLANE", g_plane_type[region], rp_plane_lookup, "Unknown Plane")
+    
+    rich_presence_conditional_display(
+        IsRegion(region) && g_game_mode[region] == MODE_ADVENTURE && InLevel(region),
+        "{0} Adventure Mode | {1} | {2}",
+        rp_region,
+        rp_mission,
+        rp_plane
+    )
+}
+
+rich_presence_display("Playing Sky Odyssey")
