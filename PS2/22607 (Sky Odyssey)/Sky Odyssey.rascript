@@ -317,6 +317,7 @@ for mission in Missions
         title=format("{0} - Time Attack", Missions[mission]),
         description=format("Complete \"{0}\" with the fastest time while collecting every checkpoint ring!", Missions[mission]),
         format="FRAMES",
+        lower_is_better=true,
         start=any_of(Regions, region => 
             LeaderboardSubmit(region, mission) &&
             g_checkpoint_rings_hit[region] == g_num_checkpoint_rings[region]
