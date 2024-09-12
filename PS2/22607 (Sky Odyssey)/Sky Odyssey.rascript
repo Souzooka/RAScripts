@@ -158,14 +158,60 @@ g_current_mission = {
     JP: dword(NO_ADDR),
 }
 
+g_mission_clear_state = {
+    US: dword(0x283A10),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
+g_mission_clear_substate = {
+    US: dword(0x283A14),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
 g_mission_time = {
     US: dword(0x283F00),
     EU: dword(NO_ADDR),
     JP: dword(NO_ADDR),
 }
 
+PLANE_BF = 0
+PLANE_SWORDFISH =1
+PLANE_PULSEJET = 2
+PLANE_SHINDEN = 3
+PLANE_SHINDEN_KAI = 4
+PLANE_STEALTH_JET = 5
+PLANE_ME = 6
+PLANE_F4U = 7
+PLANE_AUTOGYRO = 8
+PLANE_UFO_S = 9
+PLANE_UFO_G = 10
+g_plane_type = {
+    US: dword(0x283F24),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
+MODE_ADVENTURE = 0
+MODE_TARGET = 1
+MODE_SKY_CANVAS = 2
+MODE_TRAINING = 3
+MODE_FREE_FLIGHT = 4
+g_game_mode = {
+    US: dword(0x283F7C),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
 g_mission_goal_time = {
     US: dword(0x283FFC),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
+g_in_game = {
+    US: dword(0x28403C),
     EU: dword(NO_ADDR),
     JP: dword(NO_ADDR),
 }
@@ -202,10 +248,17 @@ g_mission_score = {
 
 // Game functions
 
+function InLevel(region)
+{
+    return g_in_game[region] != 0
+}
+
 function MissionEnd(region)
 {
-    // Probably could be something more bulletproof but this seems to work for now
-    return g_mission_rank[region] != RANK_INITIAL && prev(g_mission_rank[region]) == RANK_INITIAL
+    return InLevel(region) &&
+           g_mission_clear_state[region] != 0 &&
+           prev(g_mission_clear_substate[region]) != 0xFF &&
+           g_mission_clear_substate[region] == 0xFF
 }
 
 // Adventure leaderboards
