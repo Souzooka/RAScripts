@@ -152,7 +152,7 @@ Missions = {
     7: "The Desert Express",
     8: "Relief from Above",
     9: "The Ancient Forest",
-    10: "Blow Away",
+    10: "Blown Away",
     11: "The Great Divide",
     12: "The Valley of Fire",
     13: "A Tight Squeeze",
@@ -363,7 +363,7 @@ rp_plane_lookup = {
 
 for region in Regions
 {
-    rp_region = rich_presence_lookup("REGION", RegionByte, rp_region_lookup)
+    rp_region = rich_presence_lookup("REGION", region, rp_region_lookup)
     rp_mission = rich_presence_lookup("MISSION", g_current_mission[region], rp_mission_lookup, "Unknown Mission")
     rp_plane = rich_presence_lookup("PLANE", g_plane_type[region], rp_plane_lookup, "Unknown Plane")
     
