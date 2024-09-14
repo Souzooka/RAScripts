@@ -146,36 +146,62 @@ function TimeToCentiseconds(minutes=0, seconds=0, frames=0)
 
 // Game variables
 
+MISSION_TOWERS = 0
+MISSION_FALLS = 1
+MISSION_SOS = 2
+MISSION_MINE = 3
+MISSION_BEGIN = 4
+MISSION_LOW_ROAD = 5
+MISSION_LABYRINTH = 6
+MISSION_DESERT_EXPRESS = 7
+MISSION_RELIEF = 8
+MISSION_FOREST = 9
+MISSION_BLOWN = 10
+MISSION_GREAT_DIVIDE = 11
+MISSION_FIRE_VALLEY = 12
+MISSION_TIGHT_SQUEEZE = 13
+MISSION_GREAT_FALLS = 14
 MISSION_MAXIMUS = 15
+MISSION_RENDEZVOUS = 16
+MISSION_SEAS = 17
+MISSION_STORM = 18
 Missions = {
-    0: "Towers of Terror",
-    1: "Over the Falls",
-    2: "S.O.S.",
-    3: "Heart of the Mine",
-    4: "The Adventure Begins",
-    5: "Take the Low Road",
-    6: "The Labyrinth",
-    7: "The Desert Express",
-    8: "Relief from Above",
-    9: "The Ancient Forest",
-    10: "Blown Away",
-    11: "The Great Divide",
-    12: "The Valley of Fire",
-    13: "A Tight Squeeze",
-    14: "The Great Falls",
+    MISSION_TOWERS: "Towers of Terror",
+    MISSION_FALLS: "Over the Falls",
+    MISSION_SOS: "S.O.S.",
+    MISSION_MINE: "Heart of the Mine",
+    MISSION_BEGIN: "The Adventure Begins",
+    MISSION_LOW_ROAD: "Take the Low Road",
+    MISSION_LABYRINTH: "The Labyrinth",
+    MISSION_DESERT_EXPRESS: "The Desert Express",
+    MISSION_RELIEF: "Relief from Above",
+    MISSION_FOREST: "The Ancient Forest",
+    MISSION_BLOWN: "Blown Away",
+    MISSION_GREAT_DIVIDE: "The Great Divide",
+    MISSION_FIRE_VALLEY: "The Valley of Fire",
+    MISSION_TIGHT_SQUEEZE: "A Tight Squeeze",
+    MISSION_GREAT_FALLS: "The Great Falls",
     MISSION_MAXIMUS: "Maximus",
-    16: "Mid-air Rendezvous",
-    17: "Stormy Seas",
-    18: "A Storm before the Calm",
+    MISSION_RENDEZVOUS: "Mid-air Rendezvous",
+    MISSION_SEAS: "Stormy Seas",
+    MISSION_STORM: "A Storm before the Calm",
     19: "A Storm before the Calm",
     20: "A Storm before the Calm",
     21: "Relief from Above",
 }
 Name2Mission = dict_invert_lossless(Missions)
+FinalMissions = [MISSION_GREAT_FALLS, MISSION_FIRE_VALLEY, MISSION_TIGHT_SQUEEZE]
+OptionalMissions = [MISSION_MINE, MISSION_SOS, MISSION_RELIEF]
 // NOTE: Use g_adventure_mission for Adventure Mode logic!!
 // g_current_mission is fine for other modes; refer to code note for reasoning
 g_current_mission = {
     US: dword(0x282EA4),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
+g_rank_circle = {
+    US: dword(0x283360),
     EU: dword(NO_ADDR),
     JP: dword(NO_ADDR),
 }
@@ -293,6 +319,21 @@ function InLevel(region)
     return g_in_game[region] != 0
 }
 
+function IsMission(region, mission, allow_checkpoint=true)
+{
+    correct_mission = __ornext(
+        list_in(Name2Mission[Missions[mission]], g_adventure_mission[region])
+    )
+    
+    if !allow_checkpoint && any_of(FinalMissions, m => m == mission)
+    {
+        // Don't count final mission leaderboards if the player retried in the final segment, which would mean only 10 checkpoint rings are tracked
+        correct_mission = correct_mission && g_num_checkpoint_rings[region] != 10
+    }
+    
+    return correct_mission
+}
+
 function MissionEnd(region)
 {
     return InLevel(region) &&
@@ -311,6 +352,250 @@ function CanvasEnd(region)
 }
 
 // Achievements
+
+// Adventure
+
+AdventureClearParams = {
+    MISSION_TOWERS: {
+        "id": 463369,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_FALLS: {
+        "id": 463370,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_SOS: {
+        "id": 463371,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_MINE: {
+        "id": 463372,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_BEGIN: {
+        "id": 463373,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_LOW_ROAD: {
+        "id": 463374,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_LABYRINTH: {
+        "id": 463375,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_DESERT_EXPRESS: {
+        "id": 463376,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_RELIEF: {
+        "id": 463377,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_FOREST: {
+        "id": 463378,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_BLOWN: {
+        "id": 463379,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_GREAT_DIVIDE: {
+        "id": 463380,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_FIRE_VALLEY: {
+        "id": 463381,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_TIGHT_SQUEEZE: {
+        "id": 463382,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_GREAT_FALLS: {
+        "id": 463383,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_RENDEZVOUS: {
+        "id": 463384,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_SEAS: {
+        "id": 463395,
+        "title": "",
+        "points": 5,
+    },
+    MISSION_STORM: {
+        "id": 463385,
+        "title": "",
+        "points": 5,
+    },
+}
+
+AdventurePerfectParams = {
+    MISSION_TOWERS: {
+        "id": 463396,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_FALLS: {
+        "id": 463386,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_SOS: {
+        "id": 463397,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_MINE: {
+        "id": 463387,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_BEGIN: {
+        "id": 463398,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_LOW_ROAD: {
+        "id": 463399,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_LABYRINTH: {
+        "id": 463388,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_DESERT_EXPRESS: {
+        "id": 463389,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_RELIEF: {
+        "id": 463400,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_FOREST: {
+        "id": 463390,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_BLOWN: {
+        "id": 463401,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_GREAT_DIVIDE: {
+        "id": 463391,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_FIRE_VALLEY: {
+        "id": 463402,
+        "title": "",
+        "points": 25,
+    },
+    MISSION_TIGHT_SQUEEZE: {
+        "id": 463392,
+        "title": "",
+        "points": 25,
+    },
+    MISSION_GREAT_FALLS: {
+        "id": 463403,
+        "title": "",
+        "points": 25,
+    },
+    MISSION_RENDEZVOUS: {
+        "id": 463393,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_SEAS: {
+        "id": 463404,
+        "title": "",
+        "points": 10,
+    },
+    MISSION_STORM: {
+        "id": 463394,
+        "title": "",
+        "points": 10,
+    },
+}
+
+for mission in AdventureClearParams
+{
+    params = AdventureClearParams[mission]
+    
+    id = params["id"]
+    title = if_else(params["title"] == "", format("Adventure Mode - {0}", Missions[mission]), params["title"])
+    description = format("In Adventure Mode, complete the mission \"{0}.\"", Missions[mission])
+    points = params["points"]
+    type = if_else(list_in(OptionalMissions, mission), "missable", "progression")
+    type = if_else(list_in(FinalMissions, mission), "win_condition", type)
+    
+    achievement(
+        id=id,
+        title=title,
+        description=description,
+        points=points,
+        type=type,
+        trigger=any_of(Regions, region =>
+            IsRegion(region) &&
+            IsMission(region, mission, allow_checkpoint=true) &&
+            MissionEnd(region)
+        )
+    )
+}
+
+for mission in AdventurePerfectParams
+{
+    params = AdventurePerfectParams[mission]
+    
+    id = params["id"]
+    title = if_else(params["title"] == "", format("Adventure Mode - {0} - Perfect", Missions[mission]), params["title"])
+    description = format(
+        "In Adventure Mode, complete the mission \"{0}\" and achieve a circled A+ rank.{1}{2}",
+        Missions[mission],
+        if_else(mission == MISSION_BEGIN, " This can be achieved by scoring 25,000 points within the goal time, with at least 5,000 acrobatic points.", ""),
+        if_else(list_in(FinalMissions, mission), " This achievement is voided if the attempt is retried after reaching Maximus.", "")
+    )
+    points = params["points"]
+    
+    achievement(
+        id=id,
+        title=title,
+        description=description,
+        points=points,
+        trigger=any_of(Regions, region =>
+            IsRegion(region) &&
+            IsMission(region, mission, allow_checkpoint=false) &&
+            MissionEnd(region) &&
+            g_mission_rank[region] == RANK_AP &&
+            g_rank_circle[region] != 0
+        )
+    )
+}
+
+// TODO: Shinden(-Kai)
 
 // Sky Canvas
 FREE_CANVAS = 10
@@ -423,41 +708,31 @@ for params in SkyCanvasParams
 // Adventure leaderboards
 
 leaderboard_ids = {
-    0: [115478, 115479],
-    1: [115480, 115481],
-    2: [115482, 115483],
-    3: [115484, 115485],
-    4: [115486, 115487],
-    5: [115488, 115489],
-    6: [115490, 115491],
-    7: [115492, 115493],
-    8: [115506, 115494],
-    9: [115507, 115495],
-    10: [115496, 115508],
-    11: [115497, 115509],
-    12: [115498, 115510],
-    13: [115499, 115511],
-    14: [115500, 115512],
-    //15: [115501, 115513],
-    16: [115502, 115503],
-    17: [115514, 115504],
-    18: [115515, 115505],
+    MISSION_TOWERS: [115478, 115479],
+    MISSION_FALLS: [115480, 115481],
+    MISSION_SOS: [115482, 115483],
+    MISSION_MINE: [115484, 115485],
+    MISSION_BEGIN: [115486, 115487],
+    MISSION_LOW_ROAD: [115488, 115489],
+    MISSION_LABYRINTH: [115490, 115491],
+    MISSION_DESERT_EXPRESS: [115492, 115493],
+    MISSION_RELIEF: [115506, 115494],
+    MISSION_FOREST: [115507, 115495],
+    MISSION_BLOWN: [115496, 115508],
+    MISSION_GREAT_DIVIDE: [115497, 115509],
+    MISSION_FIRE_VALLEY: [115498, 115510],
+    MISSION_TIGHT_SQUEEZE: [115499, 115511],
+    MISSION_GREAT_FALLS: [115500, 115512],
+    //MISSION_MAXIMUS: [115501, 115513],
+    MISSION_RENDEZVOUS: [115502, 115503],
+    MISSION_SEAS: [115514, 115504],
+    MISSION_STORM: [115515, 115505],
 }
 
 function LeaderboardSubmit(region, mission)
 {
-    correct_mission = __ornext(
-        list_in(Name2Mission[Missions[mission]], g_adventure_mission[region])
-    )
-    
-    if any_of(["The Great Divide", "The Valley of Fire", "A Tight Squeeze"], name => list_in(Name2Mission[name], mission))
-    {
-        // Don't count final mission leaderboards if the player retried in the final segment, which would mean only 10 checkpoint rings are tracked
-        correct_mission = correct_mission && g_num_checkpoint_rings[region] != 10
-    }
-
     return IsRegion(region) &&
-           correct_mission &&
+           IsMission(region, mission, allow_checkpoint=false) &&
            MissionEnd(region)
 }
 
