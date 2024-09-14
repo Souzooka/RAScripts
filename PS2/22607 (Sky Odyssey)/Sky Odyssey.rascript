@@ -26,6 +26,11 @@ function if_else(cond, v1, v2)
     return v2
 }
 
+function list_in(list, val)
+{
+    return any_of(list, v => v == val)
+}
+
 function dict_copy(dict)
 {
     copy = {}
@@ -114,7 +119,7 @@ function ptr(base, offsets, accessor=dword)
 
 function assert(cond, msg="No Assertion Message")
 {
-    if cond == false
+    if !cond
     {
         l = {}
         return l[msg]
@@ -141,6 +146,7 @@ function TimeToCentiseconds(minutes=0, seconds=0, frames=0)
 
 // Game variables
 
+MISSION_MAXIMUS = 15
 Missions = {
     0: "Towers of Terror",
     1: "Over the Falls",
@@ -157,12 +163,17 @@ Missions = {
     12: "The Valley of Fire",
     13: "A Tight Squeeze",
     14: "The Great Falls",
-    15: "Maximus",
+    MISSION_MAXIMUS: "Maximus",
     16: "Mid-air Rendezvous",
     17: "Stormy Seas",
     18: "A Storm before the Calm",
+    19: "A Storm before the Calm",
+    20: "A Storm before the Calm",
+    21: "Relief from Above",
 }
-Name2Mission = dict_invert(Missions)
+Name2Mission = dict_invert_lossless(Missions)
+// NOTE: Use g_adventure_mission for Adventure Mode logic!!
+// g_current_mission is fine for other modes; refer to code note for reasoning
 g_current_mission = {
     US: dword(0x282EA4),
     EU: dword(NO_ADDR),
@@ -251,6 +262,24 @@ g_mission_rank = {
     JP: dword(NO_ADDR),
 }
 
+g_sky_canvas_results_timer = {
+    US: dword(0x28421C),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
+g_sky_canvas_score = {
+    US: float(0x284244),
+    EU: float(NO_ADDR),
+    JP: float(NO_ADDR),
+}
+
+g_adventure_mission = {
+    US: dword(0x2D0E88),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
 g_mission_score = {
     US: dword(0x2D63E0),
     EU: dword(NO_ADDR),
@@ -267,9 +296,128 @@ function InLevel(region)
 function MissionEnd(region)
 {
     return InLevel(region) &&
+           g_game_mode[region] == MODE_ADVENTURE &&
            g_mission_clear_state[region] != 0 &&
            prev(g_mission_clear_substate[region]) != 0xFF &&
            g_mission_clear_substate[region] == 0xFF
+}
+
+function CanvasEnd(region)
+{
+    return InLevel(region) &&
+           g_game_mode[region] == MODE_SKY_CANVAS &&
+           g_sky_canvas_results_timer[region] > 1 &&
+           prev(g_sky_canvas_results_timer[region]) == 1
+}
+
+// Achievements
+
+// Sky Canvas
+FREE_CANVAS = 10
+SkyCanvasStages = {
+    0: "Line",
+    1: "Triangle",
+    2: "Diamond",
+    3: "Infinity Symbol",
+    4: "Pentagon",
+    5: "Heart",
+    6: "Watch",
+    7: "Chain",
+    8: "Face",
+    9: "Word",
+    FREE_CANVAS: "Free Canvas",
+}
+SkyCanvasStagesFull = {}
+for i in range(0, 9)
+{
+    n = i + 1
+    SkyCanvasStagesFull[i] = format("No. {0}{1}: {2}", if_else(n < 10, "0", ""), n, SkyCanvasStages[i])
+}
+SkyCanvasStagesFull[FREE_CANVAS] = SkyCanvasStages[FREE_CANVAS]
+SkyCanvasStagePrefixes = {3: "an", FREE_CANVAS: "in"}
+
+SkyCanvasParams = [
+    {
+        "id": 463017,
+        "mission": 0,
+        "title": "",
+        "points": 1,
+    },
+    {
+        "id": 463018,
+        "mission": 1,
+        "title": "",
+        "points": 2,
+    },
+    {
+        "id": 463019,
+        "mission": 2,
+        "title": "",
+        "points": 2,
+    },
+    {
+        "id": 463020,
+        "mission": 3,
+        "title": "",
+        "points": 2,
+    },
+    {
+        "id": 463021,
+        "mission": 4,
+        "title": "",
+        "points": 3,
+    },
+    {
+        "id": 463022,
+        "mission": 5,
+        "title": "",
+        "points": 3,
+    },
+    {
+        "id": 463023,
+        "mission": 6,
+        "title": "",
+        "points": 3,
+    },
+    {
+        "id": 463024,
+        "mission": 7,
+        "title": "",
+        "points": 3,
+    },
+    {
+        "id": 463025,
+        "mission": 8,
+        "title": "",
+        "points": 4,
+    },
+    {
+        "id": 463026,
+        "mission": 9,
+        "title": "",
+        "points": 5,
+    },
+]
+
+for params in SkyCanvasParams
+{
+    id = params["id"]
+    mission = params["mission"]
+    title = if_else(params["title"] == "", format("Sky Canvas - {0}", SkyCanvasStages[mission]), params["title"])
+    points = params["points"]
+    
+    achievement(
+        id=id,
+        title=title,
+        description=format("In Sky Canvas, complete {0} with a score of 90 or higher.", SkyCanvasStagesFull[mission]),
+        points=points,
+        trigger=any_of(Regions, region =>
+            IsRegion(region) &&
+            CanvasEnd(region) &&
+            g_current_mission[region] == mission &&
+            g_sky_canvas_score[region] >= 90.0
+        )
+    )
 }
 
 // Adventure leaderboards
@@ -290,7 +438,7 @@ leaderboard_ids = {
     12: [115498, 115510],
     13: [115499, 115511],
     14: [115500, 115512],
-    15: [115501, 115513],
+    //15: [115501, 115513],
     16: [115502, 115503],
     17: [115514, 115504],
     18: [115515, 115505],
@@ -298,15 +446,23 @@ leaderboard_ids = {
 
 function LeaderboardSubmit(region, mission)
 {
+    correct_mission = __ornext(
+        list_in(Name2Mission[Missions[mission]], g_adventure_mission[region])
+    )
+    
+    if any_of(["The Great Divide", "The Valley of Fire", "A Tight Squeeze"], name => list_in(Name2Mission[name], mission))
+    {
+        // Don't count final mission leaderboards if the player retried in the final segment, which would mean only 10 checkpoint rings are tracked
+        correct_mission = correct_mission && g_num_checkpoint_rings[region] != 10
+    }
+
     return IsRegion(region) &&
-           g_current_mission[region] == mission &&
+           correct_mission &&
            MissionEnd(region)
 }
 
-for mission in Missions
-{
-    assert(dict_in(leaderboard_ids, mission), format("Define mission {0} IDs in leaderboard_ids", mission))
-    
+for mission in leaderboard_ids
+{   
     // Point Attack
     leaderboard(
         id=leaderboard_ids[mission][0],
@@ -347,6 +503,8 @@ rp_region_lookup = {
     JP: "ʲᵖ",
 }
 rp_mission_lookup = dict_copy(Missions)
+rp_canvas_lookup = dict_copy(SkyCanvasStages)
+rp_canvas_prefix_lookup = dict_copy(SkyCanvasStagePrefixes)
 rp_plane_lookup = {
     PLANE_BF: "🛩️ BF-109 Custom",
     PLANE_SWORDFISH: "🛩️ Swordfish Mk.1 Custom",
@@ -356,7 +514,7 @@ rp_plane_lookup = {
     PLANE_STEALTH_JET: "🛩️ Stealth Jet",
     PLANE_ME: "🛩️ Me-262",
     PLANE_F4U: "🛩️ F4U Corsair",
-    PLANE_AUTOGYRO: "🛩️ Autogyro XG-1",
+    PLANE_AUTOGYRO: "🚁️ Autogyro XG-1",
     PLANE_UFO_S: "🛸 UFO \"Type Silver\"",
     PLANE_UFO_G: "🛸️ UFO \"Type Gold\"",
 }
@@ -364,14 +522,30 @@ rp_plane_lookup = {
 for region in Regions
 {
     rp_region = rich_presence_lookup("REGION", region, rp_region_lookup)
-    rp_mission = rich_presence_lookup("MISSION", g_current_mission[region], rp_mission_lookup, "Unknown Mission")
+    rp_mission_prefix = rich_presence_lookup("MISSION_PREFIX", g_current_mission[region], {MISSION_MAXIMUS: "Maximus (via "}, "")
+    rp_mission = rich_presence_lookup("MISSION", g_adventure_mission[region], rp_mission_lookup, "Unknown Mission")
+    rp_mission_suffix = rich_presence_lookup("MISSION_SUFFIX", g_current_mission[region], {MISSION_MAXIMUS: ")"}, "")
     rp_plane = rich_presence_lookup("PLANE", g_plane_type[region], rp_plane_lookup, "Unknown Plane")
+    rp_canvas = rich_presence_lookup("CANVAS", g_current_mission[region], rp_canvas_lookup, "Unknown Shape")
+    rp_canvas_prefix = rich_presence_lookup("CANVAS_PREFIX", g_current_mission[region], rp_canvas_prefix_lookup, "a")
     
+    // Adventure Mode
     rich_presence_conditional_display(
         IsRegion(region) && g_game_mode[region] == MODE_ADVENTURE && InLevel(region),
-        "{0} Adventure Mode | {1} | {2}",
+        "{0} Adventure Mode | {1}{2}{3} | {4}",
         rp_region,
+        rp_mission_prefix,
         rp_mission,
+        rp_mission_suffix,
+        rp_plane
+    )
+    // Sky Canvas Mode
+    rich_presence_conditional_display(
+        IsRegion(region) && g_game_mode[region] == MODE_SKY_CANVAS && InLevel(region),
+        "{0} Sky Canvas Mode | Drawing {1} {2} | {3}",
+        rp_region,
+        rp_canvas_prefix,
+        rp_canvas,
         rp_plane
     )
 }
