@@ -1,5 +1,6 @@
 // Sega Rally Championship
 // #ID = 28879
+// #MinimumVersion = 1.3
 
 // MISC. SCRIPT HELPERS
 
