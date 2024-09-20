@@ -1,5 +1,6 @@
 // Sega Rally Championship 2
 // #ID = 8443
+// #MinimumVersion = 1.3
 
 // MISC. Script helpers
 
@@ -43,7 +44,7 @@ function dict_get(dict, key, default=0)
 PROCESS_START = 0xA98000 // Where RALLY2.exe memory *should* exist in memory. Thanks Windows CE, very cool!
 
 // Where RALLY2.exe memory *could* exist in memory due to CPU timing differences.
-PROCESS_STARTS = [PROCESS_START, 0xA99000, 0xA9A000, 0xA9B000]
+PROCESS_STARTS = [0xA95000, PROCESS_START, 0xA99000, 0xA9A000, 0xA9B000]
 // for tininstellian (why does his vary so much???????????????????)
 // they sent a save state with an offset -0xA000 off!!!
 TEST_DYNAMIC_OFFSETS = [0, -0x1000, -0x2000, -0x3000, -0x4000, -0x5000, -0x6000, -0x7000, -0x8000, -0x9000, -0xA000]
@@ -76,6 +77,22 @@ function DynamicVarsStartsAt(static_addr, dynamic_addr, for_rp=false)
         // sorry tininstellian your nonsense can't fit inside RP so you'll forever be stuck with crazy race positions
         return true
     }
+    
+    // For if we get really desperate with character budget space, but may cause false positives/negatives
+    FAST_CMP = false
+    if FAST_CMP
+    {
+               // 3 bytes above race position should be 0
+        return tbyte(LapProgressPtr(static_addr) + dynamic_addr + 0x21) == 0 &&
+               // These are non-NULL pointers (probably 0x0023XXXX)
+               byte(LapProgressPtr(static_addr) + dynamic_addr + 0x6) == 0x23 &&
+               byte(LapProgressPtr(static_addr) + dynamic_addr + 0xA) == 0x23 &&
+               byte(LapProgressPtr(static_addr) + dynamic_addr + 0x12) == 0x23 &&
+               byte(LapProgressPtr(static_addr) + dynamic_addr + 0x16) == 0x23 &&
+               byte(LapProgressPtr(static_addr) + dynamic_addr + 0x1A) == 0x23 &&
+               byte(LapProgressPtr(static_addr) + dynamic_addr + 0x1E) == 0x23
+    }
+    
            // 3 bytes above race position should be 0
     return tbyte(LapProgressPtr(static_addr) + dynamic_addr + 0x21) == 0 &&
            // These are non-NULL pointers
@@ -414,7 +431,10 @@ function AntiCheat(addr)
     // No internal measure for 10years completed (cars unlocked indicate the year is "completed")
     // but if there is a code, we could perhaps make sure the top record for the year 10 course isn't default
     // If year 10 isn't unlocked, but we have the Lancia 037 Rally, then someone cheated.
-    return !(YearsUnlocked(addr) < 9 && bit(CAR_037_RALLY, CarsUnlocked(addr)) == 1)
+    
+    //return !(YearsUnlocked(addr) < 9 && bit(CAR_037_RALLY, CarsUnlocked(addr)) == 1)
+    // Really try and force RATools to generate Or Next here, because we need the code character budget
+    return __ornext(YearsUnlocked(addr) >= 9 || bit(CAR_037_RALLY, CarsUnlocked(addr)) == 0)
 }
 
 function InRace(addr)
