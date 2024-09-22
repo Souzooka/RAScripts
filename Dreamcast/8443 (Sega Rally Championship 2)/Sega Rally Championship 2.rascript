@@ -44,7 +44,7 @@ function dict_get(dict, key, default=0)
 PROCESS_START = 0xA98000 // Where RALLY2.exe memory *should* exist in memory. Thanks Windows CE, very cool!
 
 // Where RALLY2.exe memory *could* exist in memory due to CPU timing differences.
-PROCESS_STARTS = [0xA95000, PROCESS_START, 0xA99000, 0xA9A000, 0xA9B000]
+PROCESS_STARTS = [0xA95000, 0xA96000, 0xA97000, PROCESS_START, 0xA99000, 0xA9A000, 0xA9B000]
 // for tininstellian (why does his vary so much???????????????????)
 // they sent a save state with an offset -0xA000 off!!!
 TEST_DYNAMIC_OFFSETS = [0, -0x1000, -0x2000, -0x3000, -0x4000, -0x5000, -0x6000, -0x7000, -0x8000, -0x9000, -0xA000]
