@@ -1,5 +1,6 @@
 // Disaster Report | SOS: The Final Escape | Zettai Zetsumei Toshi
 // #ID = 2663
+// #MinimumVersion = 1.3
 
 NULL = 0
 NO_ADDR = 0x100000
@@ -417,7 +418,7 @@ rich_presence_display("Playing Disaster Report")
 
 // ACHIEVEMENTS START
 
-FLAG_SAVED_KAREN = 0x213E
+FLAG_SAVED_KAREN = 0x2144
 FLAG_FOUND_KAREN = 0x57E // Overturned building
 FLAG_MET_GREG = 0x214E
 FLAG_ESCAPE_CONSTRUCTION_SITE = 0x214B
