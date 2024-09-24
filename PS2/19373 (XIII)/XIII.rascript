@@ -274,6 +274,7 @@ for key in Missions
     // map names seem to load in lowercase for a frame or 2 for some reason when first changing
     MissionsLookup[lower_hash] = Missions[key]
 }
+MissionsLookup[0] = "booting the game" // why are you just sat paused on boot anyways
 DifficultyLookup = {
     0x0: "Arcade",
     0x1: "Normal",
