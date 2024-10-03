@@ -99,6 +99,93 @@ achievement(
     )
 )
 
+// Treasure Hunter achievements
+
+// The start of the array for bits for chests being opened
+TreasureFlagsStart = {
+    EU: 0x2082DC,
+    JP: 0x1EF57C,
+}
+
+// The number of treasure flags per floor
+// Each floor is 2 bytes apart from the address in TreasureFlagsStart,
+// so floor 1 bits are at 0x2082DC, floor 2 bits are at 0x2082DE, etc.
+NumTreasures = {
+    1: 10,
+    2: 5,
+    3: 5,
+    4: 6,
+    5: 5,
+    6: 4,
+    7: 6,
+    8: 10,
+    9: 7,
+    10: 5,
+    11: 4,
+    12: 4,
+    13: 6,
+    14: 4,
+    15: 7,
+    16: 6,
+    17: 3,
+    18: 1,
+    19: 2,
+    20: 4,
+    21: 2,
+    22: 4,
+    23: 5,
+    24: 5,
+    25: 4,
+    26: 4,
+    27: 6,
+    28: 1,
+    29: 5,
+    30: 0,
+}
+
+// Check if all treasures in a range of floors are collected
+function AllTreasuresTrigger(region, min_floor, max_floor)
+{
+    total = 0
+    found = 0
+    prev_found = 0
+    for floor in range(min_floor, max_floor)
+    {
+        n_treasures = NumTreasures[floor]
+        total = total + n_treasures
+        
+        addr = TreasureFlagsStart[region] + (floor - 1) * 2
+        if n_treasures > 0
+        {
+            for i in range(0, n_treasures - 1)
+            {
+                found = found + bit(i, addr)
+                prev_found = prev_found + prev(bit(i, addr))
+            }
+        } 
+    }
+    
+    return measured(found == total, when=IsRegion(region)) && prev_found == total - 1
+}
+
+NUMERALS = ["I", "II", "III", "IV", "V", "VI"]
+LOCALES = ["Emerald Grove", "Primitive Jungle", "Azure Rainforest", "Sandy Barrens", "Lost Shinjuku", "Claret Hollows"]
+HUNTER_IDS = [103219, 103220, 103221, 103222, 103223, 103224]
+for i in range(0, 6 - 1)
+{
+    achievement(
+        id=HUNTER_IDS[i],
+        title=format("Treasure Hunter {0}", NUMERALS[i]),
+        description=format("Open all the chests in the {0}.", LOCALES[i]),
+        points=10,
+        trigger=any_of(Regions, region =>
+            IsRegion(region) &&
+            AllTreasuresTrigger(region, i * 5 + 1, (i + 1) * 5)
+        )
+    )
+}
+
+
 
 achievement(
     title = "Journey Has Started!", points = 5, type="progression",
@@ -880,194 +967,6 @@ achievement(
                 prev(word(0x1ED3B4)) != 4208 && word(0x1ED3B4) == 4208) ||
                (unless(byte(0x20608D) == 0) && unless((byte(0x1ED322) != 28 && byte(0x1ED322) != 29)) &&
                 prev(word(0x1ED3B6)) != 4208 && word(0x1ED3B6) == 4208))
-)
-
-achievement(
-    title = "Treasure Hunter I", points = 10,
-    description = "Open all the chests in the Emerald Grove.",
-    id = 103219, badge = "112698", published = "3/17/2020 8:59:40 PM", modified = "10/14/2022 9:32:35 PM",
-    trigger = always_true() &&
-              ((measured((bit0(0x2082DC) + bit1(0x2082DC) + bit2(0x2082DC) + bit3(0x2082DC) + bit4(0x2082DC) +
-                    bit5(0x2082DC) + bit6(0x2082DC) + bit7(0x2082DC) + bit0(0x2082DD) + bit1(0x2082DD) + bit0(0x2082DE) +
-                    bit1(0x2082DE) + bit2(0x2082DE) + bit3(0x2082DE) + bit4(0x2082DE) + bit0(0x2082E0) + bit1(0x2082E0) +
-                    bit2(0x2082E0) + bit3(0x2082E0) + bit4(0x2082E0) + bit0(0x2082E2) + bit1(0x2082E2) + bit2(0x2082E2) +
-                    bit3(0x2082E2) + bit4(0x2082E2) + bit5(0x2082E2) + bit0(0x2082E4) + bit1(0x2082E4) + bit2(0x2082E4) +
-                    bit3(0x2082E4) + bit4(0x2082E4)) == 31, when=byte(0x20608D) == 0
-                ) &&
-                (prev(bit0(0x2082DC)) + prev(bit1(0x2082DC)) + prev(bit2(0x2082DC)) + prev(bit3(0x2082DC)) +
-                prev(bit4(0x2082DC)) + prev(bit5(0x2082DC)) + prev(bit6(0x2082DC)) + prev(bit7(0x2082DC)) +
-                prev(bit0(0x2082DD)) + prev(bit1(0x2082DD)) + prev(bit0(0x2082DE)) + prev(bit1(0x2082DE)) +
-                prev(bit2(0x2082DE)) + prev(bit3(0x2082DE)) + prev(bit4(0x2082DE)) + prev(bit0(0x2082E0)) +
-                prev(bit1(0x2082E0)) + prev(bit2(0x2082E0)) + prev(bit3(0x2082E0)) + prev(bit4(0x2082E0)) +
-                prev(bit0(0x2082E2)) + prev(bit1(0x2082E2)) + prev(bit2(0x2082E2)) + prev(bit3(0x2082E2)) +
-                prev(bit4(0x2082E2)) + prev(bit5(0x2082E2)) + prev(bit0(0x2082E4)) + prev(bit1(0x2082E4)) +
-                prev(bit2(0x2082E4)) + prev(bit3(0x2082E4)) + prev(bit4(0x2082E4))) == 30) ||
-               (measured((bit0(0x1EF57C) + bit1(0x1EF57C) + bit2(0x1EF57C) + bit3(0x1EF57C) + bit4(0x1EF57C) +
-                    bit5(0x1EF57C) + bit6(0x1EF57C) + bit7(0x1EF57C) + bit0(0x1EF57D) + bit1(0x1EF57D) + bit0(0x1EF57E) +
-                    bit1(0x1EF57E) + bit2(0x1EF57E) + bit3(0x1EF57E) + bit4(0x1EF57E) + bit0(0x1EF580) + bit1(0x1EF580) +
-                    bit2(0x1EF580) + bit3(0x1EF580) + bit4(0x1EF580) + bit0(0x1EF582) + bit1(0x1EF582) + bit2(0x1EF582) +
-                    bit3(0x1EF582) + bit4(0x1EF582) + bit5(0x1EF582) + bit0(0x1EF584) + bit1(0x1EF584) + bit2(0x1EF584) +
-                    bit3(0x1EF584) + bit4(0x1EF584)) == 31, when=byte(0x20608D) > 0
-                ) &&
-                (prev(bit0(0x1EF57C)) + prev(bit1(0x1EF57C)) + prev(bit2(0x1EF57C)) + prev(bit3(0x1EF57C)) +
-                prev(bit4(0x1EF57C)) + prev(bit5(0x1EF57C)) + prev(bit6(0x1EF57C)) + prev(bit7(0x1EF57C)) +
-                prev(bit0(0x1EF57D)) + prev(bit1(0x1EF57D)) + prev(bit0(0x1EF57E)) + prev(bit1(0x1EF57E)) +
-                prev(bit2(0x1EF57E)) + prev(bit3(0x1EF57E)) + prev(bit4(0x1EF57E)) + prev(bit0(0x1EF580)) +
-                prev(bit1(0x1EF580)) + prev(bit2(0x1EF580)) + prev(bit3(0x1EF580)) + prev(bit4(0x1EF580)) +
-                prev(bit0(0x1EF582)) + prev(bit1(0x1EF582)) + prev(bit2(0x1EF582)) + prev(bit3(0x1EF582)) +
-                prev(bit4(0x1EF582)) + prev(bit5(0x1EF582)) + prev(bit0(0x1EF584)) + prev(bit1(0x1EF584)) +
-                prev(bit2(0x1EF584)) + prev(bit3(0x1EF584)) + prev(bit4(0x1EF584))) == 30))
-)
-
-achievement(
-    title = "Treasure Hunter II", points = 10,
-    description = "Open all the chests in the Primitive Jungle.",
-    id = 103220, badge = "112699", published = "3/17/2020 8:59:47 PM", modified = "10/14/2022 10:58:31 PM",
-    trigger = always_true() &&
-              ((measured((bit0(0x2082E6) + bit1(0x2082E6) + bit2(0x2082E6) + bit3(0x2082E6) + bit0(0x2082E8) +
-                    bit1(0x2082E8) + bit2(0x2082E8) + bit3(0x2082E8) + bit4(0x2082E8) + bit5(0x2082E8) + bit0(0x2082EA) +
-                    bit1(0x2082EA) + bit2(0x2082EA) + bit3(0x2082EA) + bit4(0x2082EA) + bit5(0x2082EA) + bit6(0x2082EA) +
-                    bit7(0x2082EA) + bit0(0x2082EB) + bit1(0x2082EB) + bit0(0x2082EC) + bit1(0x2082EC) + bit2(0x2082EC) +
-                    bit3(0x2082EC) + bit4(0x2082EC) + bit5(0x2082EC) + bit6(0x2082EC) + bit0(0x2082EE) + bit1(0x2082EE) +
-                    bit2(0x2082EE) + bit3(0x2082EE) + bit4(0x2082EE)) == 32, when=byte(0x20608D) == 0
-                ) &&
-                (prev(bit0(0x2082E6)) + prev(bit1(0x2082E6)) + prev(bit2(0x2082E6)) + prev(bit3(0x2082E6)) +
-                prev(bit0(0x2082E8)) + prev(bit1(0x2082E8)) + prev(bit2(0x2082E8)) + prev(bit3(0x2082E8)) +
-                prev(bit4(0x2082E8)) + prev(bit5(0x2082E8)) + prev(bit0(0x2082EA)) + prev(bit1(0x2082EA)) +
-                prev(bit2(0x2082EA)) + prev(bit3(0x2082EA)) + prev(bit4(0x2082EA)) + prev(bit5(0x2082EA)) +
-                prev(bit6(0x2082EA)) + prev(bit7(0x2082EA)) + prev(bit0(0x2082EB)) + prev(bit1(0x2082EB)) +
-                prev(bit0(0x2082EC)) + prev(bit1(0x2082EC)) + prev(bit2(0x2082EC)) + prev(bit3(0x2082EC)) +
-                prev(bit4(0x2082EC)) + prev(bit5(0x2082EC)) + prev(bit6(0x2082EC)) + prev(bit0(0x2082EE)) +
-                prev(bit1(0x2082EE)) + prev(bit2(0x2082EE)) + prev(bit3(0x2082EE)) + prev(bit4(0x2082EE))) == 31) ||
-               (measured((bit0(0x1EF586) + bit1(0x1EF586) + bit2(0x1EF586) + bit3(0x1EF586) + bit0(0x1EF588) +
-                    bit1(0x1EF588) + bit2(0x1EF588) + bit3(0x1EF588) + bit4(0x1EF588) + bit5(0x1EF588) + bit0(0x1EF58A) +
-                    bit1(0x1EF58A) + bit2(0x1EF58A) + bit3(0x1EF58A) + bit4(0x1EF58A) + bit5(0x1EF58A) + bit6(0x1EF58A) +
-                    bit7(0x1EF58A) + bit0(0x1EF58B) + bit1(0x1EF58B) + bit0(0x1EF58C) + bit1(0x1EF58C) + bit2(0x1EF58C) +
-                    bit3(0x1EF58C) + bit4(0x1EF58C) + bit5(0x1EF58C) + bit6(0x1EF58C) + bit0(0x1EF58E) + bit1(0x1EF58E) +
-                    bit2(0x1EF58E) + bit3(0x1EF58E) + bit4(0x1EF58E)) == 32, when=byte(0x20608D) > 0
-                ) &&
-                (prev(bit0(0x1EF586)) + prev(bit1(0x1EF586)) + prev(bit2(0x1EF586)) + prev(bit3(0x1EF586)) +
-                prev(bit0(0x1EF588)) + prev(bit1(0x1EF588)) + prev(bit2(0x1EF588)) + prev(bit3(0x1EF588)) +
-                prev(bit4(0x1EF588)) + prev(bit5(0x1EF588)) + prev(bit0(0x1EF58A)) + prev(bit1(0x1EF58A)) +
-                prev(bit2(0x1EF58A)) + prev(bit3(0x1EF58A)) + prev(bit4(0x1EF58A)) + prev(bit5(0x1EF58A)) +
-                prev(bit6(0x1EF58A)) + prev(bit7(0x1EF58A)) + prev(bit0(0x1EF58B)) + prev(bit1(0x1EF58B)) +
-                prev(bit0(0x1EF58C)) + prev(bit1(0x1EF58C)) + prev(bit2(0x1EF58C)) + prev(bit3(0x1EF58C)) +
-                prev(bit4(0x1EF58C)) + prev(bit5(0x1EF58C)) + prev(bit6(0x1EF58C)) + prev(bit0(0x1EF58E)) +
-                prev(bit1(0x1EF58E)) + prev(bit2(0x1EF58E)) + prev(bit3(0x1EF58E)) + prev(bit4(0x1EF58E))) == 31))
-)
-
-achievement(
-    title = "Treasure Hunter III", points = 10,
-    description = "Open all the chests in the Azure Rainforest.",
-    id = 103221, badge = "112700", published = "3/17/2020 8:59:50 PM", modified = "6/20/2022 5:51:19 PM",
-    trigger = always_true() &&
-              ((unless(byte(0x20608D) > 0) &&
-                measured((bit0(0x2082F0) + bit1(0x2082F0) + bit2(0x2082F0) + bit3(0x2082F0) + bit0(0x2082F2) +
-                    bit1(0x2082F2) + bit2(0x2082F2) + bit3(0x2082F2) + bit0(0x2082F4) + bit1(0x2082F4) + bit2(0x2082F4) +
-                    bit3(0x2082F4) + bit4(0x2082F4) + bit5(0x2082F4) + bit0(0x2082F6) + bit1(0x2082F6) + bit2(0x2082F6) +
-                    bit3(0x2082F6) + bit0(0x2082F8) + bit1(0x2082F8) + bit2(0x2082F8) + bit3(0x2082F8) + bit4(0x2082F8) +
-                    bit5(0x2082F8) + bit6(0x2082F8)) == 25
-                ) &&
-                (prev(bit0(0x2082F0)) + prev(bit1(0x2082F0)) + prev(bit2(0x2082F0)) + prev(bit3(0x2082F0)) +
-                prev(bit0(0x2082F2)) + prev(bit1(0x2082F2)) + prev(bit2(0x2082F2)) + prev(bit3(0x2082F2)) +
-                prev(bit0(0x2082F4)) + prev(bit1(0x2082F4)) + prev(bit2(0x2082F4)) + prev(bit3(0x2082F4)) +
-                prev(bit4(0x2082F4)) + prev(bit5(0x2082F4)) + prev(bit0(0x2082F6)) + prev(bit1(0x2082F6)) +
-                prev(bit2(0x2082F6)) + prev(bit3(0x2082F6)) + prev(bit0(0x2082F8)) + prev(bit1(0x2082F8)) +
-                prev(bit2(0x2082F8)) + prev(bit3(0x2082F8)) + prev(bit4(0x2082F8)) + prev(bit5(0x2082F8)) +
-                prev(bit6(0x2082F8))) == 24) ||
-               (unless(byte(0x20608D) == 0) &&
-                measured((bit0(0x1EF590) + bit1(0x1EF590) + bit2(0x1EF590) + bit3(0x1EF590) + bit0(0x1EF592) +
-                    bit1(0x1EF592) + bit2(0x1EF592) + bit3(0x1EF592) + bit0(0x1EF594) + bit1(0x1EF594) + bit2(0x1EF594) +
-                    bit3(0x1EF594) + bit4(0x1EF594) + bit5(0x1EF594) + bit0(0x1EF596) + bit1(0x1EF596) + bit2(0x1EF596) +
-                    bit3(0x1EF596) + bit0(0x1EF598) + bit1(0x1EF598) + bit2(0x1EF598) + bit3(0x1EF598) + bit4(0x1EF598) +
-                    bit5(0x1EF598) + bit6(0x1EF598)) == 25
-                ) &&
-                (prev(bit0(0x1EF590)) + prev(bit1(0x1EF590)) + prev(bit2(0x1EF590)) + prev(bit3(0x1EF590)) +
-                prev(bit0(0x1EF592)) + prev(bit1(0x1EF592)) + prev(bit2(0x1EF592)) + prev(bit3(0x1EF592)) +
-                prev(bit0(0x1EF594)) + prev(bit1(0x1EF594)) + prev(bit2(0x1EF594)) + prev(bit3(0x1EF594)) +
-                prev(bit4(0x1EF594)) + prev(bit5(0x1EF594)) + prev(bit0(0x1EF596)) + prev(bit1(0x1EF596)) +
-                prev(bit2(0x1EF596)) + prev(bit3(0x1EF596)) + prev(bit0(0x1EF598)) + prev(bit1(0x1EF598)) +
-                prev(bit2(0x1EF598)) + prev(bit3(0x1EF598)) + prev(bit4(0x1EF598)) + prev(bit5(0x1EF598)) +
-                prev(bit6(0x1EF598))) == 24))
-)
-
-achievement(
-    title = "Treasure Hunter IV", points = 10,
-    description = "Open all the chests in the Sandy Barrens.",
-    id = 103222, badge = "112701", published = "3/17/2020 8:59:53 PM", modified = "11/19/2022 12:21:43 AM",
-    trigger = always_true() &&
-              ((measured((bit0(0x2082FA) + bit1(0x2082FA) + bit2(0x2082FA) + bit3(0x2082FA) + bit4(0x2082FA) +
-                    bit5(0x2082FA) + bit0(0x2082FC) + bit1(0x2082FC) + bit2(0x2082FC) + bit0(0x2082FE) + bit0(0x208300) +
-                    bit1(0x208300) + bit0(0x208302) + bit1(0x208302) + bit2(0x208302) + bit3(0x208302)) == 16,
-                    when=byte(0x20608D) == 0
-                ) &&
-                (prev(bit0(0x2082FA)) + prev(bit1(0x2082FA)) + prev(bit2(0x2082FA)) + prev(bit3(0x2082FA)) +
-                prev(bit4(0x2082FA)) + prev(bit5(0x2082FA)) + prev(bit0(0x2082FC)) + prev(bit1(0x2082FC)) +
-                prev(bit2(0x2082FC)) + prev(bit0(0x2082FE)) + prev(bit0(0x208300)) + prev(bit1(0x208300)) +
-                prev(bit0(0x208302)) + prev(bit1(0x208302)) + prev(bit2(0x208302)) + prev(bit3(0x208302))) == 15) ||
-               (measured((bit0(0x1EF59A) + bit1(0x1EF59A) + bit2(0x1EF59A) + bit3(0x1EF59A) + bit4(0x1EF59A) +
-                    bit5(0x1EF59A) + bit0(0x1EF59C) + bit1(0x1EF59C) + bit2(0x1EF59C) + bit0(0x1EF59E) + bit0(0x1EF5A0) +
-                    bit1(0x1EF5A0) + bit0(0x1EF5A2) + bit1(0x1EF5A2) + bit2(0x1EF5A2) + bit3(0x1EF5A2)) == 16,
-                    when=byte(0x20608D) > 0
-                ) &&
-                (prev(bit0(0x1EF59A)) + prev(bit1(0x1EF59A)) + prev(bit2(0x1EF59A)) + prev(bit3(0x1EF59A)) +
-                prev(bit4(0x1EF59A)) + prev(bit5(0x1EF59A)) + prev(bit0(0x1EF59C)) + prev(bit1(0x1EF59C)) +
-                prev(bit2(0x1EF59C)) + prev(bit0(0x1EF59E)) + prev(bit0(0x1EF5A0)) + prev(bit1(0x1EF5A0)) +
-                prev(bit0(0x1EF5A2)) + prev(bit1(0x1EF5A2)) + prev(bit2(0x1EF5A2)) + prev(bit3(0x1EF5A2))) == 15))
-)
-
-achievement(
-    title = "Treasure Hunter V", points = 10,
-    description = "Open all the chests in the Lost Shinjuku.",
-    id = 103223, badge = "112702", published = "3/17/2020 8:59:57 PM", modified = "6/20/2022 5:51:20 PM",
-    trigger = always_true() &&
-              ((unless(byte(0x20608D) > 0) &&
-                measured((bit0(0x208304) + bit1(0x208304) + bit0(0x208306) + bit1(0x208306) + bit2(0x208306) +
-                    bit3(0x208306) + bit0(0x208308) + bit1(0x208308) + bit2(0x208308) + bit3(0x208308) + bit4(0x208308) +
-                    bit0(0x20830A) + bit1(0x20830A) + bit2(0x20830A) + bit3(0x20830A) + bit4(0x20830A) + bit0(0x20830C) +
-                    bit1(0x20830C) + bit2(0x20830C) + bit3(0x20830C)) == 20
-                ) &&
-                (prev(bit0(0x208304)) + prev(bit1(0x208304)) + prev(bit0(0x208306)) + prev(bit1(0x208306)) +
-                prev(bit2(0x208306)) + prev(bit3(0x208306)) + prev(bit0(0x208308)) + prev(bit1(0x208308)) +
-                prev(bit2(0x208308)) + prev(bit3(0x208308)) + prev(bit4(0x208308)) + prev(bit0(0x20830A)) +
-                prev(bit1(0x20830A)) + prev(bit2(0x20830A)) + prev(bit3(0x20830A)) + prev(bit4(0x20830A)) +
-                prev(bit0(0x20830C)) + prev(bit1(0x20830C)) + prev(bit2(0x20830C)) + prev(bit3(0x20830C))) == 19) ||
-               (unless(byte(0x20608D) == 0) &&
-                measured((bit0(0x1EF5A4) + bit1(0x1EF5A4) + bit0(0x1EF5A6) + bit1(0x1EF5A6) + bit2(0x1EF5A6) +
-                    bit3(0x1EF5A6) + bit0(0x1EF5A8) + bit1(0x1EF5A8) + bit2(0x1EF5A8) + bit3(0x1EF5A8) + bit4(0x1EF5A8) +
-                    bit0(0x1EF5AA) + bit1(0x1EF5AA) + bit2(0x1EF5AA) + bit3(0x1EF5AA) + bit4(0x1EF5AA) + bit0(0x1EF5AC) +
-                    bit1(0x1EF5AC) + bit2(0x1EF5AC) + bit3(0x1EF5AC)) == 20
-                ) &&
-                (prev(bit0(0x1EF5A4)) + prev(bit1(0x1EF5A4)) + prev(bit0(0x1EF5A6)) + prev(bit1(0x1EF5A6)) +
-                prev(bit2(0x1EF5A6)) + prev(bit3(0x1EF5A6)) + prev(bit0(0x1EF5A8)) + prev(bit1(0x1EF5A8)) +
-                prev(bit2(0x1EF5A8)) + prev(bit3(0x1EF5A8)) + prev(bit4(0x1EF5A8)) + prev(bit0(0x1EF5AA)) +
-                prev(bit1(0x1EF5AA)) + prev(bit2(0x1EF5AA)) + prev(bit3(0x1EF5AA)) + prev(bit4(0x1EF5AA)) +
-                prev(bit0(0x1EF5AC)) + prev(bit1(0x1EF5AC)) + prev(bit2(0x1EF5AC)) + prev(bit3(0x1EF5AC))) == 19))
-)
-
-achievement(
-    title = "Treasure Hunter VI", points = 10,
-    description = "Open all the chests in the Claret Hollows.",
-    id = 103224, badge = "112703", published = "3/17/2020 9:00:00 PM", modified = "6/20/2022 5:51:20 PM",
-    trigger = always_true() &&
-              ((unless(byte(0x20608D) > 0) &&
-                measured((bit0(0x20830E) + bit1(0x20830E) + bit2(0x20830E) + bit3(0x20830E) + bit0(0x208310) +
-                    bit1(0x208310) + bit2(0x208310) + bit3(0x208310) + bit4(0x208310) + bit5(0x208310) + bit0(0x208312) +
-                    bit0(0x208314) + bit1(0x208314) + bit2(0x208314) + bit3(0x208314) + bit4(0x208314)) == 16
-                ) &&
-                (prev(bit0(0x20830E)) + prev(bit1(0x20830E)) + prev(bit2(0x20830E)) + prev(bit3(0x20830E)) +
-                prev(bit0(0x208310)) + prev(bit1(0x208310)) + prev(bit2(0x208310)) + prev(bit3(0x208310)) +
-                prev(bit4(0x208310)) + prev(bit5(0x208310)) + prev(bit0(0x208312)) + prev(bit0(0x208314)) +
-                prev(bit1(0x208314)) + prev(bit2(0x208314)) + prev(bit3(0x208314)) + prev(bit4(0x208314))) == 15) ||
-               (unless(byte(0x20608D) == 0) &&
-                measured((bit0(0x1EF5AE) + bit1(0x1EF5AE) + bit2(0x1EF5AE) + bit3(0x1EF5AE) + bit0(0x1EF5B0) +
-                    bit1(0x1EF5B0) + bit2(0x1EF5B0) + bit3(0x1EF5B0) + bit4(0x1EF5B0) + bit5(0x1EF5B0) + bit0(0x1EF5B2) +
-                    bit0(0x1EF5B4) + bit1(0x1EF5B4) + bit2(0x1EF5B4) + bit3(0x1EF5B4) + bit4(0x1EF5B4)) == 16
-                ) &&
-                (prev(bit0(0x1EF5AE)) + prev(bit1(0x1EF5AE)) + prev(bit2(0x1EF5AE)) + prev(bit3(0x1EF5AE)) +
-                prev(bit0(0x1EF5B0)) + prev(bit1(0x1EF5B0)) + prev(bit2(0x1EF5B0)) + prev(bit3(0x1EF5B0)) +
-                prev(bit4(0x1EF5B0)) + prev(bit5(0x1EF5B0)) + prev(bit0(0x1EF5B2)) + prev(bit0(0x1EF5B4)) +
-                prev(bit1(0x1EF5B4)) + prev(bit2(0x1EF5B4)) + prev(bit3(0x1EF5B4)) + prev(bit4(0x1EF5B4))) == 15))
 )
 
 achievement(
