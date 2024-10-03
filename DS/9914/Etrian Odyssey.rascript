@@ -29,6 +29,12 @@ function IsRegion(region)
     return check()
 }
 
+LOCATION_STORE = 0x4
+LocationID = {
+    EU: byte(0x208100),
+    JP: byte(0x1ef3a0),
+}
+
 // Deserializes party member information in game into a more programmer-friendy dictionaries
 SIZEOF_PartyMember = 0x64
 function PartyMember(addr)
@@ -185,6 +191,50 @@ for i in range(0, 6 - 1)
     )
 }
 
+// Item achievements ?
+
+ITEM_WARP_WIRE = 0x1116
+
+// 60-count array of 16-bit item IDs
+InventoryStart = {
+    EU: 0x2060a0,
+    JP: 0x1ed340,
+}
+Inventory = {
+    EU: [],
+    JP: [],
+}
+
+for i in range(0, 60 - 1)
+{
+    array_push(Inventory[EU], word(InventoryStart[EU] + i * 2))
+    array_push(Inventory[JP], word(InventoryStart[JP] + i * 2))
+}
+
+function WarpWireTrigger(region)
+{
+    conds = []
+    for item in Inventory[region]
+    {
+        // This slot is now a Warp Wire
+        array_push(conds, once(prev(item) == 0 && item == ITEM_WARP_WIRE))
+    }
+
+    return unless(!IsRegion(region)) &&
+           never(LocationID[region] != LOCATION_STORE) &&
+           tally(2, conds)
+}
+
+achievement(
+    id=103193,
+    title="Better Safe Than Sorry",
+    description="Purchase 2 Warp Wires in one trip to Shilleka's Goods.",
+    points=3,
+    trigger=any_of(Regions, region =>
+        //IsRegion(region) && // taken care of in WarpWireTrigger
+        WarpWireTrigger(region)
+    )
+)
 
 
 achievement(
@@ -320,137 +370,6 @@ achievement(
                     prev(byte(0x1ED104)) == byte(0x1ED104) && prev(byte(0x1ED168)) == byte(0x1ED168) &&
                     prev(byte(0x1ED1CC)) == byte(0x1ED1CC) && prev(byte(0x1ED230)) == byte(0x1ED230) &&
                     prev(byte(0x1ED294)) == byte(0x1ED294) && prev(byte(0x1ED2F8)) == byte(0x1ED2F8))
-                )))
-)
-
-achievement(
-    title = "Better Safe Than Sorry", points = 3,
-    description = "Purchase 2 Warp Wires in one trip to Shilleka's Goods.",
-    id = 103193, badge = "112674", published = "3/17/2020 8:57:56 PM", modified = "6/20/2022 5:51:13 PM",
-    trigger = always_true() &&
-              ((unless(byte(0x20608D) > 0) && never(byte(0x208100) != 4) &&
-                tally(2, once(prev(word(0x2060A0)) == 0 && word(0x2060A0) == 4374),
-                    once(prev(word(0x2060A2)) == 0 && word(0x2060A2) == 4374),
-                    once(prev(word(0x2060A4)) == 0 && word(0x2060A4) == 4374),
-                    once(prev(word(0x2060A6)) == 0 && word(0x2060A6) == 4374),
-                    once(prev(word(0x2060A8)) == 0 && word(0x2060A8) == 4374),
-                    once(prev(word(0x2060AA)) == 0 && word(0x2060AA) == 4374),
-                    once(prev(word(0x2060AC)) == 0 && word(0x2060AC) == 4374),
-                    once(prev(word(0x2060AE)) == 0 && word(0x2060AE) == 4374),
-                    once(prev(word(0x2060B0)) == 0 && word(0x2060B0) == 4374),
-                    once(prev(word(0x2060B2)) == 0 && word(0x2060B2) == 4374),
-                    once(prev(word(0x2060B4)) == 0 && word(0x2060B4) == 4374),
-                    once(prev(word(0x2060B6)) == 0 && word(0x2060B6) == 4374),
-                    once(prev(word(0x2060B8)) == 0 && word(0x2060B8) == 4374),
-                    once(prev(word(0x2060BA)) == 0 && word(0x2060BA) == 4374),
-                    once(prev(word(0x2060BC)) == 0 && word(0x2060BC) == 4374),
-                    once(prev(word(0x2060BE)) == 0 && word(0x2060BE) == 4374),
-                    once(prev(word(0x2060C0)) == 0 && word(0x2060C0) == 4374),
-                    once(prev(word(0x2060C2)) == 0 && word(0x2060C2) == 4374),
-                    once(prev(word(0x2060C4)) == 0 && word(0x2060C4) == 4374),
-                    once(prev(word(0x2060C6)) == 0 && word(0x2060C6) == 4374),
-                    once(prev(word(0x2060C8)) == 0 && word(0x2060C8) == 4374),
-                    once(prev(word(0x2060CA)) == 0 && word(0x2060CA) == 4374),
-                    once(prev(word(0x2060CC)) == 0 && word(0x2060CC) == 4374),
-                    once(prev(word(0x2060CE)) == 0 && word(0x2060CE) == 4374),
-                    once(prev(word(0x2060D0)) == 0 && word(0x2060D0) == 4374),
-                    once(prev(word(0x2060D2)) == 0 && word(0x2060D2) == 4374),
-                    once(prev(word(0x2060D4)) == 0 && word(0x2060D4) == 4374),
-                    once(prev(word(0x2060D6)) == 0 && word(0x2060D6) == 4374),
-                    once(prev(word(0x2060D8)) == 0 && word(0x2060D8) == 4374),
-                    once(prev(word(0x2060DA)) == 0 && word(0x2060DA) == 4374),
-                    once(prev(word(0x2060DC)) == 0 && word(0x2060DC) == 4374),
-                    once(prev(word(0x2060DE)) == 0 && word(0x2060DE) == 4374),
-                    once(prev(word(0x2060E0)) == 0 && word(0x2060E0) == 4374),
-                    once(prev(word(0x2060E2)) == 0 && word(0x2060E2) == 4374),
-                    once(prev(word(0x2060E4)) == 0 && word(0x2060E4) == 4374),
-                    once(prev(word(0x2060E6)) == 0 && word(0x2060E6) == 4374),
-                    once(prev(word(0x2060E8)) == 0 && word(0x2060E8) == 4374),
-                    once(prev(word(0x2060EA)) == 0 && word(0x2060EA) == 4374),
-                    once(prev(word(0x2060EC)) == 0 && word(0x2060EC) == 4374),
-                    once(prev(word(0x2060EE)) == 0 && word(0x2060EE) == 4374),
-                    once(prev(word(0x2060F0)) == 0 && word(0x2060F0) == 4374),
-                    once(prev(word(0x2060F2)) == 0 && word(0x2060F2) == 4374),
-                    once(prev(word(0x2060F4)) == 0 && word(0x2060F4) == 4374),
-                    once(prev(word(0x2060F6)) == 0 && word(0x2060F6) == 4374),
-                    once(prev(word(0x2060F8)) == 0 && word(0x2060F8) == 4374),
-                    once(prev(word(0x2060FA)) == 0 && word(0x2060FA) == 4374),
-                    once(prev(word(0x2060FC)) == 0 && word(0x2060FC) == 4374),
-                    once(prev(word(0x2060FE)) == 0 && word(0x2060FE) == 4374),
-                    once(prev(word(0x206100)) == 0 && word(0x206100) == 4374),
-                    once(prev(word(0x206102)) == 0 && word(0x206102) == 4374),
-                    once(prev(word(0x206104)) == 0 && word(0x206104) == 4374),
-                    once(prev(word(0x206106)) == 0 && word(0x206106) == 4374),
-                    once(prev(word(0x206108)) == 0 && word(0x206108) == 4374),
-                    once(prev(word(0x20610A)) == 0 && word(0x20610A) == 4374),
-                    once(prev(word(0x20610C)) == 0 && word(0x20610C) == 4374),
-                    once(prev(word(0x20610E)) == 0 && word(0x20610E) == 4374),
-                    once(prev(word(0x206110)) == 0 && word(0x206110) == 4374),
-                    once(prev(word(0x206112)) == 0 && word(0x206112) == 4374),
-                    once(prev(word(0x206114)) == 0 && word(0x206114) == 4374),
-                    once(prev(word(0x206116)) == 0 && word(0x206116) == 4374)
-                )) ||
-               (unless(byte(0x20608D) == 0) && never(byte(0x1EF3A0) != 4) &&
-                tally(2, once(prev(word(0x1ED340)) == 0 && word(0x1ED340) == 4374),
-                    once(prev(word(0x1ED342)) == 0 && word(0x1ED342) == 4374),
-                    once(prev(word(0x1ED344)) == 0 && word(0x1ED344) == 4374),
-                    once(prev(word(0x1ED346)) == 0 && word(0x1ED346) == 4374),
-                    once(prev(word(0x1ED348)) == 0 && word(0x1ED348) == 4374),
-                    once(prev(word(0x1ED34A)) == 0 && word(0x1ED34A) == 4374),
-                    once(prev(word(0x1ED34C)) == 0 && word(0x1ED34C) == 4374),
-                    once(prev(word(0x1ED34E)) == 0 && word(0x1ED34E) == 4374),
-                    once(prev(word(0x1ED350)) == 0 && word(0x1ED350) == 4374),
-                    once(prev(word(0x1ED352)) == 0 && word(0x1ED352) == 4374),
-                    once(prev(word(0x1ED354)) == 0 && word(0x1ED354) == 4374),
-                    once(prev(word(0x1ED356)) == 0 && word(0x1ED356) == 4374),
-                    once(prev(word(0x1ED358)) == 0 && word(0x1ED358) == 4374),
-                    once(prev(word(0x1ED35A)) == 0 && word(0x1ED35A) == 4374),
-                    once(prev(word(0x1ED35C)) == 0 && word(0x1ED35C) == 4374),
-                    once(prev(word(0x1ED35E)) == 0 && word(0x1ED35E) == 4374),
-                    once(prev(word(0x1ED360)) == 0 && word(0x1ED360) == 4374),
-                    once(prev(word(0x1ED362)) == 0 && word(0x1ED362) == 4374),
-                    once(prev(word(0x1ED364)) == 0 && word(0x1ED364) == 4374),
-                    once(prev(word(0x1ED366)) == 0 && word(0x1ED366) == 4374),
-                    once(prev(word(0x1ED368)) == 0 && word(0x1ED368) == 4374),
-                    once(prev(word(0x1ED36A)) == 0 && word(0x1ED36A) == 4374),
-                    once(prev(word(0x1ED36C)) == 0 && word(0x1ED36C) == 4374),
-                    once(prev(word(0x1ED36E)) == 0 && word(0x1ED36E) == 4374),
-                    once(prev(word(0x1ED370)) == 0 && word(0x1ED370) == 4374),
-                    once(prev(word(0x1ED372)) == 0 && word(0x1ED372) == 4374),
-                    once(prev(word(0x1ED374)) == 0 && word(0x1ED374) == 4374),
-                    once(prev(word(0x1ED376)) == 0 && word(0x1ED376) == 4374),
-                    once(prev(word(0x1ED378)) == 0 && word(0x1ED378) == 4374),
-                    once(prev(word(0x1ED37A)) == 0 && word(0x1ED37A) == 4374),
-                    once(prev(word(0x1ED37C)) == 0 && word(0x1ED37C) == 4374),
-                    once(prev(word(0x1ED37E)) == 0 && word(0x1ED37E) == 4374),
-                    once(prev(word(0x1ED380)) == 0 && word(0x1ED380) == 4374),
-                    once(prev(word(0x1ED382)) == 0 && word(0x1ED382) == 4374),
-                    once(prev(word(0x1ED384)) == 0 && word(0x1ED384) == 4374),
-                    once(prev(word(0x1ED386)) == 0 && word(0x1ED386) == 4374),
-                    once(prev(word(0x1ED388)) == 0 && word(0x1ED388) == 4374),
-                    once(prev(word(0x1ED38A)) == 0 && word(0x1ED38A) == 4374),
-                    once(prev(word(0x1ED38C)) == 0 && word(0x1ED38C) == 4374),
-                    once(prev(word(0x1ED38E)) == 0 && word(0x1ED38E) == 4374),
-                    once(prev(word(0x1ED390)) == 0 && word(0x1ED390) == 4374),
-                    once(prev(word(0x1ED392)) == 0 && word(0x1ED392) == 4374),
-                    once(prev(word(0x1ED394)) == 0 && word(0x1ED394) == 4374),
-                    once(prev(word(0x1ED396)) == 0 && word(0x1ED396) == 4374),
-                    once(prev(word(0x1ED398)) == 0 && word(0x1ED398) == 4374),
-                    once(prev(word(0x1ED39A)) == 0 && word(0x1ED39A) == 4374),
-                    once(prev(word(0x1ED39C)) == 0 && word(0x1ED39C) == 4374),
-                    once(prev(word(0x1ED39E)) == 0 && word(0x1ED39E) == 4374),
-                    once(prev(word(0x1ED3A0)) == 0 && word(0x1ED3A0) == 4374),
-                    once(prev(word(0x1ED3A2)) == 0 && word(0x1ED3A2) == 4374),
-                    once(prev(word(0x1ED3A4)) == 0 && word(0x1ED3A4) == 4374),
-                    once(prev(word(0x1ED3A6)) == 0 && word(0x1ED3A6) == 4374),
-                    once(prev(word(0x1ED3A8)) == 0 && word(0x1ED3A8) == 4374),
-                    once(prev(word(0x1ED3AA)) == 0 && word(0x1ED3AA) == 4374),
-                    once(prev(word(0x1ED3AC)) == 0 && word(0x1ED3AC) == 4374),
-                    once(prev(word(0x1ED3AE)) == 0 && word(0x1ED3AE) == 4374),
-                    once(prev(word(0x1ED3B0)) == 0 && word(0x1ED3B0) == 4374),
-                    once(prev(word(0x1ED3B2)) == 0 && word(0x1ED3B2) == 4374),
-                    once(prev(word(0x1ED3B4)) == 0 && word(0x1ED3B4) == 4374),
-                    once(prev(word(0x1ED3B6)) == 0 && word(0x1ED3B6) == 4374)
                 )))
 )
 
