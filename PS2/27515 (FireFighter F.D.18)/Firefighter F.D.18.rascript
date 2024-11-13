@@ -218,23 +218,60 @@ function Plane2(x1, y1, x2, y2)
         "y1": y1,
         "x2": x2,
         "y2": y2,
-    }
+    }  
     return ret
 }
 
-function _Plane2_interp(plane)
+function Plane2_cmp(plane, x, y, cmp)
 {
     x1 = plane["x1"]
     y1 = plane["y1"]
     x2 = plane["x2"]
     y2 = plane["y2"]
-    return (x1 + x2) / 2.0 + (y1 + y2) / 2.0
-}
+    
+    run = (x2 - x1)
+    rise = (y2 - y1)
+    x_mul = 0
+    y_mul = 0
+    if (rise == 0)
+    {
+        x_mul = 1.0
+        y_mul = 0.0
+        slope = 0.0
+    }
+    else if (run == 0)
+    {
+        x_mul = 1.0
+        y_mul = 1.0
+        slope = 0.0
+    }
+    else
+    {
+        slope = rise / run
 
-function Plane2_cmp(plane, x, y, cmp)
-{
-    interp = _Plane2_interp(plane)
-    return cmp(x + y, interp)
+        if (slope <= 0)
+        {
+            x_mul = -slope
+            y_mul = 1.0
+        }
+        else if (slope > 0)
+        {
+            x_mul = slope
+            y_mul = -1.0
+        }
+    }
+
+    // Zero-intercept...
+    if rise == 0
+    {
+        zero = plane["x1"]
+    }
+    else
+    {
+        zero = (plane["y1"] - slope * plane["x1"]) * y_mul
+    }
+    
+    return cmp(x * x_mul + y * y_mul, zero)
 }
 
 // RICH PRESENCE START
@@ -1457,8 +1494,10 @@ for stage_id in BossNames
 // Simplifying the above equation:
 // (x + y) < 4541.875 for Jason's side, (x + y) > 4541.875 for bodyguard's side
 // NOTE: For the above, x and z are taken from the 3d position and mapped to x and y on a 2d coordinate plane.
-jason_arena_plane = Plane2(6787.07, -3129.25, 7742.54, -2316.61)
-in_jason_arena = (PlayerPos["x"] + PlayerPos["z"]) < 4541.875
+//jason_arena_plane = Plane2(1000.0, 10.0, 2000.0, 10.0)
+//jason_arena_plane = Plane2(10.0, 1000.0, 10.0, 2000.0)
+jason_arena_plane = Plane2(7264.805, -2722.93, 7264.805 + 10, -2722.93 - 10)
+//jason_arena_plane = Plane2(6787.07, -3129.25, 7742.54, -3016.61)
 
 achievement(
     title="Don't Shoot the Messenger",
