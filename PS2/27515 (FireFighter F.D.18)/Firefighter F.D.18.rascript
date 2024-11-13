@@ -181,6 +181,62 @@ function TestStageIDElement(address, element_size, test_func)
     return condition
 }
 
+function __eq__(a, b)
+{
+    return a == b
+}
+
+function __ne__(a, b)
+{
+    return a != b
+}
+
+function __lt__(a, b)
+{
+    return a < b 
+}
+
+function __lte__(a, b)
+{
+    return a <= b
+}
+
+function __gt__(a, b)
+{
+    return a > b
+}
+
+function __gte__(a, b)
+{
+    return a >= b
+}
+
+function Plane2(x1, y1, x2, y2)
+{
+    ret = {
+        "x1": x1,
+        "y1": y1,
+        "x2": x2,
+        "y2": y2,
+    }
+    return ret
+}
+
+function _Plane2_interp(plane)
+{
+    x1 = plane["x1"]
+    y1 = plane["y1"]
+    x2 = plane["x2"]
+    y2 = plane["y2"]
+    return (x1 + x2) / 2.0 + (y1 + y2) / 2.0
+}
+
+function Plane2_cmp(plane, x, y, cmp)
+{
+    interp = _Plane2_interp(plane)
+    return cmp(x + y, interp)
+}
+
 // RICH PRESENCE START
 
 CharacterNames = {
@@ -1401,6 +1457,7 @@ for stage_id in BossNames
 // Simplifying the above equation:
 // (x + y) < 4541.875 for Jason's side, (x + y) > 4541.875 for bodyguard's side
 // NOTE: For the above, x and z are taken from the 3d position and mapped to x and y on a 2d coordinate plane.
+jason_arena_plane = Plane2(6787.07, -3129.25, 7742.54, -2316.61)
 in_jason_arena = (PlayerPos["x"] + PlayerPos["z"]) < 4541.875
 
 achievement(
@@ -1408,7 +1465,7 @@ achievement(
     description="Defeat Jason Hunt.",
     points=5,
     type="progression",
-    trigger=RegularBossTrigger(0x45, in_jason_arena)
+    trigger=RegularBossTrigger(0x45, Plane2_cmp(jason_arena_plane, PlayerPos["x"], PlayerPos["z"], __lt__))
 )
 
 achievement(
@@ -1416,7 +1473,7 @@ achievement(
     description="Defeat Bodyguard.",
     points=5,
     type="progression",
-    trigger=RegularBossTrigger(0x45, !in_jason_arena)
+    trigger=RegularBossTrigger(0x45, Plane2_cmp(jason_arena_plane, PlayerPos["x"], PlayerPos["z"], __gte__))
 )
 
 // WIN CONDITIONS
