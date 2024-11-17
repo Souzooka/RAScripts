@@ -117,11 +117,11 @@ STAGE_Any = -1 // Just for scripting purposes
 
 CHARACTER_Any = -1 // Just for scripting purposes
 CHARACTER_DeanFireCoat = 0
-CHARACTER_DeanUnarmed = 1
-CHARACTER_DeanMaxMcGregor = 2
+CHARACTER_DeanUnarmed = 2
 CHARACTER_MissCrimson = 3
 CHARACTER_MissJetBlack = 4
 CHARACTER_MissHolyWhite = 5
+CHARACTER_DeanMaxMcGregor = 6
 
 AWARD_SuperPlay = 1 // Beating dev time maybe...? Need to look into this one
 AWARD_RecordTimeGold = 2
@@ -277,12 +277,12 @@ function Plane2_cmp(plane, x, y, cmp)
 // RICH PRESENCE START
 
 CharacterNames = {
-    0x0: "Dean McGregor",
-    0x1: "Dean McGregor",
-    0x2: "Dean McGregor",
-    0x3: "Miss Crimson",
-    0x4: "Miss Jet-Black",
-    0x5: "Miss Holy White",
+    CHARACTER_DeanFireCoat: "Dean McGregor",
+    CHARACTER_DeanUnarmed: "Dean McGregor",
+    CHARACTER_DeanMaxMcGregor: "Dean McGregor",
+    CHARACTER_MissCrimson: "Miss Crimson",
+    CHARACTER_MissJetBlack: "Miss Jet-Black",
+    CHARACTER_MissHolyWhite: "Miss Holy White",
 }
 
 StageNames = {
@@ -334,12 +334,12 @@ Difficulties = {
 // seemingly can't string together 2 arithmetic operations for an RP value
 // so we have to do constant folding for max health / 100
 CharacterMaxHealths = {
-    0x0: 60000,
-    0x1: 60000,
-    0x2: 60000,
-    0x3: (45000 - 10), // Tweak the value a little bit so rounding on RP display doesn't show 99% at full health
-    0x4: 60000,
-    0x5: 90000,
+    CHARACTER_DeanFireCoat: 60000,
+    CHARACTER_DeanUnarmed: 60000,
+    CHARACTER_MissCrimson: (45000 - 10), // Tweak the value a little bit so rounding on RP display doesn't show 99% at full health
+    CHARACTER_MissJetBlack: 60000,
+    CHARACTER_MissHolyWhite: 60000,
+    CHARACTER_DeanMaxMcGregor: 90000,
 }
 
 main_menu_statuses = [STATUS_SoftResetLoad, STATUS_LanguageSelect, STATUS_Initial, STATUS_Splash, STATUS_TitleMenu, STATUS_IntroCutsceneLoad, STATUS_IntroCutscene]
@@ -448,12 +448,12 @@ LeaderboardStageIDs = {
 
 // Upon consultation with speedrunners these are different enough to justify splitting them up
 LeaderboardCharacterNames = {
-    0: "Dean Fire Coat",
-    1: "Dean Unarmed",
-    2: "Dean Max McGregor",
-    3: "Miss Crimson",
-    4: "Miss Jet-Black",
-    5: "Miss Holy White",
+    CHARACTER_DeanFireCoat: "Dean Fire Coat",
+    CHARACTER_DeanUnarmed: "Dean Unarmed",
+    CHARACTER_DeanMaxMcGregor: "Dean Max McGregor",
+    CHARACTER_MissCrimson: "Miss Crimson",
+    CHARACTER_MissJetBlack: "Miss Jet-Black",
+    CHARACTER_MissHolyWhite: "Miss Holy White",
 }
 
 LeaderboardIDs = {
