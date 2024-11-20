@@ -73,8 +73,8 @@ function TimeToCentiseconds(minutes=0, seconds=0, frames=0)
 
 inRace = {
     US: dword(0x359a4c),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x3590CC),
+    JP: dword(0x34CD1C),
 }
 
 SKY_PALM = 0x71
@@ -110,8 +110,8 @@ SKY_EAST = 0x11B
 // The filename idx for the currently-used sky, used for zone detection
 currSky = {
     US: dword(0x549B74),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x549174),
+    JP: dword(0x51F674),
 }
 
 // The currently-selected car
@@ -127,8 +127,8 @@ CAR_F40 = 8
 CAR_250GTO = 9
 car = {
     US: byte(0x369BE8),
-    EU: byte(NO_ADDR),
-    JP: byte(NO_ADDR),
+    EU: byte(0x369268),
+    JP: byte(0x35D028),
 }
 
 // Transmission type
@@ -136,8 +136,8 @@ TRANS_AUTO = 0x0
 TRANS_MANUAL = 0x1
 transmission = {
     US: byte(0x369BEA),
-    EU: byte(NO_ADDR),
-    JP: byte(NO_ADDR),
+    EU: byte(0x36926A),
+    JP: byte(0x35D02A),
 }
 
 // The type of active event
@@ -148,8 +148,8 @@ EVENT_GIRLFRIEND = 5
 EVENT_FLAGMAN = 6
 eventType = {
     US: dword(0x443F08),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x443508),
+    JP: dword(0x434108),
 }
 
 EVENT_SUB_NORMAL_SP = 0x0
@@ -158,8 +158,8 @@ EVENT_SUB_CONTINUOUS_SP = 0x2
 EVENT_SUB_CONTINUOUS = 0x3
 eventSubType = {
     US: dword(0x443F0C),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x44350C),
+    JP: dword(0x43410C),
 }
 
 STATE_ARCADE_MODE = 0x0A
@@ -169,8 +169,8 @@ STATE_MENU = 0x20
 STATE_CONGRATULATIONS = 0x24
 gameState = {
     US: dword(0x443F10),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x443510),
+    JP: dword(0x434110),
 }
 
 CONGRATS_NONE = -1
@@ -185,14 +185,20 @@ CONGRATS_CLEAR = 7 // You have cleared Coast 2 Coast
 CONGRATS_PERFECT = 8 // Perfect! (All events perfected)
 congratsType = {
     US: dword(0x35D244),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x35C8C4),
+    JP: dword(0x3505EC),
 }
 
 flagmanRanks = {
-    US: 0x00589245,
-    EU: NO_ADDR,
-    JP: NO_ADDR,
+    US: 0x589245,
+    EU: 0x588845,
+    JP: 0x55ED55,
+}
+
+girlfriendRanks = {
+    US: 0x5893d6,
+    EU: 0x5889D6,
+    JP: 0x55EEE6,
 }
 
 // GAME FUNCTIONS
