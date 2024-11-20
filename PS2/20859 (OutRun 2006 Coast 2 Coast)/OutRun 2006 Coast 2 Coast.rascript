@@ -201,6 +201,19 @@ girlfriendRanks = {
     JP: 0x55EEE6,
 }
 
+eventDistance = {
+    US: ptr(dword(0x557B08), [0x260], word),
+    EU: ptr(dword(0x557108), [0x260], word),
+    JP: ptr(dword(0x52D618), [0x260], word),
+}
+
+// 60 frames / second (NOTE: PAL might be 50 depending on display mode...)
+eventTime = {
+    US: dword(0x5C694C),
+    EU: dword(0x5C5F4C),
+    JP: dword(0x5A2514),
+}
+
 // GAME FUNCTIONS
 
 function IsInGame(region)
@@ -318,7 +331,7 @@ event_sub_lookup = {
 
 for region in Regions
 {
-    rp_region = rich_presence_lookup("REGION", RegionByte, region_lookup, region_lookup[US])
+    rp_region = rich_presence_lookup("REGION", region, region_lookup, region_lookup[US])
     rp_track = rich_presence_lookup("TRACK", currSky[region], track_lookup, "Unknown Zone")
     rp_trans = rich_presence_lookup("TRANS", transmission[region], trans_lookup, "??")
     rp_car = rich_presence_lookup("CAR", car[region], car_lookup, "Unknown Car")
