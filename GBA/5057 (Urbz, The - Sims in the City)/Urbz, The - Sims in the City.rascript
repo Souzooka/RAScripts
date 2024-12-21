@@ -342,14 +342,21 @@ for i in range(0, 8 - 1)
 
 // GAME FUNCTIONS
 
+function AntiBiosCheck()
+{
+    return prior(GameMode) == LastGameModeSticky
+}
+
 function SaveProtection(is_minigame=false)
 {
            // When loading the save file, the last game mode is set to the title
-    return (LastGameMode != MODE_TITLE &&
+    return ((LastGameMode != MODE_TITLE &&
            // Loading can also happen 1 frame after because why not
            prev(LastGameMode) != MODE_TITLE) ||
            // Main menu minigames have the last game mode as the title, but I don't think we'll ever have to check for this
-           if_else(is_minigame, IsMinigame(), always_false())
+           if_else(is_minigame, IsMinigame(), always_false())) &&
+           // anti-BIOS check...
+           AntiBiosCheck()
 }
 
 function IsMinigame()
@@ -1338,7 +1345,7 @@ achievement(
         // could technically overflow, but I don't foresee it causing any
         // major issues. The player should already have this achievement.
         SaveProtection() &&
-        measured(TrashPiles == 100, when=prev(TrashPiles) < 100)
+        measured(TrashPiles == 100, when=prev(TrashPiles) < 100 && AntiBiosCheck())
     )
 )
 
