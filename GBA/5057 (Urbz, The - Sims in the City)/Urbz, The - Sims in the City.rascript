@@ -1,5 +1,6 @@
 // Urbz, The: Sims in the City
 // #ID = 5057
+// #MinimumVersion = 1.3
 
 // Hi, if you're looking at this script years down the line to fix missing text in the Rich Presence, simply change this variable to "true".
 // Due to limitations in mathemetics in rcheevos, abusing the integer boundry was the only way I found that I could effectively "bitwise and"
@@ -344,7 +345,12 @@ for i in range(0, 8 - 1)
 
 function AntiBiosCheck()
 {
-    return prior(GameMode) == LastGameModeSticky
+    return __ornext(
+            prior(GameMode) == LastGameModeSticky ||
+            // Game transitions state 1 -> state 1 on room transition
+            GameMode == LastGameModeSticky
+           ) &&
+           GameMode <= 0x1D
 }
 
 function SaveProtection(is_minigame=false)
@@ -361,7 +367,7 @@ function SaveProtection(is_minigame=false)
 
 function IsMinigame()
 {
-    return GameMode == MODE_MINIGAME && MinigameBase != NULL
+    return GameMode == MODE_MINIGAME && MinigameBase != NULL && AntiBiosCheck()
 }
 
 function IsMinigameOver()
@@ -1241,7 +1247,8 @@ achievement(
     trigger=(
         // Don't need save protection since if you know the password there's no barrier anyways
         AreaID == AREA_CLUB_XIZZLE &&
-        prev(AreaID) != AREA_CLUB_XIZZLE
+        prev(AreaID) != AREA_CLUB_XIZZLE &&
+        AntiBiosCheck()
     )
 )
 
