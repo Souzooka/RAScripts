@@ -58,6 +58,8 @@ function assert(cond, msg="No Assertion Message")
     return true
 }
 
+function halfbyte(addr, i) => if_else(i % 2 == 0, high4(addr + (i / 2)), low4(addr + (i / 2)))
+
 FRAMES_PER_SECOND = 60.0
 function FramesToCentiseconds(val)
 {
@@ -195,6 +197,12 @@ flagmanRanks = {
     JP: NO_ADDR,
 }
 
+girlfriendRanks = {
+    US: 0x005893d6,
+    EU: NO_ADDR,
+    JP: NO_ADDR,
+}
+
 // GAME FUNCTIONS
 
 function IsInGame(region)
@@ -233,6 +241,12 @@ function FlagmanAddresses(region, event, count)
         (i) => byte(flagmanRanks[region] + 5 * (event-1) + i))
 }
 
+function GirlfriendAddresses(region, offset, count)
+{
+    return array_map(range(0, count-1), 
+        (i) => if_else(i % 2 == 0, low4, high4)(girlfriendRanks[region] + offset + i/2))
+}
+
 function UsedENTIRETY(region)
 {
     return byte(flagmanRanks[region] + 4) != 0x07
@@ -247,36 +261,69 @@ region_lookup = {
 }
 
 track_lookup = {
-    SKY_PALM: "🌴 Palm Beach",
-    SKY_LAKE: "🚣 Deep Lake",
-    SKY_INDU: "🏭 Industrial Complex",
-    SKY_ALPI: "🏔️ Alpine",
-    SKY_SNOW: "🏔️ Snow Mountain",
-    SKY_CLOU: "☁️ Cloudy Highland",
-    SKY_CAST: "🏰 Castle Wall",
-    SKY_GHOS: "👻 Ghost Forest",
-    SKY_FORE: "🌲 Coniferous Forest",
-    SKY_DESE: "🏜️ Desert",
-    SKY_TULI: "🌷 Tulip Garden",
-    SKY_METR: "🌁 Metropolis",
-    SKY_RUIN: "🧭 Ancient Ruins",
-    SKY_CAPE: "🛣️ Cape Way",
-    SKY_IMPE: "🏛️ Imperial Avenue",
-    SKY_GRAN: "🌄 Canyon",
-    SKY_SEQU: "🌲 Big Forest",
-    SKY_SANF: "🌉 Bay Area",
-    SKY_NEWY: "🏙️ Skyscrapers",
-    SKY_MACH: "🏺 Lost City",
-    SKY_YOSE: "🏞️ National Park",
-    SKY_MAYA: "🏛️ Legend",
-    SKY_NIAG: "🏞️ Water Falls",
-    SKY_ALAS: "❄️ Ice Scape",
-    SKY_AMAZ: "🦁 Jungle",
-    SKY_BEAC: "🏖️ Sunny Beach",
-    SKY_LASV: "🌆 Casino Town",
-    SKY_PRIN: "🌸 Floral Village",
-    SKY_FLOR: "🌌 Milky Way",
-    SKY_EAST: "🗿 Giant Statues",
+    SKY_PALM: "Palm Beach",
+    SKY_LAKE: "Deep Lake",
+    SKY_INDU: "Industrial Complex",
+    SKY_ALPI: "Alpine",
+    SKY_SNOW: "Snow Mountain",
+    SKY_CLOU: "Cloudy Highland",
+    SKY_CAST: "Castle Wall",
+    SKY_GHOS: "Ghost Forest",
+    SKY_FORE: "Coniferous Forest",
+    SKY_DESE: "Desert",
+    SKY_TULI: "Tulip Garden",
+    SKY_METR: "Metropolis",
+    SKY_RUIN: "Ancient Ruins",
+    SKY_CAPE: "Cape Way",
+    SKY_IMPE: "Imperial Avenue",
+    SKY_GRAN: "Canyon",
+    SKY_SEQU: "Big Forest",
+    SKY_SANF: "Bay Area",
+    SKY_NEWY: "Skyscrapers",
+    SKY_MACH: "Lost City",
+    SKY_YOSE: "National Park",
+    SKY_MAYA: "Legend",
+    SKY_NIAG: "Water Falls",
+    SKY_ALAS: "Ice Scape",
+    SKY_AMAZ: "Jungle",
+    SKY_BEAC: "Sunny Beach",
+    SKY_LASV: "Casino Town",
+    SKY_PRIN: "Floral Village",
+    SKY_FLOR: "Milky Way",
+    SKY_EAST: "Giant Statues",
+}
+
+track_emoji = {
+    SKY_PALM: "🌴",
+    SKY_LAKE: "🚣",
+    SKY_INDU: "🏭",
+    SKY_ALPI: "🏔️",
+    SKY_SNOW: "🏔️",
+    SKY_CLOU: "☁️",
+    SKY_CAST: "🏰",
+    SKY_GHOS: "👻",
+    SKY_FORE: "🌲",
+    SKY_DESE: "🏜️",
+    SKY_TULI: "🌷",
+    SKY_METR: "🌁",
+    SKY_RUIN: "🧭",
+    SKY_CAPE: "🛣️",
+    SKY_IMPE: "🏛️",
+    SKY_GRAN: "🌄",
+    SKY_SEQU: "🌲",
+    SKY_SANF: "🌉",
+    SKY_NEWY: "🏙️",
+    SKY_MACH: "🏺",
+    SKY_YOSE: "🏞️",
+    SKY_MAYA: "🏛️",
+    SKY_NIAG: "🏞️",
+    SKY_ALAS: "❄️",
+    SKY_AMAZ: "🦁",
+    SKY_BEAC: "🏖️",
+    SKY_LASV: "🌆",
+    SKY_PRIN: "🌸",
+    SKY_FLOR: "🌌",
+    SKY_EAST: "🗿",
 }
 
 trans_lookup = {
@@ -313,6 +360,7 @@ event_sub_lookup = {
 for region in Regions
 {
     rp_region = rich_presence_lookup("REGION", RegionByte, region_lookup, region_lookup[US])
+    rp_track_icon = rich_presence_lookup("TRACKICON", currSky[region], track_emoji, "")
     rp_track = rich_presence_lookup("TRACK", currSky[region], track_lookup, "Unknown Zone")
     rp_trans = rich_presence_lookup("TRANS", transmission[region], trans_lookup, "??")
     rp_car = rich_presence_lookup("CAR", car[region], car_lookup, "Unknown Car")
@@ -326,12 +374,13 @@ for region in Regions
     )
     rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region),
-        "{0} OutRunning | {1}{2} | {3} ({4}) | {5}",
+        "{0} OutRunning | {1}{2} | {3} ({4}) | {5} {6}",
         rp_region,
         rp_event,
         rp_event_sub,
         rp_car,
         rp_trans,
+        rp_track_icon,
         rp_track
     )
     rich_presence_conditional_display(
@@ -345,13 +394,11 @@ rich_presence_display("Playing OutRun 2006: Coast 2 Coast")
 
 // ACHIEVEMENTS
 
-challenge_description = {
-    "race": "Race the Rivals!",
-    "girlfriend": "Don't lose your Girlfriend!",
-    "slipstream": "Test your Slipstream!",
-    "knockout": "Avoid the Knockout!",
-    "drift": "Test your Drift!",
-}
+CTYPE_RACE = "Race the Rivals!"
+CTYPE_GIRLFRIEND = "Don't lose your Girlfriend!"
+CTYPE_SLIPSTREAM = "Test your Slipstream!"
+CTYPE_KNOCKOUT = "Avoid the Knockout!"
+CTYPE_DRIFT = "Test your Drift!"
 
 // Flagman Mode
 
@@ -399,241 +446,241 @@ flagman_events = [
         "id": 0,
         "event": 1,
         "count": 3,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 2,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 3,
         "count": 1,
-        "type": "drift",
+        "type": CTYPE_DRIFT,
     },
     {
         "id": 0,
         "event": 4,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 5,
         "count": 1,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 6,
         "count": 1,
-        "type": "girlfriend",
+        "type": CTYPE_GIRLFRIEND,
     },
     {
         "id": 0,
         "event": 7,
         "count": 3,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 8,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 9,
         "count": 1,
-        "type": "slipstream",
+        "type": CTYPE_SLIPSTREAM,
     },
     {
         "id": 0,
         "event": 10,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 11,
         "count": 3,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 12,
         "count": 1,
-        "type": "knockout",
+        "type": CTYPE_KNOCKOUT,
     },
     {
         "id": 0,
         "event": 13,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 14,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 15,
         "count": 2,
-        "type": "drift",
+        "type": CTYPE_DRIFT,
     },
     {
         "id": 0,
         "event": 16,
         "count": 4,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 17,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 18,
         "count": 2,
-        "type": "slipstream",
+        "type": CTYPE_SLIPSTREAM,
     },
     {
         "id": 0,
         "event": 19,
         "count": 3,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 20,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 21,
         "count": 1,
-        "type": "knockout",
+        "type": CTYPE_KNOCKOUT,
     },
     {
         "id": 0,
         "event": 22,
         "count": 4,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 23,
         "count": 3,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 24,
         "count": 1,
-        "type": "girlfriend",
+        "type": CTYPE_GIRLFRIEND,
     },
     {
         "id": 0,
         "event": 25,
         "count": 5,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 26,
         "count": 5,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 27,
         "count": 2,
-        "type": "slipstream",
+        "type": CTYPE_SLIPSTREAM,
     },
     {
         "id": 0,
         "event": 28,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 29,
         "count": 5,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 30,
         "count": 2,
-        "type": "drift",
+        "type": CTYPE_DRIFT,
     },
     {
         "id": 0,
         "event": 31,
         "count": 3,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 32,
         "count": 5,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 33,
         "count": 1,
-        "type": "knockout",
+        "type": CTYPE_KNOCKOUT,
     },
     {
         "id": 0,
         "event": 34,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 35,
         "count": 3,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 36,
         "count": 1,
-        "type": "girlfriend",
+        "type": CTYPE_GIRLFRIEND,
     },
     {
         "id": 0,
         "event": 37,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 38,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
     {
         "id": 0,
         "event": 39,
         "count": 2,
-        "type": "drift",
+        "type": CTYPE_DRIFT,
     },
     {
         "id": 0,
         "event": 40,
         "count": 2,
-        "type": "race",
+        "type": CTYPE_RACE,
     },
 ]
 
@@ -652,7 +699,7 @@ for event in flagman_events
         id=event["id"],
         title=format("Flagman's Challenge: {0} {1}", event["event"], fgroupname),
         description=format("{0} In Flagman {1}, complete all events in {2} {3} with a ranking of AAA",
-            challenge_description[event["type"]], fgroup, event["event"], fgroupname),
+            event["type"], fgroup, event["event"], fgroupname),
         points=event["count"],
         trigger=any_of(Regions, region => 
             IsRegion(region) &&
@@ -684,6 +731,384 @@ for flevel in flagman_levels
 }
 
 // Girlfriend Mode
+
+girlfriend_levels = [
+    {
+        "name": "Clarissa",
+        "first": 0x1e,
+        "end": 0x3c,
+        
+        "id": 0,
+        "screens": [CONGRATS_GIRL1,],
+        "title": "Clarissa is Thrilled",
+    },
+    {
+        "name": "Jennifer",
+        "first": 0,
+        "end": 0x1e,
+        
+        "id": 0,
+        "screens": [CONGRATS_GIRL2,],
+        "title": "Jennifer Loves Your Technique",
+    },
+    {
+        "name": "Holly",
+        "first": 0x3c,
+        "end": 0xff,
+        
+        "id": 0,
+        "screens": [CONGRATS_GIRL3, CONGRATS_CLEAR, CONGRATS_PERFECT,],
+        "title": "Holly Likes Your Thinking",
+    },
+]
+
+girlfriend_events = [
+    // CLARISSA (Outrun2SP Courses)
+    {
+        "id": 0,
+        "offset": 0x1e,
+        "count": 1,
+        "course": SKY_BEAC,
+    },
+    {
+        "id": 0,
+        "offset": 0x2a,
+        "count": 1,
+        "course": SKY_SANF,
+    },
+    {
+        "id": 0,
+        "offset": 0x30,
+        "count": 1,
+        "course": SKY_YOSE,
+    },
+    {
+        "id": 0,
+        "offset": 0x22,
+        "count": 2,
+        "course": SKY_NIAG,
+    },
+    {
+        "id": 0,
+        "offset": 0x20,
+        "count": 2,
+        "course": SKY_SEQU,
+    },
+    {
+        "id": 0,
+        "offset": 0x28,
+        "count": 2,
+        "course": SKY_GRAN,
+    },
+    {
+        "id": 0,
+        "offset": 0x2e,
+        "count": 3,
+        "course": SKY_MACH,
+    },
+    {
+        "id": 0,
+        "offset": 0x24,
+        "count": 3,
+        "course": SKY_LASV,
+    },
+    {
+        "id": 0,
+        "offset": 0x26,
+        "count": 3,
+        "course": SKY_ALAS,
+    },
+    {
+        "id": 0,
+        "offset": 0x2c,
+        "count": 3,
+        "course": SKY_AMAZ,
+    },
+    {
+        "id": 0,
+        "offset": 0x3a,
+        "count": 4,
+        "course": SKY_EAST,
+    },
+    {
+        "id": 0,
+        "offset": 0x32,
+        "count": 4,
+        "course": SKY_MAYA,
+    },
+    {
+        "id": 0,
+        "offset": 0x36,
+        "count": 4,
+        "course": SKY_PRIN,
+    },
+    {
+        "id": 0,
+        "offset": 0x38,
+        "count": 4,
+        "course": SKY_FLOR,
+    },
+    {
+        "id": 0,
+        "offset": 0x34,
+        "count": 4,
+        "course": SKY_NEWY,
+    },
+    // JENNIFER (Outrun2SP Courses)
+    {
+        "id": 0,
+        "offset": 0x00,
+        "count": 1,
+        "course": SKY_PALM,
+    },
+    {
+        "id": 0,
+        "offset": 0x02,
+        "count": 1,
+        "course": SKY_LAKE,
+    },
+    {
+        "id": 0,
+        "offset": 0x06,
+        "count": 1,
+        "course": SKY_ALPI,
+    },
+    {
+        "id": 0,
+        "offset": 0x0c,
+        "count": 2,
+        "course": SKY_CAST,
+    },
+    {
+        "id": 0,
+        "offset": 0x10,
+        "count": 2,
+        "course": SKY_FORE,
+    },
+    {
+        "id": 0,
+        "offset": 0x12,
+        "count": 2,
+        "course": SKY_DESE,
+    },
+    {
+        "id": 0,
+        "offset": 0x0a,
+        "count": 3,
+        "course": SKY_CLOU,
+    },
+    {
+        "id": 0,
+        "offset": 0x04,
+        "count": 3,
+        "course": SKY_INDU,
+    },
+    {
+        "id": 0,
+        "offset": 0x08,
+        "count": 3,
+        "course": SKY_SNOW,
+    },
+    {
+        "id": 0,
+        "offset": 0x0e,
+        "count": 3,
+        "course": SKY_GHOS,
+    },
+    {
+        "id": 0,
+        "offset": 0x14,
+        "count": 4,
+        "course": SKY_TULI,
+    },
+    {
+        "id": 0,
+        "offset": 0x16,
+        "count": 4,
+        "course": SKY_METR,
+    },
+    {
+        "id": 0,
+        "offset": 0x18,
+        "count": 4,
+        "course": SKY_RUIN,
+    },
+    {
+        "id": 0,
+        "offset": 0x1c,
+        "count": 4,
+        "course": SKY_IMPE,
+    },
+    {
+        "id": 0,
+        "offset": 0x1a,
+        "count": 4,
+        "course": SKY_CAPE,
+    },
+    // HOLLY (Mix 1 Courses)
+    {
+        "id": 0,
+        "offset": 0x76,
+        "count": 1,
+        "course": SKY_EAST,
+    },
+    {
+        "id": 0,
+        "offset": 0x60,
+        "count": 1,
+        "course": SKY_LASV,
+    },
+    {
+        "id": 0,
+        "offset": 0x52,
+        "count": 1,
+        "course": SKY_METR,
+    },
+    {
+        "id": 0,
+        "offset": 0x4e,
+        "count": 2,
+        "course": SKY_DESE,
+    },
+    {
+        "id": 0,
+        "offset": 0x70,
+        "count": 2,
+        "course": SKY_NEWY,
+    },
+    {
+        "id": 0,
+        "offset": 0x62,
+        "count": 2,
+        "course": SKY_ALAS,
+    },
+    {
+        "id": 0,
+        "offset": 0x42,
+        "count": 3,
+        "course": SKY_ALPI,
+    },
+    {
+        "id": 0,
+        "offset": 0x6c,
+        "count": 3,
+        "course": SKY_YOSE,
+    },
+    {
+        "id": 0,
+        "offset": 0x64,
+        "count": 3,
+        "course": SKY_GRAN,
+    },
+    {
+        "id": 0,
+        "offset": 0x40,
+        "count": 3,
+        "course": SKY_INDU,
+    },
+    {
+        "id": 0,
+        "offset": 0x5a,
+        "count": 4,
+        "course": SKY_BEAC,
+    },
+    {
+        "id": 0,
+        "offset": 0x48,
+        "count": 4,
+        "course": SKY_CAST,
+    },
+    {
+        "id": 0,
+        "offset": 0x56,
+        "count": 4,
+        "course": SKY_CAPE,
+    },
+    {
+        "id": 0,
+        "offset": 0x68,
+        "count": 4,
+        "course": SKY_AMAZ,
+    },
+    {
+        "id": 0,
+        "offset": 0x3c,
+        "count": 4,
+        "course": SKY_PALM,
+    },
+]
+
+for event in girlfriend_events
+{
+    girlname = ""
+    for x in girlfriend_levels
+        if (event["offset"] >= x["first"] && event["offset"] < x["end"])
+        {
+            girlname = x["name"]
+        }
+
+    achievement(
+        id=event["id"],
+        title=format("{0}'s Challenge: {1}", girlname, track_lookup[event["course"]]),
+        description=format("In {0}'s challenges, complete all events in {1} with a ranking of AAA",
+            girlname, track_lookup[event["course"]]),
+        points=event["count"],
+        trigger=any_of(Regions, region => 
+            IsRegion(region) &&
+            eventType[region] == EVENT_GIRLFRIEND &&
+            gameState[region] != STATE_MENU &&
+            // AverageRatingIsBetter(FlagmanAddresses(region, event["event"], event["count"]), target_rank) &&
+            // __ornext(!AverageRatingIsBetter(array_map(FlagmanAddresses(region, event["event"], event["count"]), (x) => prev(x)), target_rank))
+            AAARating(GirlfriendAddresses(region, event["offset"], event["count"]))
+        )
+    )
+}
+
+for glevel in girlfriend_levels
+{
+    achievement(
+        id=glevel["id"],
+        title=glevel["title"],
+        description=format("Complete all requests in {0}'s challenge with an average rating of A or higher",
+            glevel["name"]),
+        points=10,
+        type="progression",
+        trigger=any_of(Regions, region => 
+            IsRegion(region) &&
+            prev(gameState[region]) != STATE_CONGRATULATIONS &&
+            gameState[region] == STATE_CONGRATULATIONS &&
+            any_of(glevel["screens"], (x) => congratsType[region] == x)
+        )
+    )
+}
+
+achievement(
+    id=0,
+    title="Coast 2 Coast",
+    description="Clear all events in Coast 2 Coast mode",
+    points=25,
+    type="win_condition",
+    trigger=any_of(Regions, region => 
+        IsRegion(region) &&
+        prev(gameState[region]) != STATE_CONGRATULATIONS &&
+        gameState[region] == STATE_CONGRATULATIONS &&
+        any_of([CONGRATS_CLEAR, CONGRATS_PERFECT], 
+            (x) => congratsType[region] == x)
+    )
+)
+
+achievement(
+    id=0,
+    title="Step on Beat",
+    description="Get perfect in every event in Coast 2 Coast mode",
+    points=50,
+    trigger=any_of(Regions, region => 
+        IsRegion(region) &&
+        prev(gameState[region]) != STATE_CONGRATULATIONS &&
+        gameState[region] == STATE_CONGRATULATIONS &&
+        congratsType[region] == CONGRATS_PERFECT
+    )
+)
 
 // OutRun Mode
 
