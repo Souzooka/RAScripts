@@ -236,8 +236,8 @@ HelicopterLookup = {
     0x9: "Caliber Swift 60",
     0xA: "UFO",
     0xB: "RAT",
-    0xC: "MANTA",
-    0xD: "VTOL",
+    0xC: "VTOL",
+    0xD: "MANTA",
     0xE: "EPC BLACK",
     0xF: "Caliber 90 Flying Circus",
 }

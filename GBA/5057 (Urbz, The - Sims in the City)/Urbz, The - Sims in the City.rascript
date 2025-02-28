@@ -1,5 +1,6 @@
 // Urbz, The: Sims in the City
 // #ID = 5057
+// #MinimumVersion = 1.3
 
 // Hi, if you're looking at this script years down the line to fix missing text in the Rich Presence, simply change this variable to "true".
 // Due to limitations in mathemetics in rcheevos, abusing the integer boundry was the only way I found that I could effectively "bitwise and"
@@ -342,19 +343,31 @@ for i in range(0, 8 - 1)
 
 // GAME FUNCTIONS
 
+function AntiBiosCheck()
+{
+    return __ornext(
+            prior(GameMode) == LastGameModeSticky ||
+            // Game transitions state 1 -> state 1 on room transition
+            GameMode == LastGameModeSticky
+           ) &&
+           GameMode <= 0x1D
+}
+
 function SaveProtection(is_minigame=false)
 {
            // When loading the save file, the last game mode is set to the title
-    return (LastGameMode != MODE_TITLE &&
+    return ((LastGameMode != MODE_TITLE &&
            // Loading can also happen 1 frame after because why not
            prev(LastGameMode) != MODE_TITLE) ||
            // Main menu minigames have the last game mode as the title, but I don't think we'll ever have to check for this
-           if_else(is_minigame, IsMinigame(), always_false())
+           if_else(is_minigame, IsMinigame(), always_false())) &&
+           // anti-BIOS check...
+           AntiBiosCheck()
 }
 
 function IsMinigame()
 {
-    return GameMode == MODE_MINIGAME && MinigameBase != NULL
+    return GameMode == MODE_MINIGAME && MinigameBase != NULL && AntiBiosCheck()
 }
 
 function IsMinigameOver()
@@ -1234,7 +1247,8 @@ achievement(
     trigger=(
         // Don't need save protection since if you know the password there's no barrier anyways
         AreaID == AREA_CLUB_XIZZLE &&
-        prev(AreaID) != AREA_CLUB_XIZZLE
+        prev(AreaID) != AREA_CLUB_XIZZLE &&
+        AntiBiosCheck()
     )
 )
 
@@ -1338,7 +1352,7 @@ achievement(
         // could technically overflow, but I don't foresee it causing any
         // major issues. The player should already have this achievement.
         SaveProtection() &&
-        measured(TrashPiles == 100, when=prev(TrashPiles) < 100)
+        measured(TrashPiles == 100, when=prev(TrashPiles) < 100 && AntiBiosCheck())
     )
 )
 

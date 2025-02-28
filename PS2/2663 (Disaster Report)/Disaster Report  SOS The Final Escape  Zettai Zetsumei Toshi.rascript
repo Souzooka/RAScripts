@@ -1,7 +1,9 @@
 // Disaster Report | SOS: The Final Escape | Zettai Zetsumei Toshi
 // #ID = 2663
+// #MinimumVersion = 1.3
 
 NULL = 0
+NO_ADDR = 0x100000
 
 REGION_US = 0
 REGION_EU = 1
@@ -22,8 +24,14 @@ IsJP = byte(0x135150)
 // the instruction at 0x192F88 (addiu t2, zero, -0x2) has to be changed to (addiu t2, zero, -0x81 (!!!)) for the arrow to show up. The imprecision!
 // Item menu bg depth is at 0x183B10, item tabs at 0x183DC8 -- can just be changed to -0x2F8 and -0x1F8
 // Depth for "Save game?" screen with faucet is in memory at 0x26B978 -- can be changed to 0xFFFFFF70
-// For "Exit game without saving?" backdrop depth is at memory 0x26A120 and can be changed to 0xFFFFFF70;
+// For "Exit game without saving?" backdrop depth is at memory 0x26A128 and can be changed to 0xFFFFFF70;
+// save window bg text depth = 00241A0C (set to -0x81)
 // window backdrop is at code 0x199364; can be changed to -0x81
+// Depth of interact text backdrop at 0x193034, change to 0x1000000 so arrow writes on top
+// (dunno why the depth has to be so low but it should be fine I think?)
+// change code @ 1300C0 to addiu s1, s1, 0x8; sw s1, 0xD28(at); jal 0x130970; sw s1,0xCA8(at). This prevents the arrow from disappearing in
+// certain select dialogue boxes (like the ending 7 choice), I don't know why
+// Letterbox depth = 1946D0 (is -2, set to -100); change 194718 to addiu a3, a3, -0x80
 
 function IsRegion(region)
 {
@@ -43,6 +51,11 @@ BACKPACK_GYMBAG = 4
 BACKPACK_CLOTHBAG = 5
 
 CHR_ACT_BICYCLE = 0x15
+
+LETTERBOX_HIDDEN = 0x1
+LETTERBOX_MOVEIN = 0x2
+LETTERBOX_MOVEOUT = 0x3
+LETTERBOX_VISIBLE = 0x4
 
 Area = {
     US: dword(0x36bbb0),
@@ -68,6 +81,11 @@ Compass = {
     US: dword(0x3FE8E0),
     EU: dword(0x4252E0),
     JP: dword(0x40A360),
+}
+FoundCompasses = {
+    US: 0x3FE8EC,
+    EU: 0x4252EC,
+    JP: 0x40A36C,
 }
 Backpack = {
     US: dword(0x3533A0),
@@ -146,6 +164,21 @@ GameEndingState = {
     EU: byte(0x43AE80),
     JP: byte(0x41FF00),
 }
+Letterbox = {
+    US: dword(0x391308),
+    EU: dword(0x3B7B08),
+    JP: dword(0x392E08),
+}
+CameraZoom = {
+    US: float(0x3696A4),
+    EU: float(0x390EA4),
+    JP: float(0x36B6A4),
+}
+CreditsTask = {
+    US: dword(0x41B1B0),
+    EU: dword(0x441BB0),
+    JP: dword(0x427050),
+}
 
 // Game State
 MENU_TRANSITION = -1
@@ -198,15 +231,37 @@ function IsInGame(region)
     return MapObjsLength[region] > 0
 }
 
+// PAL has language select at 0x8, shifting menus up by 1 value
+// JP has no Agetec/localizer logo(?), shifting menus down by 1 value
+MenuOffsets = {EU: -1, US: 0, JP: 1}
+
+function GetPreviousMenu(region)
+{
+    menu = PreviousMenu[region] + MenuOffsets[region]
+    return menu
+}
+
+function GetCurrentMenu(region)
+{
+    menu = CurrentMenu[region] + MenuOffsets[region]
+    return menu
+}
+
+function GetNextMenu(region)
+{
+    menu = NextMenu[region] + MenuOffsets[region]
+    return menu
+}
+
 function LoadProtection(region)
 {
     // Gotta be really careful with this because if we put any ||s in here
     // RA has to think too hard and will refuse to consider the condition valid
-    return prior(PreviousMenu[region]) != MENU_MCMENU &&
-           PreviousMenu[region] != MENU_MCMENU &&
-           CurrentMenu[region] != MENU_MCMENU &&
-           CurrentMenu[region] > MENU_TITLE &&
-           NextMenu[region] > MENU_TITLE
+    return prior(GetPreviousMenu(region)) != MENU_MCMENU &&
+           GetPreviousMenu(region) != MENU_MCMENU &&
+           GetCurrentMenu(region) != MENU_MCMENU &&
+           GetCurrentMenu(region) > MENU_TITLE &&
+           GetNextMenu(region) > MENU_TITLE
 }
 
 // RICH PRESENCE START
@@ -335,7 +390,7 @@ MapNameLookup = {
     0707: "Keith and Karen are taking a long, somber walk up the Quinn Building.",
     0716: "Keith and Kelly are taking a long, somber walk up the Quinn Building.",
     0708: "Keith and Karen are continuing to escape the rising waters by climbing the Central Tower Building!",
-    0717: "Keith and Karen are continuing to escape the rising waters by climbing the Central Tower Building!",
+    0717: "Keith and Kelly are continuing to escape the rising waters by climbing the Central Tower Building!",
 }
 
 for region in Regions
@@ -363,7 +418,7 @@ rich_presence_display("Playing Disaster Report")
 
 // ACHIEVEMENTS START
 
-FLAG_SAVED_KAREN = 0x213E
+FLAG_SAVED_KAREN = 0x2144
 FLAG_FOUND_KAREN = 0x57E // Overturned building
 FLAG_MET_GREG = 0x214E
 FLAG_ESCAPE_CONSTRUCTION_SITE = 0x214B
@@ -371,9 +426,10 @@ FLAG_SAVED_KELLY = 0x2322
 FLAG_GAVE_FILE = 0x5F5B // Giving John Patton Greg's File at the Santa Katrina Hospital
 FLAG_BOAT_RIDE_DONE = 0x2452 // Finished sailing down Dmitri Canal on Karen's route
 FLAG_KAREN_HOME_CONVERSATION = 0x24B2 // Eavesdrop on Karen while she's in her home
-
-FLAG_COMPASS_START = 9800
-FLAG_COMPASS_END = 9834
+FLAG_FOUND_GEN = 0x24A1 // Set just after Gen (Karen's dog) reunites with Karen at her house
+FLAG_ACCEPT_THIEF_RING = 0x1F43 // Accepted diamond ring from jewelry thief near Town Crier News Building
+FLAG_ACCEPT_THIEF_RING_NO_SPACE_EMERALD = 0x1434 // Accepted emerald ring (but player had no space in backpack)
+FLAG_ACCEPT_THIEF_RING_NO_SPACE = 0x1435 // Accepted diamond ring (but player had no space in backpack)
 
 function BackpackTrigger(region, backpack)
 {
@@ -382,9 +438,9 @@ function BackpackTrigger(region, backpack)
     // We'll guard the achievement with a map ID check to prevent this scenario.
     maps = {
         BACKPACK_RESCUEPACK: 0101,
-        BACKPACK_KNAPSACK: 0110,
+        BACKPACK_KNAPSACK: 0109,
         BACKPACK_BACKPACK: 0203,
-        BACKPACK_GYMBAG: 0000, // TODO
+        BACKPACK_GYMBAG: 0302,
         BACKPACK_CLOTHBAG: 0403,
         BACKPACK_FRAMEPACK: 0505,
     }
@@ -404,17 +460,17 @@ function FlagGet(region, flag)
     return bit(flag % 8, flags + flag / 8)
 }
 
-function FlagSetTrigger(region, flag, map=-1)
+function FlagSetTrigger(region, flag, maps=[])
 {
     map_cond = always_true()
-    if (map != -1)
+    if (length(maps) != 0)
     {
-        map_cond = MapID(region) == map
+        map_cond = any_of(maps, m => MapID(region) == m)
     }
 
     return IsRegion(region) && 
            LoadProtection(region) && 
-           map_cond &&
+           map_cond &&     
            FlagGet(region, flag) == 1 && 
            prev(FlagGet(region, flag)) == 0
 }
@@ -424,18 +480,15 @@ function CompassCount(region)
     current = 0
     delta = 0
     prior = 0
+    NUM_COMPASSES = 35
     
-    for flag in range(FLAG_COMPASS_START, FLAG_COMPASS_END)
+    for i in range(0, NUM_COMPASSES - 1)
     {
-        current = current + FlagGet(region, flag)
-        delta = delta + prev(FlagGet(region, flag))
-        prior = prior + prior(FlagGet(region, flag))
+        acc = bit(i % 8, FoundCompasses[region] + i / 8)
+        current = current + acc
+        delta = delta + prev(acc)
+        prior = prior + prior(acc)
     }
-    
-    // Compass 0 (standard) is flag 9800, but never seems to get set on.
-    // We'll add 1 (or not, using XOR, if it is on) to count it anyways.
-    current = current + (FlagGet(region, FLAG_COMPASS_START) ^ 1)
-    delta = delta + (FlagGet(region, FLAG_COMPASS_START) ^ 1)
     
     return [current, delta, prior]
 }
@@ -458,69 +511,86 @@ function CompassMeasuredTrigger(region, new_count, old_count=-1)
     return current > delta && measured(measured_condition, when=when)
 }
 
-function MapTransition(region, old_map, new_map)
+function MapTransition(region, old_maps, new_maps)
 {
     return IsRegion(region) &&
            LoadProtection(region) &&
-           MapID(region) == new_map &&
-           MapIDPrev(region) == old_map
+           __ornext(any_of(new_maps, m => m == MapID(region))) &&
+           __ornext(any_of(old_maps, m => m == MapIDPrev(region)))
 }
 
 function EndingTrigger(region, endings)
 {
     return IsRegion(region) &&
-           any_of(endings, ending => GameEnding[region] == ending) &&
+           __ornext(any_of(endings, ending => GameEnding[region] == ending)) &&
            GameEndingState[region] >= 3 &&
            prev(GameEndingState[region]) < 3
+}
+
+function QuickEndingTrigger(region, maps)
+{
+    // Just checks if the credits task is set while in the specified map, so the user doesn't have to sit through the credits
+    return IsRegion(region) &&
+           __ornext(any_of(maps, map => MapID(region) == map)) &&
+           CreditsTask[region] != NULL &&
+           prev(CreditsTask[region]) == NULL
 }
 
 // Backpacks
 
 achievement(
+    id=460875,
     title="And Don't Forget Your Backpack",
     description="Obtain the Rescue Pack.",
     points=2,
+    type="progression",
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_RESCUEPACK))
 )
 
 achievement(
-    title="TODO Backpack - Knapsack",
+    id=460876,
+    title="Petty Theft",
     description="Obtain the Knapsack.",
     points=3,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_KNAPSACK))
 )
 
 achievement(
-    title="TODO Backpack - Backpack",
+    id=460877,
+    title="Urban Explorer Kit",
     description="Obtain the Backpack.",
     points=3,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_BACKPACK))
 )
 
 achievement(
-    title="TODO Backpack - Gym Bag",
+    id=460878,
+    title="Do You Even Pull-Up, Bro?",
     description="Obtain the Gym Bag.",
     points=3,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_GYMBAG))
 )
 
 achievement(
-    title="TODO Backpack - Cloth Bag",
+    id=460879,
+    title="Furoshiki Fashion",
     description="Obtain the Cloth Bag.",
     points=3,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_CLOTHBAG))
 )
 
 achievement(
-    title="TODO Backpack - Frame Pack",
+    id=460880,
+    title="More Backpack Than Man",
     description="Obtain the Frame Pack.",
-    points=5,
+    points=4,
     trigger=any_of(Regions, region => BackpackTrigger(region, BACKPACK_FRAMEPACK))
 )
 
 // Compasses
 
 achievement(
+    id=460881,
     title="Compass Novice",
     description="Obtain 10 compasses.",
     points=5,
@@ -528,6 +598,7 @@ achievement(
 )
 
 achievement(
+    id=460882,
     title="Compass Enthusiast",
     description="Obtain 20 compasses.",
     points=5,
@@ -535,6 +606,7 @@ achievement(
 )
 
 achievement(
+    id=460883,
     title="Compass Master",
     description="Obtain all 35 compasses.",
     points=25,
@@ -544,9 +616,11 @@ achievement(
 // Story events
 
 achievement(
-    title="TODO Rescue Karen",
+    id=460884,
+    title="Not Trained for This",
     description="Rescue the injured woman on the Airport Island Bridge.",
     points=3,
+    type="progression",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KAREN))
 )
 
@@ -565,31 +639,39 @@ function CrowbarTrigger(region)
 }
 
 achievement(
-    title="Keith Helm, in the Flesh",
+    id=460885,
+    title="In the Flesh",
     description="Obtain the Crowbar.",
     points=2,
+    type="progression",
     trigger=any_of(Regions, region => CrowbarTrigger(region))
 )
 
 achievement(
-    title="TODO Find Karen",
+    id=460886,
+    title="This Whole Wacky World",
     description="Find Karen in the overturned building on Girard Street.",
     points=3,
+    type="progression",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_FOUND_KAREN))
 )
 
 achievement(
-    title="The Aspiring Journalist",
+    id=460887,
+    title="Aspiring Journalist",
     description="Meet a freelance photographer.",
     points=3,
+    type="progression",
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_MET_GREG))
 )
 
 achievement(
-    title="TODO Escape Construction Site",
+    id=460888,
+    title="Rapid Disassembly",
     description="Escape the construction site.",
     points=3,
-    trigger=any_of(Regions, region => MapTransition(region, 0202, 0203))
+    type="progression",
+    trigger=any_of(Regions, region => MapTransition(region, [0202], [0203]))
 )
 
 function FreshMemoriesTrigger(region)
@@ -602,9 +684,11 @@ function FreshMemoriesTrigger(region)
 }
 
 achievement(
+    id=460889,
     title="Fresh Memories",
-    description="Try and save an elderly couple trapped in a destroyed building.",
+    description="Attempt to save an elderly couple trapped in a destroyed building.",
     points=3,
+    type="progression",
     trigger=any_of(Regions, region => FreshMemoriesTrigger(region))
 )
 
@@ -620,6 +704,7 @@ function CyclistTrigger(region)
 }
 
 achievement(
+    id=460890,
     title="Capital City Cyclist",
     description="Arrive at the amusement park by bicycle.",
     points=2,
@@ -627,6 +712,7 @@ achievement(
 )
 
 achievement(
+    id=460900,
     title="I Want to Get Off Mr. Bones' Wild Ride",
     description="Save a trapped teenage girl in the amusement park.",
     points=3,
@@ -634,6 +720,7 @@ achievement(
 )
 
 achievement(
+    id=460891,
     title="Don't Forget",
     description="Give John Patton Greg's File at the Santa Katrina Hospital.",
     points=4,
@@ -650,15 +737,17 @@ function RawDangerTrigger(region)
 }
 
 achievement(
+    id=460901,
     title="Raw Danger",
     description="Escape the submerged area around the Santa Katrina Hospital.",
-    points=5,
+    points=4,
     trigger=any_of(Regions, region => RawDangerTrigger(region))
 )
 
 // Karen route
 
 achievement(
+    id=460892,
     title="Adventures of Keith Helm",
     description="Sail down the Dmitri Canal on a makeshift raft.",
     points=3,
@@ -666,47 +755,170 @@ achievement(
 )
 
 achievement(
+    id=460902,
     title="Peeping Keith",
     description="Eavesdrop on Karen talking to herself while she is in her room.",
     points=2,
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_KAREN_HOME_CONVERSATION))
 )
 
+achievement(
+    id=460895,
+    title="Dog's Best Friend",
+    description="Help Karen reunite with her dog, Gen.",
+    points=2,
+    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_FOUND_GEN))
+)
+
+function FlamingAcrobatTrigger(region)
+{
+    // another bit scuffed due to the lack of a flag and save screen
+    return IsRegion(region) &&
+           MapID(region) == 0304 &&
+           // High enough to hit the end cutscene
+           PlayerXYZ[1][region] < 5.0 &&
+           // we had the letterbox, now we don't
+           Letterbox[region] == LETTERBOX_MOVEOUT &&
+           prev(Letterbox[region]) == LETTERBOX_VISIBLE
+}
+
+achievement(
+    id=460905,
+    title="Flaming Acrobat",
+    description="Escape Park Avenue Subway with Karen.",
+    points=4,
+    trigger=any_of(Regions, FlamingAcrobatTrigger)
+)
+
+// Shared route part 2
+
+achievement(
+    id=460896,
+    title="Diamonds Are Forever",
+    description="Accept a gift from the jewelry thief near the Town Crier News building.",
+    points=3,
+    trigger=any_of(Regions, region =>     
+            FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING) || 
+            FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING_NO_SPACE) ||
+            FlagSetTrigger(region, FLAG_ACCEPT_THIEF_RING_NO_SPACE_EMERALD)
+        )
+)
+
+function BlindedByTheLightTrigger(region)
+{
+    // blah blah a bit iffy, triggered by camera zoom on the roof -- don't think anything else changes this
+    return IsRegion(region) &&
+           MapID(region) == 0503 &&
+           PlayerXYZ[1][region] < -78.0 &&
+           CameraZoom[region] <= 900.0 &&
+           prev(CameraZoom[region]) > 900.0
+}
+
+achievement(
+    id=460906,
+    title="Blinded by the Light",
+    description="Escape from a bind on top of the Christophe Construction building by using a lighter.",
+    points=4,
+    trigger=any_of(Regions, BlindedByTheLightTrigger)
+)
+
+achievement(
+    id=460897,
+    title="I Need a Fire Hero",
+    description="Escape the Town Crier News building and head off towards Windrunner Park with William.",
+    points=4,
+    type="progression",
+    trigger=any_of(Regions, region => MapTransition(region, [500, 510], [505]))
+)
+
+achievement(
+    id=460907,
+    title="All Hands on Deck!",
+    description="After escaping May Stadium, flee into Lincoln Plaza.",
+    points=5,
+    type="progression",
+    trigger=any_of(Regions, region => MapTransition(region, [600, 605], [601, 606]))
+)
+
+// Trigger here for cinematic effect
+// NOTE: Flags don't work so we have to tap into the power of reading the goon -- they f*cking kill (dealloc) him :(
+// gonna refactor this into something nicer in the tomorrowyear
+GoonPtr = {
+    US: dword(0x34dc10 + 0x4 * 14),
+    EU: dword(0x375410 + 0x4 * 14),
+    JP: dword(0x34fc10 + 0x4 * 14),
+}
+
+achievement(
+    id=460898,
+    title="On-Site Procurement",
+    description="Down your first helicopter without using any firearms or explosives.",
+    points=10,
+    type="progression",
+    trigger=any_of(Regions, region =>
+        IsRegion(region) &&
+        LoadProtection(region) &&
+        once(
+            // Witnessed the helicopter approach cutscene (zooms in camera at the end)
+            __ornext(MapID(region) == 603 || MapID(region) == 608) &&
+            PlayerXYZ[1][region] < -58.0 &&
+            prev(CameraZoom[region]) >= 2400.0 &&
+            CameraZoom[region] < 2400.0
+        ) &&
+        // left to menu :(
+        never(GetCurrentMenu(region) == MENU_TITLE) &&
+        trigger_when(
+            GoonPtr[region] == NULL &&
+            prev(GoonPtr[region]) != NULL &&
+            // Prevents the achievement from rewarding when respawning from game over
+            prev(GetCurrentMenu(region) == MENU_GAME)
+        )
+    )
+)
+
 // Endings
 
 achievement(
-    title="TODO Ending 1/2",
+    id=460893,
+    title="Outside My Window",
     description="Obtain Ending 1 or 2.",
     points=10,
-    trigger=any_of(Regions, region => EndingTrigger(region, [1, 2]))
+    type="win_condition",
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [707, 716]))
 )
 
 achievement(
-    title="TODO Ending 3",
+    id=460903,
+    title="Stiver for Her Heart",
     description="Obtain Ending 3.",
     points=25,
-    trigger=any_of(Regions, region => EndingTrigger(region, [3]))
+    type="win_condition",
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [708]))
 )
 
 achievement(
-    title="TODO Ending 4",
+    id=460894,
+    title="Autumn Memories",
     description="Obtain Ending 4.",
     points=25,
-    trigger=any_of(Regions, region => EndingTrigger(region, [4]))
+    type="win_condition",
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [717]))
 )
 
 achievement(
-    title="TODO Ending 5/6",
+    id=460904,
+    title="Windrun Outta Here",
     description="Obtain Ending 5 or 6.",
     points=10,
-    trigger=any_of(Regions, region => EndingTrigger(region, [5, 6]))
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [505]))
 )
 
 achievement(
-    title="TODO Ending 7",
+    id=460899,
+    title="Thank the Air Rangers!",
     description="Obtain Ending 7.",
     points=10,
-    trigger=any_of(Regions, region => EndingTrigger(region, [7]))
+    trigger=any_of(Regions, region => QuickEndingTrigger(region, [404]))
 )
 
 // ACHIEVEMENTS END

@@ -117,11 +117,11 @@ STAGE_Any = -1 // Just for scripting purposes
 
 CHARACTER_Any = -1 // Just for scripting purposes
 CHARACTER_DeanFireCoat = 0
-CHARACTER_DeanUnarmed = 1
-CHARACTER_DeanMaxMcGregor = 2
+CHARACTER_DeanUnarmed = 2
 CHARACTER_MissCrimson = 3
 CHARACTER_MissJetBlack = 4
 CHARACTER_MissHolyWhite = 5
+CHARACTER_DeanMaxMcGregor = 6
 
 AWARD_SuperPlay = 1 // Beating dev time maybe...? Need to look into this one
 AWARD_RecordTimeGold = 2
@@ -181,15 +181,108 @@ function TestStageIDElement(address, element_size, test_func)
     return condition
 }
 
+function __eq__(a, b)
+{
+    return a == b
+}
+
+function __ne__(a, b)
+{
+    return a != b
+}
+
+function __lt__(a, b)
+{
+    return a < b 
+}
+
+function __lte__(a, b)
+{
+    return a <= b
+}
+
+function __gt__(a, b)
+{
+    return a > b
+}
+
+function __gte__(a, b)
+{
+    return a >= b
+}
+
+function Plane2(x1, y1, x2, y2)
+{
+    ret = {
+        "x1": x1,
+        "y1": y1,
+        "x2": x2,
+        "y2": y2,
+    }  
+    return ret
+}
+
+function Plane2_cmp(plane, x, y, cmp)
+{
+    x1 = plane["x1"]
+    y1 = plane["y1"]
+    x2 = plane["x2"]
+    y2 = plane["y2"]
+    
+    run = (x2 - x1)
+    rise = (y2 - y1)
+    x_mul = 0
+    y_mul = 0
+    if (rise == 0)
+    {
+        x_mul = 1.0
+        y_mul = 0.0
+        slope = 0.0
+    }
+    else if (run == 0)
+    {
+        x_mul = 1.0
+        y_mul = 1.0
+        slope = 0.0
+    }
+    else
+    {
+        slope = rise / run
+
+        if (slope <= 0)
+        {
+            x_mul = -slope
+            y_mul = 1.0
+        }
+        else if (slope > 0)
+        {
+            x_mul = slope
+            y_mul = -1.0
+        }
+    }
+
+    // Zero-intercept...
+    if rise == 0
+    {
+        zero = plane["x1"]
+    }
+    else
+    {
+        zero = (plane["y1"] - slope * plane["x1"]) * y_mul
+    }
+    
+    return cmp(x * x_mul + y * y_mul, zero)
+}
+
 // RICH PRESENCE START
 
 CharacterNames = {
-    0x0: "Dean McGregor",
-    0x1: "Dean McGregor",
-    0x2: "Dean McGregor",
-    0x3: "Miss Crimson",
-    0x4: "Miss Jet-Black",
-    0x5: "Miss Holy White",
+    CHARACTER_DeanFireCoat: "Dean McGregor",
+    CHARACTER_DeanUnarmed: "Dean McGregor",
+    CHARACTER_DeanMaxMcGregor: "Dean McGregor",
+    CHARACTER_MissCrimson: "Miss Crimson",
+    CHARACTER_MissJetBlack: "Miss Jet-Black",
+    CHARACTER_MissHolyWhite: "Miss Holy White",
 }
 
 StageNames = {
@@ -241,12 +334,12 @@ Difficulties = {
 // seemingly can't string together 2 arithmetic operations for an RP value
 // so we have to do constant folding for max health / 100
 CharacterMaxHealths = {
-    0x0: 60000,
-    0x1: 60000,
-    0x2: 60000,
-    0x3: (45000 - 10), // Tweak the value a little bit so rounding on RP display doesn't show 99% at full health
-    0x4: 60000,
-    0x5: 90000,
+    CHARACTER_DeanFireCoat: 60000,
+    CHARACTER_DeanUnarmed: 60000,
+    CHARACTER_MissCrimson: (45000 - 10), // Tweak the value a little bit so rounding on RP display doesn't show 99% at full health
+    CHARACTER_MissJetBlack: 60000,
+    CHARACTER_MissHolyWhite: 60000,
+    CHARACTER_DeanMaxMcGregor: 90000,
 }
 
 main_menu_statuses = [STATUS_SoftResetLoad, STATUS_LanguageSelect, STATUS_Initial, STATUS_Splash, STATUS_TitleMenu, STATUS_IntroCutsceneLoad, STATUS_IntroCutscene]
@@ -355,12 +448,12 @@ LeaderboardStageIDs = {
 
 // Upon consultation with speedrunners these are different enough to justify splitting them up
 LeaderboardCharacterNames = {
-    0: "Dean Fire Coat",
-    1: "Dean Unarmed",
-    2: "Dean Max McGregor",
-    3: "Miss Crimson",
-    4: "Miss Jet-Black",
-    5: "Miss Holy White",
+    CHARACTER_DeanFireCoat: "Dean Fire Coat",
+    CHARACTER_DeanUnarmed: "Dean Unarmed",
+    CHARACTER_DeanMaxMcGregor: "Dean Max McGregor",
+    CHARACTER_MissCrimson: "Miss Crimson",
+    CHARACTER_MissJetBlack: "Miss Jet-Black",
+    CHARACTER_MissHolyWhite: "Miss Holy White",
 }
 
 LeaderboardIDs = {
@@ -1401,14 +1494,17 @@ for stage_id in BossNames
 // Simplifying the above equation:
 // (x + y) < 4541.875 for Jason's side, (x + y) > 4541.875 for bodyguard's side
 // NOTE: For the above, x and z are taken from the 3d position and mapped to x and y on a 2d coordinate plane.
-in_jason_arena = (PlayerPos["x"] + PlayerPos["z"]) < 4541.875
+//jason_arena_plane = Plane2(1000.0, 10.0, 2000.0, 10.0)
+//jason_arena_plane = Plane2(10.0, 1000.0, 10.0, 2000.0)
+jason_arena_plane = Plane2(7264.805, -2722.93, 7264.805 + 10, -2722.93 - 10)
+//jason_arena_plane = Plane2(6787.07, -3129.25, 7742.54, -3016.61)
 
 achievement(
     title="Don't Shoot the Messenger",
     description="Defeat Jason Hunt.",
     points=5,
     type="progression",
-    trigger=RegularBossTrigger(0x45, in_jason_arena)
+    trigger=RegularBossTrigger(0x45, Plane2_cmp(jason_arena_plane, PlayerPos["x"], PlayerPos["z"], __lt__))
 )
 
 achievement(
@@ -1416,7 +1512,7 @@ achievement(
     description="Defeat Bodyguard.",
     points=5,
     type="progression",
-    trigger=RegularBossTrigger(0x45, !in_jason_arena)
+    trigger=RegularBossTrigger(0x45, Plane2_cmp(jason_arena_plane, PlayerPos["x"], PlayerPos["z"], __gte__))
 )
 
 // WIN CONDITIONS
