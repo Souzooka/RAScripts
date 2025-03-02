@@ -167,6 +167,7 @@ eventSubType = {
 STATE_ARCADE_MODE = 0x0A
 STATE_DRIVING = 0x10
 STATE_GOAL = 0x13
+STATE_TIMEUP = 0x14
 STATE_MENU = 0x20
 STATE_CONGRATULATIONS = 0x24
 gameState = {
@@ -1260,4 +1261,18 @@ for params in outrun_params
     )
 }
 
+achievement(
+    id=0,
+    title="Look at Him Go!",
+    description="Stay at the starting line for the whole race. I didn't know the flagman had moves like that!",
+    points=1,
+    trigger=any_of(Regions, region => 
+        IsRegion(region) &&
+        eventDistance[region] == 1 &&
+        prev(gameState[region]) == STATE_DRIVING &&
+        gameState[region] == STATE_TIMEUP
+    )
+)
+
 //
+
