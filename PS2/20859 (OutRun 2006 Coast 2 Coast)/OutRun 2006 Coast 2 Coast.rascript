@@ -248,10 +248,10 @@ function AverageRatingIsBetter(list, threshold)
 }
 
 // pass a list of addresses for 0-7 bytes
-function AAARating(list)
+function AAARating(region, list)
 {
     if (length(list) == 1) return list[0] == 0x06 && prev(list[0]) != 0x06
-    return measured(tally_of(list, length(list), (x) => once(x == 0x06 && never(x != 0x06)))) &&
+    return measured(tally_of(list, length(list), (x) => once(x == 0x06 && never(x != 0x06))), when=IsRegion(region)) &&
         __ornext(any_of(list, (x) => prev(x) != 0x06))
 }
 
@@ -727,7 +727,7 @@ for event in flagman_events
             gameState[region] != STATE_MENU &&
             // AverageRatingIsBetter(FlagmanAddresses(region, event["event"], event["count"]), target_rank) &&
             // __ornext(!AverageRatingIsBetter(array_map(FlagmanAddresses(region, event["event"], event["count"]), (x) => prev(x)), target_rank))
-            AAARating(FlagmanAddresses(region, event["event"], event["count"]))
+            AAARating(region, FlagmanAddresses(region, event["event"], event["count"]))
         )
     )
 }
@@ -1079,7 +1079,7 @@ for event in girlfriend_events
             gameState[region] != STATE_MENU &&
             // AverageRatingIsBetter(FlagmanAddresses(region, event["event"], event["count"]), target_rank) &&
             // __ornext(!AverageRatingIsBetter(array_map(FlagmanAddresses(region, event["event"], event["count"]), (x) => prev(x)), target_rank))
-            AAARating(GirlfriendAddresses(region, event["offset"], event["count"]))
+            AAARating(region, GirlfriendAddresses(region, event["offset"], event["count"]))
         )
     )
 }
