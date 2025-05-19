@@ -150,12 +150,6 @@ function GetGameStats(region)
     return _CGameStats(g_p_game_stats[region])
 }
 
-function SaveProtection(region)
-{
-    // TODO
-    return true
-}
-
 function KeyObtained(region, world_id, level_id, now=true)
 {
     game = GetGameStats(region)
@@ -261,10 +255,31 @@ function AllTimeTrials(region)
     return cond && sum == (total - 1)
 }
 
+function SaveProtection(region)
+{
+    // TODO
+    return true
+}
+
+function CheatProtection(region)
+{
+    // TODO
+    return true
+}
+
 function IsMap(region, world_id, level_id)
 {
     game = GetGameStats(region)
     return game["m_world_id"] == world_id && game["m_level_id"] == level_id
+}
+
+function InGame(region)
+{
+    switch = {
+        US: dword(0x27C320),
+    }
+    
+    return switch[region] == 0
 }
 
 // Game variables
@@ -284,22 +299,53 @@ g_p_level_stats = {
     US: dword(0x2623c8),
 }
 
+// Gets set to 1 when the player hits any checkpoint in the level for the first time
+// (useful for detecting the end of the prologue, as the van is a checkpoint)
+g_checkpoint_hit = {
+    US: dword(0x26184c)
+}
+
+g_alarm_hit = {
+    US: dword(0x2623dc)
+}
+
 // Prologue
 
 achievement(
-    title = "Just a Little Rendezvous", points = 1, type="progression",
-    description = "Complete the Prologue",
-    id = 261367, badge = "296024", published = "10/30/2022 1:16:14 AM", modified = "10/30/2022 1:16:14 AM",
-    trigger = dword(0x27DBF8) == 0 && prev(dword(0x27DBFC)) == 3 && dword(0x26184C) == 1
+    id=261367,
+    title="Just a Little Rendezvous",
+    description="Complete the Prologue",
+    points=1,
+    type="progression",
+    trigger=any_of(regions, region => 
+        IsRegion(region) &&
+        SaveProtection(region) &&
+        CheatProtection(region) &&
+        // Is in Police HQ
+        IsMap(region, 0, 3) &&
+        // Checkpoint was hit (the van is a checkpoint)
+        g_checkpoint_hit[region] > prev(g_checkpoint_hit[region])
+    )
 )
 
 achievement(
-    title = "Carmelita Forgot Who Her Foe Was", points = 2,
+    id=261365,
+    title="Carmelita Forgot Who Her Foe Was",
     description = "Get Sly's File at Police Headquarters without triggering the alarm",
-    id = 261365, badge = "296023", published = "10/30/2022 1:16:14 AM", modified = "5/5/2025 3:39:10 PM",
-    trigger = disable_when(dword(0x2623DC) == 1) && prev(dword(0x27C66C)) == 0 && trigger_when(dword(0x27C66C) == 1) &&
-              prev(dword(0x27C320)) == 0 && dword(0x27C320) == 0 && dword(0x27DBF8) == 0 && dword(0x27DBFC) == 3 &&
-              (always_false() || (never(dword(0x27C320) == 1)))
+    points=2,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        SaveProtection(region) &&
+        CheatProtection(region) &&
+        // In game (prevent trigger icon showing up on title)
+        InGame(region) &&
+        // Is in Police HQ
+        IsMap(region, 0, 3) &&
+        // Don't hit those alarms
+        disable_when(g_alarm_hit[region] == True, until=!InGame(region)) &&
+        // Get that file (crack safe in Police HQ map)
+        trigger_when(SafeObtained(region, 0, 3))
+    )
 )
 
 // Keys (and key damageless)
