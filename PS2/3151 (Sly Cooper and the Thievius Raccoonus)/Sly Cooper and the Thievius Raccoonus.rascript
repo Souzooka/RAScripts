@@ -229,10 +229,11 @@ function CheatProtection(region)
     return true
 }
 
-function IsMap(region, world_id, level_id)
+function IsMap(region, world_id, level_id, previous=false)
 {
     game = GetGameStats(region)
-    return game["m_world_id"] == world_id && game["m_level_id"] == level_id
+    acc = if_else(previous, prev, (v) => v)
+    return acc(game["m_world_id"]) == world_id && acc(game["m_level_id"]) == level_id
 }
 
 function InGame(region)
@@ -689,17 +690,33 @@ for param in collection_params
 // Misc. Progression Achievements
 
 achievement(
-    title = "We're In!", points = 10,
-    description = "Complete \"Burning Rubber\"",
-    id = 261461, badge = "296295", published = "10/30/2022 1:16:46 AM", modified = "10/30/2022 1:16:46 AM",
-    trigger = dword(0x27DBF8) == 5 && prev(dword(0x27DBFC)) == 2 && dword(0x27DBFC) == 3
+    id=261461,
+    title="We're In!",
+    description="Complete \"Burning Rubber\"",
+    points=10,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        CheatProtection(region) &&
+        // Was on Burning Rubber
+        IsMap(region, 5, 2, previous=true) &&
+        // Now on A Daring Rescue
+        IsMap(region, 5, 3)
+    )
 )
 
 achievement(
-    title = "Nice Job, Raccoon", points = 10,
-    description = "Complete \"A Temporary Truce\"",
-    id = 261463, badge = "296296", published = "10/30/2022 1:16:47 AM", modified = "10/30/2022 1:16:47 AM",
-    trigger = dword(0x27DBF8) == 5 && prev(dword(0x27DBFC)) == 5 && dword(0x27DBFC) == 6
+    id=261463,
+    title="Nice Job, Raccoon",
+    description="Complete \"A Temporary Truce\"",
+    points=10,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        CheatProtection(region) &&
+        // Was on A Temporary Truce
+        IsMap(region, 5, 5, previous=true) &&
+        // Now on Sinking Peril
+        IsMap(region, 5, 6)
+    )
 )
 
 // Safes (excluding Police HQ)
