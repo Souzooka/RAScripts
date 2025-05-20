@@ -12,7 +12,8 @@ US = 0
 regions = [US]
 function IsRegion(region)
 {
-    return true
+    // TODO
+    return byte(0x0) == byte(0x0)
 }
 
 function if_else(cond, v1, v2)
@@ -56,7 +57,7 @@ function _CLevelStats(addr)
         // Safe Cracked
         "m_safe": bit2(addr + 0),
         // Time Trial Complete
-        "m_time_trial": bit3(addr + 0),
+        "m_sprint": bit3(addr + 0),
         // IGT (in seconds)
         "m_time": float(addr + 4), 
         // Best time remaining for time trial completion (seconds)
@@ -130,11 +131,11 @@ function GetCurrentLevelStats(region)
     return _CLevelStats(g_p_level_stats[region])
 }
 
-function GetLevelStats(game, world_id, level_id)
+function GetLevelStats(region, world_id, level_id)
 {
     // Returns the level stats for a particular world/level ID pair
     assert(0 <= level_id && level_id < NUM_LEVELS)
-    world = GetWorldStats(game, world_id)
+    world = GetWorldStats(region, world_id)
     return world["m_levels"][level_id]
 }
 
@@ -143,10 +144,10 @@ function GetCurrentWorldStats(region)
     return _CWorldStats(g_p_world_stats[region])
 }
 
-function GetWorldStats(game, world_id)
+function GetWorldStats(region, world_id)
 {
     assert(0 <= world_id && world_id < NUM_WORLDS)
-    return game["m_worlds"][world_id]
+    return GameStats[region]["m_worlds"][world_id]
 }
 
 function GetGameStats(region)
@@ -156,8 +157,7 @@ function GetGameStats(region)
 
 function KeyObtained(region, world_id, level_id, now=true)
 {
-    game = GetGameStats(region)
-    level = GetLevelStats(game, world_id, level_id)
+    level = GetLevelStats(region, world_id, level_id)
     key = level["m_key"]
     
     if now
@@ -169,8 +169,7 @@ function KeyObtained(region, world_id, level_id, now=true)
 
 function SafeObtained(region, world_id, level_id, now=true)
 {
-    game = GetGameStats(region)
-    level = GetLevelStats(game, world_id, level_id)
+    level = GetLevelStats(region, world_id, level_id)
     safe = level["m_safe"]
     
     if now
@@ -180,14 +179,8 @@ function SafeObtained(region, world_id, level_id, now=true)
     return safe == True
 }
 
-function AllSafes(region)
+function TallySafes(region)
 {
-    game = GetGameStats(region)
-    cond = always_true()
-    
-    // Should be 19 over the 4 worlds
-    total = 19
-    
     // Check current (sum should equal total)
     sum = 0
     for w in range(1, NUM_WORLDS - 1)
@@ -196,40 +189,23 @@ function AllSafes(region)
         sum = sum + world["m_safes"]
     }
     
-    cond = cond && sum == total
-    
-    // Check previous (sum should equal total - 1)
-    sum = 0
-    for w in range(1, NUM_WORLDS - 1)
-    {
-        world = GetWorldStats(region, w)
-        sum = sum + prev(world["m_safes"])
-    }
-    
-    return cond && sum == (total - 1)
+    return sum
 }
 
 function SprintObtained(region, world_id, level_id, now=true)
 {
-    game = GetGameStats(region)
-    level = GetLevelStats(game, world_id, level_id)
+    level = GetLevelStats(region, world_id, level_id)
     sprint = level["m_sprint"]
     
     if now
     {
-        return sprint > prev(safe)
+        return sprint > prev(sprint)
     }
     return sprint == True
 }
 
-function AllSprints(region)
+function TallySprints(region)
 {
-    game = GetGameStats(region)
-    cond = always_true()
-    
-    // Should be 19 over the 4 worlds
-    total = 19
-    
     // Check current (sum should equal total)
     sum = 0
     for w in range(1, NUM_WORLDS - 1)
@@ -238,23 +214,13 @@ function AllSprints(region)
         sum = sum + world["m_sprints"]
     }
     
-    cond = cond && sum == total
-    
-    // Check previous (sum should equal total - 1)
-    sum = 0
-    for w in range(1, NUM_WORLDS - 1)
-    {
-        world = GetWorldStats(region, w)
-        sum = sum + prev(world["m_sprints"])
-    }
-    
-    return cond && sum == (total - 1)
+    return sum
 }
 
 function SaveProtection(region)
 {
     // TODO
-    return true
+    return prev(InGame(region))
 }
 
 function CheatProtection(region)
@@ -282,6 +248,8 @@ function InGame(region)
 
 NUM_WORLDS = 6
 NUM_LEVELS = 9
+TOTAL_SAFES = 19
+TOTAL_SPRINTS = 19
 
 g_p_game_stats = {
     US: dword(0x2623c0),
@@ -915,52 +883,66 @@ achievement(
 
 // Safes (excluding Police HQ)
 
-achievement(
-    title = "Safe: A Stealthy Approach", points = 5,
-    description = "Crack the safe in \"A Stealthy Approach\"",
-    id = 261368, badge = "296027", published = "10/30/2022 1:16:15 AM", modified = "11/18/2022 9:13:53 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 0 && bit2(0x27C67C) > prev(bit2(0x27C67C)) &&
-              prev(dword(0x27C320)) == 0
-)
+// Safe collection
+for param in collection_params
+{
+    world = param["map"][0]
+    level = param["map"][1]
+    
+    if (dictionary_contains_key(param, "id_safe"))
+    {
+        id = param["id_safe"]
+        title = format("Safe: {0}", param["name"])
+        if dictionary_contains_key(param, "title_safe")
+        {
+            title = param["title_safe"]
+        }
+        
+        description = format("Crack the safe in \"{0}\"", param["name"])
+        if dictionary_contains_key(param, "description_safe")
+        {
+            description = param["description_safe"]
+        }
+        
+        points = 5
+        if dictionary_contains_key(param, "points_safe")
+        {
+            points = param["points_safe"]
+        }
+        
+        achievement(
+            id=id,
+            title=title,
+            description=description,
+            points=points,
+            trigger=any_of(regions, region => 
+                IsRegion(region) &&
+                SaveProtection(region) &&
+                CheatProtection(region) &&
+                // Crack that safe
+                SafeObtained(region, world, level)
+            )
+        )
+    }
+}
 
+// All Safes
 achievement(
-    title = "Safe: High Class Heist", points = 5,
-    description = "Crack the Safe in \"High Class Heist\"",
-    id = 261378, badge = "296031", published = "10/30/2022 1:16:18 AM", modified = "11/18/2022 9:13:54 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 2 && bit2(0x27C76C) > prev(bit2(0x27C76C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: Into the Machine", points = 5,
-    description = "Crack the safe in \"Into the Machine\"",
-    id = 261379, badge = "296044", published = "10/30/2022 1:16:18 AM", modified = "11/18/2022 9:41:30 PM",
-    trigger = bit2(0x27C7E4) > prev(bit2(0x27C7E4)) && dword(0x27DBF8) == 1 && dword(0x27DBFC) == 3 &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: A Cunning Disguise", points = 5,
-    description = "Crack the safe in \"A Cunning Disguise\"",
-    id = 261380, badge = "296048", published = "10/30/2022 1:16:19 AM", modified = "11/18/2022 9:13:55 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 4 && bit2(0x27C85C) > prev(bit2(0x27C85C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: The Fire Down Below", points = 5,
-    description = "Crack the safe in \"The Fire Down Below\"",
-    id = 261381, badge = "296059", published = "10/30/2022 1:16:19 AM", modified = "11/18/2022 9:13:55 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 5 && bit2(0x27C8D4) > prev(bit2(0x27C8D4)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: The Gunboat Graveyard", points = 5,
-    description = "Crack the safe in \"The Gunboat Graveyard\"",
-    id = 261382, badge = "296065", published = "10/30/2022 1:16:19 AM", modified = "11/18/2022 9:13:56 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 7 && bit2(0x27C9C4) > prev(bit2(0x27C9C4)) &&
-              prev(dword(0x27C320)) == 0
+    id=261454,
+    title="The Book is Finally Complete",
+    description="Get back all pages of the Thievius Raccoonus",
+    points=25,
+    trigger=any_of(regions, region => 
+        IsRegion(region) &&
+        SaveProtection(region) &&
+        CheatProtection(region) &&
+        // Crack all those safes
+        measured(TallySafes(region) == TOTAL_SAFES, when=IsRegion(region)) &&
+        // Pause measured count when not in game
+        disable_when(!InGame(region), until=InGame(region)) &&
+        // last update should have all safes - 1
+        prev(TallySafes(region)) == TOTAL_SAFES - 1
+    )
 )
 
 achievement(
@@ -1067,18 +1049,69 @@ achievement(
               prev(dword(0x27C320)) == 0
 )
 
-achievement(
-    title = "The Book is Finally Complete", points = 25,
-    description = "Get back all pages of the Thievius Racoonus",
-    id = 261454, badge = "296297", published = "10/30/2022 1:16:44 AM", modified = "10/30/2022 1:16:44 AM",
-    trigger = dword(0x27CAB8) == 6 && dword(0x27CF04) == 5 && dword(0x27D350) == 4 && dword(0x27D79C) == 4 &&
-              ((prev(dword(0x27CAB8)) == 5) ||
-               (prev(dword(0x27CF04)) == 4) ||
-               (prev(dword(0x27D350)) == 3) ||
-               (prev(dword(0x27D79C)) == 3))
-)
-
 // Master Thief Sprints
+
+// Sprint collection
+for param in collection_params
+{
+    world = param["map"][0]
+    level = param["map"][1]
+    
+    if (dictionary_contains_key(param, "id_sprint"))
+    {
+        id = param["id_sprint"]
+        title = format("Sprint: {0}", param["name"])
+        if dictionary_contains_key(param, "title_sprint")
+        {
+            title = param["title_sprint"]
+        }
+        
+        description = format("Complete the Master Thief Sprint in \"{0}\"", param["name"])
+        if dictionary_contains_key(param, "description_sprint")
+        {
+            description = param["description_sprint"]
+        }
+        
+        points = 5
+        if dictionary_contains_key(param, "points_sprint")
+        {
+            points = param["points_sprint"]
+        }
+        
+        achievement(
+            id=id,
+            title=title,
+            description=description,
+            points=points,
+            trigger=any_of(regions, region => 
+                IsRegion(region) &&
+                SaveProtection(region) &&
+                CheatProtection(region) &&
+                // Grab that hourglass
+                SprintObtained(region, world, level)
+            )
+        )
+    }
+}
+
+// All Safes
+achievement(
+    id=261455,
+    title="You Are Granted the Rank of Master Thief",
+    description="Complete all Master Thief Sprints",
+    points=25,
+    trigger=any_of(regions, region => 
+        IsRegion(region) &&
+        SaveProtection(region) &&
+        CheatProtection(region) &&
+        // Finish all those sprints
+        measured(TallySprints(region) == TOTAL_SPRINTS, when=IsRegion(region)) &&
+        // Pause measured count when not in game
+        disable_when(!InGame(region), until=InGame(region)) &&
+        // last update should have all sprints - 1
+        prev(TallySprints(region)) == TOTAL_SPRINTS - 1
+    )
+)
 
 achievement(
     title = "A Speedy Approach", points = 5,
