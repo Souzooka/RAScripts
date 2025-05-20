@@ -884,7 +884,17 @@ achievement(
     description="Obtain Ending 1 or 2.",
     points=10,
     type="win_condition",
-    trigger=any_of(Regions, region => QuickEndingTrigger(region, [707, 716]))
+    trigger=any_of(Regions, region => 
+        // Triggers when the credits sequence is set awarding the achievement without
+        // the player having to sit through credits, BUT can fail if the player softresets
+        // (by pressing R1+R2+L1+L2+Select+Start)
+        // as the game leaves the credits sequence as a dangling pointer in this scenario.
+        QuickEndingTrigger(region, [707, 716]) ||
+        // Therefore, we should also use this backup. This will only award the achievement
+        // When reaching the game ending screen, but will prevent the achievement from not
+        // being awarded entirely.
+        EndingTrigger(region, [1, 2])
+    )
 )
 
 achievement(
@@ -893,7 +903,10 @@ achievement(
     description="Obtain Ending 3.",
     points=25,
     type="win_condition",
-    trigger=any_of(Regions, region => QuickEndingTrigger(region, [708]))
+    trigger=any_of(Regions, region => 
+        QuickEndingTrigger(region, [708]) ||
+        EndingTrigger(region, [3])
+    )
 )
 
 achievement(
@@ -902,7 +915,10 @@ achievement(
     description="Obtain Ending 4.",
     points=25,
     type="win_condition",
-    trigger=any_of(Regions, region => QuickEndingTrigger(region, [717]))
+    trigger=any_of(Regions, region => 
+        QuickEndingTrigger(region, [717]) ||
+        EndingTrigger(region, [4])
+    )
 )
 
 achievement(
@@ -910,7 +926,10 @@ achievement(
     title="Windrun Outta Here",
     description="Obtain Ending 5 or 6.",
     points=10,
-    trigger=any_of(Regions, region => QuickEndingTrigger(region, [505]))
+    trigger=any_of(Regions, region => 
+        QuickEndingTrigger(region, [505]) ||
+        EndingTrigger(region, [5, 6])
+    )
 )
 
 achievement(
@@ -918,7 +937,10 @@ achievement(
     title="Thank the Air Rangers!",
     description="Obtain Ending 7.",
     points=10,
-    trigger=any_of(Regions, region => QuickEndingTrigger(region, [404]))
+    trigger=any_of(Regions, region => 
+        QuickEndingTrigger(region, [404]) ||
+        EndingTrigger(region, [7])
+    )
 )
 
 // ACHIEVEMENTS END
