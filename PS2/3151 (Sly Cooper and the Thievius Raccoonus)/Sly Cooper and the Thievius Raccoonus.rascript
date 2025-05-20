@@ -278,11 +278,49 @@ g_alarm_hit = {
     US: dword(0x2623dc),
 }
 
+// Also used for "Down Home Cooking"
+g_sprint_timer = {
+    US: float(0x26E9C8),
+}
+
+// For "Down Home Cooking"
+g_chickens = {
+    US: dword(0x26d5a8),
+}
+
+// For "Burning Rubber"
+g_player_computers = {
+    US: dword(0x2726ac),
+}
+
+// For "Burning Rubber"
+g_enemy_computers = {
+    US: dword(0x27292c),
+}
+
+// For "Bentley Comes Through"
+g_bentley_packets = {
+    US: dword(0x26dfa8),
+}
+
+// For "Bentley Comes Through"
+g_bentley_health = {
+    US: dword(0x26e228),
+}
+
 // Achievement Data
 
 // Collectibles info
 
 collection_params = [
+    {
+        "name": "Police Headquarters",
+        "map": [0, 3],
+    },
+    {
+        "name": "The Hideout",
+        "map": [0, 4],
+    },
     {
         "id_key": 261370,
         "id_damageless": 261371,
@@ -292,6 +330,10 @@ collection_params = [
         "map": [1, 0],
         "title_damageless": "A Real Stealthy Approach",
         "title_sprint": "A Speedy Approach",
+    },
+    {
+        "name": "Prowling the Grounds",
+        "map": [1, 1],
     },
     {
         "id_key": 261466,
@@ -350,6 +392,15 @@ collection_params = [
         "title_sprint": "The Ship Has Sailed",
     },
     {
+        "id_boss": 261374,
+        "id_boss_damageless": 280205,
+        "boss_phases": 3,
+        "name": "Eye of the Storm",
+        "map": [1, 8],
+        "title_boss": "Raleigh Sunk",
+        "title_boss_damageless": "The Bougiest of Boss Battles",
+    },
+    {
         "id_key": 261394,
         "id_damageless": 261397,
         "id_safe": 261395,
@@ -358,6 +409,10 @@ collection_params = [
         "map": [2, 0],
         "title_damageless": "No Echo Out Here!",
         "title_sprint": "Jackhammer Chisel",
+    },
+    {
+        "name": "Muggshot's Turf",
+        "map": [2, 1],
     },
     {
         "id_key": 261398,
@@ -413,6 +468,15 @@ collection_params = [
         "title_sprint": "Quick! Before the Fuzz Comes!",
     },
     {
+        "id_boss": 261393,
+        "id_boss_damageless": 280206,
+        "boss_phases": 3,
+        "name": "A Strange Reunion",
+        "map": [2, 8],
+        "title_boss": "Muggshot Over Ice",
+        "title_boss_damageless": "Straight Flush",
+    },
+    {
         "id_key": 261417,
         "id_damageless": 261420,
         "id_safe": 261418,
@@ -421,6 +485,10 @@ collection_params = [
         "map": [3, 0],
         "title_damageless": "The Only Thing They Dread is You, Raccoon",
         "title_sprint": "The Dreaded Ghost Cooper",
+    },
+    {
+        "name": "The Swamp's Dark Center",
+        "map": [3, 1],
     },
     {
         "id_key": 261421,
@@ -469,6 +537,15 @@ collection_params = [
         "description_key": "Catch enough chickens to get the key in \"Down Home Cooking\"",
     },
     {
+        "id_boss": 261435,
+        "id_boss_damageless": 261436,
+        "boss_phases": 4,
+        "name": "A Deadly Dance",
+        "map": [3, 8],
+        "title_boss": "Mz Ruby's Last Dance",
+        "title_boss_damageless": "You Got Some Rhythm, Raccoon",
+    },
+    {
         "id_key": 261437,
         "id_damageless": 261440,
         "id_safe": 261438,
@@ -477,6 +554,10 @@ collection_params = [
         "map": [4, 0],
         "title_damageless": "Perilous? Ha!",
         "title_sprint": "She'll Be Running Up The Mountain When She Comes",
+    },
+    {
+        "name": "Inside the Stronghold",
+        "map": [4, 1],
     },
     {
         "id_key": 261445,
@@ -524,6 +605,45 @@ collection_params = [
         "name": "A Desperate Race",
         "map": [4, 7],
     },
+    {
+        "id_boss": 261441,
+        "id_boss_damageless": 280207,
+        "boss_phases": 3,
+        "name": "Flame Fu!",
+        "map": [4, 8],
+        "title_boss": "Panda King Rained Out",
+        "title_boss_damageless": "With All Fingers Intact",
+    },
+    {
+        "name": "A Hazardous Path",
+        "map": [5, 0],
+    },
+    {
+        "name": "Burning Rubber",
+        "map": [5, 2],
+    },
+    {
+        "name": "A Daring Rescue",
+        "map": [5, 3],
+    },
+    {
+        "name": "Bentley Comes Through",
+        "map": [5, 4],
+    },
+    {
+        "name": "A Temporary Truce",
+        "map": [5, 5],
+    },
+    {
+        "name": "Sinking Peril",
+        "map": [5, 6],
+    },
+    {
+        "id_boss": 261464,
+        "boss_phases": 3,
+        "name": "A Strange Reunion",
+        "map": [5, 8]
+    }
 ]
 
 // Test data validity in case I screw up an ID
@@ -531,7 +651,7 @@ __set = {}
 for param in collection_params
 {
     // Assert unique achievement IDs
-    suffixes = ["_key", "_damageless", "_safe", "_sprint"]
+    suffixes = ["_key", "_damageless", "_safe", "_sprint", "_boss", "_boss_damageless"]
     for suffix in suffixes 
     {
         key = format("id{0}", suffix)
@@ -583,6 +703,38 @@ achievement(
         disable_when(g_alarm_hit[region] == True, until=!InGame(region)) &&
         // Get that file (crack safe in Police HQ map)
         trigger_when(SafeObtained(region, 0, 3))
+    )
+)
+
+// Misc. Non-Boss Progression Achievements
+
+achievement(
+    id=261461,
+    title="We're In!",
+    description="Complete \"Burning Rubber\"",
+    points=10,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        CheatProtection(region) &&
+        // Was on Burning Rubber
+        IsMap(region, 5, 2, previous=true) &&
+        // Now on A Daring Rescue
+        IsMap(region, 5, 3)
+    )
+)
+
+achievement(
+    id=261463,
+    title="Nice Job, Raccoon",
+    description="Complete \"A Temporary Truce\"",
+    points=10,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        CheatProtection(region) &&
+        // Was on A Temporary Truce
+        IsMap(region, 5, 5, previous=true) &&
+        // Now on Sinking Peril
+        IsMap(region, 5, 6)
     )
 )
 
@@ -686,38 +838,6 @@ for param in collection_params
         )
     }
 }
-
-// Misc. Progression Achievements
-
-achievement(
-    id=261461,
-    title="We're In!",
-    description="Complete \"Burning Rubber\"",
-    points=10,
-    trigger=any_of(regions, region =>
-        IsRegion(region) &&
-        CheatProtection(region) &&
-        // Was on Burning Rubber
-        IsMap(region, 5, 2, previous=true) &&
-        // Now on A Daring Rescue
-        IsMap(region, 5, 3)
-    )
-)
-
-achievement(
-    id=261463,
-    title="Nice Job, Raccoon",
-    description="Complete \"A Temporary Truce\"",
-    points=10,
-    trigger=any_of(regions, region =>
-        IsRegion(region) &&
-        CheatProtection(region) &&
-        // Was on A Temporary Truce
-        IsMap(region, 5, 5, previous=true) &&
-        // Now on Sinking Peril
-        IsMap(region, 5, 6)
-    )
-)
 
 // Safes (excluding Police HQ)
 
@@ -850,27 +970,54 @@ achievement(
 // Minigames
 
 achievement(
-    title = "Finger Lickin' Good", points = 10,
-    description = "Get all 50 chickens in \"Down Home Cooking\" with 20 seconds or more to spare",
-    id = 261465, badge = "289597", published = "10/30/2022 1:16:48 AM", modified = "11/20/2022 12:18:05 AM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 7 && prior(float(0x26E9C8)) >= 20.0 &&
-              trigger_when(dword(0x26D5A8) == 50)
+    id=261465,
+    title="Finger Lickin' Good",
+    description="Get all 50 chickens in \"Down Home Cooking\" with 20 seconds or more to spare",
+    points=10,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        CheatProtection(region) &&
+        // In correct level
+        IsMap(region, 3, 7) &&
+        // Got all the chickens
+        trigger_when(g_chickens[region] == 50) &&
+        // Had enough time left
+        prior(g_sprint_timer[region]) >= 20.0
+    )
 )
 
 achievement(
-    title = "The Burning Smell is Normal, Right?", points = 10,
-    description = "Finish the level \"Burning Rubber\" before the lava slugs can collect 30 computers",
-    id = 261460, badge = "296247", published = "10/30/2022 1:16:46 AM", modified = "11/18/2022 3:04:27 PM",
-    trigger = trigger_when(dword(0x2726AC) == 60) && dword(0x27292C) < 30 && dword(0x27DBF8) == 5 &&
-              dword(0x27DBFC) == 2
+    id=261460,
+    title="The Burning Smell is Normal, Right?",
+    description="Finish the level \"Burning Rubber\" before the lava slugs can collect 30 computers",
+    points=10,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        CheatProtection(region) &&
+        // In correct level
+        IsMap(region, 5, 2) &&
+        // Got all the computers
+        trigger_when(g_player_computers[region] == 60) &&
+        // Prevented slugs from getting too many
+        g_enemy_computers[region] < 30
+    )
 )
 
 achievement(
-    title = "Hackerman", points = 10,
-    description = "Complete \"Bentley Comes Through\" without taking damage",
-    id = 261462, badge = "296034", published = "10/30/2022 1:16:47 AM", modified = "10/30/2022 1:16:47 AM",
-    trigger = dword(0x27DBF8) == 5 && dword(0x27DBFC) == 4 && dword(0x26E228) == 5 &&
-              trigger_when(dword(0x26DFA8) == 13)
+    id=261462,
+    title="Hackerman",
+    description="Complete \"Bentley Comes Through\" without taking damage",
+    points=10,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        CheatProtection(region) &&
+        // In correct level
+        IsMap(region, 5, 4) &&
+        // Bentley's feeling fine
+        g_bentley_health[region] == 5 &&
+        // Got all the packets
+        trigger_when(g_bentley_packets[region] == 13)
+    )
 )
 
 // Bosses (and boss challenges)
@@ -934,16 +1081,6 @@ achievement(
 )
 
 achievement(
-    title = "Clockwerk Scrapped", points = 25, type="win_condition",
-    description = "Defeat Clockwerk in \"A Strange Reunion\"",
-    id = 261464, badge = "296298", published = "10/30/2022 1:16:47 AM", modified = "9/27/2024 8:10:54 PM",
-    trigger = repeated(3,
-                  float(0x26E4C0) == 0.0 && prev(float(0x26E4C0)) <= 0.25 && prev(float(0x26E4C0)) > 0.049968 &&
-                  never(dword(0x27DBF8) != 5 && dword(0x27DBFC) != 8)
-              ) && never(dword(0x27DC00) < prev(dword(0x27DC00)))
-)
-
-achievement(
     title = "Those Belong in a Museum!", points = 10,
     description = "Defeat Panda King without letting him break any pots (die or exit and re-enter boss to retry)",
     id = 261459, badge = "296239", published = "10/30/2022 1:16:46 AM", modified = "11/18/2022 3:02:33 PM",
@@ -960,6 +1097,16 @@ achievement(
               disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
               disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
               (always_false() || (never(dword(0x27DBFC) != 8)))
+)
+
+achievement(
+    title = "Clockwerk Scrapped", points = 25, type="win_condition",
+    description = "Defeat Clockwerk in \"A Strange Reunion\"",
+    id = 261464, badge = "296298", published = "10/30/2022 1:16:47 AM", modified = "9/27/2024 8:10:54 PM",
+    trigger = repeated(3,
+                  float(0x26E4C0) == 0.0 && prev(float(0x26E4C0)) <= 0.25 && prev(float(0x26E4C0)) > 0.049968 &&
+                  never(dword(0x27DBF8) != 5 && dword(0x27DBFC) != 8)
+              ) && never(dword(0x27DC00) < prev(dword(0x27DC00)))
 )
 
 // Misc./Easter Eggs
