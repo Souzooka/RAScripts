@@ -348,7 +348,203 @@ collection_params = [
         "title_damageless": "Silence the Cannons!",
         "title_sprint": "The Ship Has Sailed",
     },
+    {
+        "id_key": 261394,
+        "id_damageless": 261397,
+        "id_safe": 261395,
+        "id_sprint": 261396,
+        "name": "A Rocky Start",
+        "map": [2, 0],
+        "title_damageless": "No Echo Out Here!",
+        "title_sprint": "Jackhammer Chisel",
+    },
+    {
+        "id_key": 261398,
+        "id_damageless": 261403,
+        "id_safe": 261399,
+        "id_sprint": 261402,
+        "name": "Boneyard Casino",
+        "map": [2, 2],
+        "title_damageless": "Betting From the Shadows",
+        "title_sprint": "Bankruptcy Speedrun",
+    },
+    {
+        "id_key": 261404,
+        "name": "Murray's Big Gamble",
+        "map": [2, 3],
+        "description_key": "Get through a frustrating turret section to get the key at the end of \"Murray's Big Gamble\"",
+    },
+    {
+        "id_key": 261405,
+        "name": "At the Dog Track",
+        "map": [2, 4],
+        "description_key": "Manage to not pull your hair out in order to get the key from \"At the Dog Track\"",
+    },
+    {
+        "id_key": 261406,
+        "id_damageless": 280203,
+        "id_safe": 261407,
+        "id_sprint": 261408,
+        "name": "Two to Tango",
+        "map": [2, 5],
+        "points_damageless": 5,
+        "title_damageless": "Rough Date in Mesa City",
+        "title_sprint": "Speed Dating",
+    },
+    {
+        "id_key": 261409,
+        "id_damageless": 261412,
+        "id_safe": 261410,
+        "id_sprint": 261411,
+        "name": "Straight to the Top",
+        "map": [2, 6],
+        "title_damageless": "Stealth Promotion",
+        "title_sprint": "Stealing Upwards",
+    },
+    {
+        "id_key": 261413,
+        "id_damageless": 261416,
+        "id_safe": 261414,
+        "id_sprint": 261415,
+        "name": "Back Alley Heist",
+        "map": [2, 7],
+        "title_damageless": "Shady Dealings",
+        "title_sprint": "Quick! Before the Fuzz Comes!",
+    },
+    {
+        "id_key": 261417,
+        "id_damageless": 261420,
+        "id_safe": 261418,
+        "id_sprint": 261419,
+        "name": "The Dread Swamp Path",
+        "map": [3, 0],
+        "title_damageless": "The Only Thing They Dread is You, Raccoon",
+        "title_sprint": "The Dreaded Ghost Cooper",
+    },
+    {
+        "id_key": 261421,
+        "id_damageless": 261424,
+        "id_safe": 261422,
+        "id_sprint": 261423,
+        "name": "The Lair of the Beast",
+        "map": [3, 2],
+        "title_damageless": "The Beast is Blind",
+        "title_sprint": "Beastly Speed",
+    },
+    {
+        "id_key": 261427,
+        "id_damageless": 261430,
+        "id_safe": 261428,
+        "id_sprint": 261429,
+        "name": "A Grave Undertaking",
+        "map": [3, 3],
+        "title_damageless": "It’s Just the Wind",
+        "title_sprint": "Morbidly Fast",
+    },
+    {
+        "id_key": 261468,
+        "name": "Piranha Lake",
+        "map": [3, 4],
+    },
+    {
+        "id_key": 261431,
+        "id_damageless": 261434,
+        "id_safe": 261432,
+        "id_sprint": 261433,
+        "name": "Descent into Danger",
+        "map": [3, 5],
+        "title_damageless": "Ascent into Legend",
+        "title_sprint": "Descent into the Danger Zone",
+    },
+    {
+        "id_key": 261426,
+        "name": "A Ghastly Voyage",
+        "map": [3, 6],
+    },
+    {
+        "id_key": 261425,
+        "name": "Down Home Cooking",
+        "map": [3, 7],
+        "description_key": "Catch enough chickens to get the key in \"Down Home Cooking\"",
+    },
+    {
+        "id_key": 261437,
+        "id_damageless": 261440,
+        "id_safe": 261438,
+        "id_sprint": 261439,
+        "name": "A Perilous Ascent",
+        "map": [4, 0],
+        "title_damageless": "Perilous? Ha!",
+        "title_sprint": "She'll Be Running Up The Mountain When She Comes",
+    },
+    {
+        "id_key": 261445,
+        "id_damageless": 261456,
+        "id_safe": 261446,
+        "id_sprint": 261447,
+        "name": "Flaming Temple of Flame",
+        "map": [4, 2],
+        "title_damageless": "No Smoke, No Fire",
+        "title_sprint": "Flaming Fast",
+    },
+    {
+        "id_key": 261448,
+        "id_damageless": 261457,
+        "id_safe": 261449,
+        "id_sprint": 261450,
+        "name": "The Unseen Foe",
+        "map": [4, 3],
+        "title_damageless": "Practically Nonexistent Foe",
+        "title_sprint": "Too Fast For the Naked Eye",
+    },
+    {
+        "id_key": 261442,
+        "name": "The King of the Hill",
+        "map": [4, 4],
+    },
+    {
+        "id_key": 261443,
+        "name": "Rapid Fire Assault",
+        "map": [4, 5],
+    },
+    {
+        "id_key": 261451,
+        "id_damageless": 280204,
+        "id_safe": 261452,
+        "id_sprint": 261453,
+        "name": "Duel by the Dragon",
+        "map": [4, 6],
+        "points_damageless": 5,
+        "title_damageless": "Someone Set Off The Fireworks Early",
+        "title_sprint": "Speed Dueling",
+    },
+    {
+        "id_key": 261444,
+        "name": "A Desperate Race",
+        "map": [4, 7],
+    },
 ]
+
+// Test data validity in case I screw up an ID
+__set = {}
+for param in collection_params
+{
+    // Assert unique achievement IDs
+    suffixes = ["_key", "_damageless", "_safe", "_sprint"]
+    for suffix in suffixes 
+    {
+        key = format("id{0}", suffix)
+        if dictionary_contains_key(param, key)
+        {
+            id = param[key]
+            if dictionary_contains_key(__set, id)
+            {
+                assert(false, format("{0} and {1} contain same ID ({2})", param["name"], __set[id], key))
+            }
+            __set[id] = param["name"]
+        }
+    }
+}
 
 // Prologue
 
@@ -490,381 +686,6 @@ for param in collection_params
     }
 }
 
-achievement(
-    title = "A Rocky Start", points = 3,
-    description = "Get the Key in \"A Rocky Start\"",
-    id = 261394, badge = "296069", published = "10/30/2022 1:16:23 AM", modified = "11/18/2022 9:13:44 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 0 && bit1(0x27CAC8) > prev(bit1(0x27CAC8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Boneyard Casino", points = 3,
-    description = "Get the Key in \"Boneyard Casino\"",
-    id = 261398, badge = "296073", published = "10/30/2022 1:16:25 AM", modified = "11/18/2022 9:13:44 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 2 && bit1(0x27CBB8) > prev(bit1(0x27CBB8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Murray's Big Gamble", points = 3,
-    description = "Get through a frustrating turret section to get the key at the end of \"Murray's Big Gamble\"",
-    id = 261404, badge = "296077", published = "10/30/2022 1:16:27 AM", modified = "11/18/2022 9:13:45 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 3 && bit1(0x27CC30) > prev(bit1(0x27CC30)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "At the Dog Track", points = 3,
-    description = "Manage to not pull your hair out in order to get the key from \"At the Dog Track\"",
-    id = 261405, badge = "296078", published = "10/30/2022 1:16:27 AM", modified = "11/18/2022 9:13:45 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 4 && bit1(0x27CCA8) > prev(bit1(0x27CCA8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Two to Tango", points = 3,
-    description = "Get the key at the end of \"Two to Tango\"",
-    id = 261406, badge = "296079", published = "10/30/2022 1:16:27 AM", modified = "11/18/2022 9:13:45 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 5 && bit1(0x27CD20) > prev(bit1(0x27CD20)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Straight to the Top", points = 3,
-    description = "Get the Key in \"Straight to the Top\"",
-    id = 261409, badge = "296083", published = "10/30/2022 1:16:28 AM", modified = "11/18/2022 9:13:46 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 6 && bit1(0x27CD98) > prev(bit1(0x27CD98)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Back Alley Heist", points = 3,
-    description = "Get the Key from \"Back Alley Heist\"",
-    id = 261413, badge = "296087", published = "10/30/2022 1:16:30 AM", modified = "11/18/2022 9:13:46 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 7 && bit1(0x27CE10) > prev(bit1(0x27CE10)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The Dread Swamp Path", points = 4,
-    description = "Get the key at the end of \"The Dread Swamp Path\"",
-    id = 261417, badge = "296093", published = "10/30/2022 1:16:31 AM", modified = "11/18/2022 9:13:47 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 0 && bit1(0x27CF14) > prev(bit1(0x27CF14)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The Lair of the Beast", points = 4,
-    description = "Get the key in \"The Lair of the Beast\"",
-    id = 261421, badge = "296097", published = "10/30/2022 1:16:32 AM", modified = "11/18/2022 9:13:47 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 2 && bit1(0x27D004) > prev(bit1(0x27D004)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "A Grave Undertaking", points = 4,
-    description = "Get the key in \"A Grave Undertaking\"",
-    id = 261427, badge = "296102", published = "10/30/2022 1:16:35 AM", modified = "11/18/2022 9:13:48 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 3 && bit1(0x27D07C) > prev(bit1(0x27D07C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Piranha Lake", points = 4,
-    description = "Get the key in \"Piranha Lake\"",
-    id = 261468, badge = "296101", published = "10/30/2022 1:17:33 AM", modified = "11/18/2022 9:13:48 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 4 && bit1(0x27D0F4) > prev(bit1(0x27D0F4)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Descent into Danger", points = 4,
-    description = "Get the key in \"Descent into Danger\"",
-    id = 261431, badge = "296147", published = "10/30/2022 1:16:36 AM", modified = "11/18/2022 9:13:49 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 5 && bit1(0x27D16C) > prev(bit1(0x27D16C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "A Ghastly Voyage", points = 4,
-    description = "Get the key in \"A Ghastly Voyage\"",
-    id = 261426, badge = "296151", published = "10/30/2022 1:16:34 AM", modified = "11/18/2022 9:13:49 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 6 && bit1(0x27D1E4) > prev(bit1(0x27D1E4)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Down Home Cooking", points = 4,
-    description = "Catch enough chickens to get the key in \"Down Home Cooking\"",
-    id = 261425, badge = "296106", published = "10/30/2022 1:16:34 AM", modified = "11/19/2022 1:33:09 AM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 7 && bit1(0x27D25C) > prev(bit1(0x27D25C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "A Perilous Ascent", points = 5,
-    description = "Get the key in \"A Perilous Ascent\"",
-    id = 261437, badge = "296238", published = "10/30/2022 1:16:38 AM", modified = "11/18/2022 9:13:50 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 0 && bit1(0x27D360) > prev(bit1(0x27D360)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Flaming Temple of Flame", points = 5,
-    description = "Get the key in \"Flaming Temple of Flame\"",
-    id = 261445, badge = "296281", published = "10/30/2022 1:16:41 AM", modified = "11/18/2022 9:13:51 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 2 && bit1(0x27D450) > prev(bit1(0x27D450)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The Unseen Foe", points = 5,
-    description = "Get the key in \"The Unseen Foe\"",
-    id = 261448, badge = "296285", published = "10/30/2022 1:16:42 AM", modified = "11/18/2022 9:13:51 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 3 && bit1(0x27D4C8) > prev(bit1(0x27D4C8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The King of the Hill", points = 5,
-    description = "Get the key from \"The King of the Hill\"",
-    id = 261442, badge = "294030", published = "10/30/2022 1:16:40 AM", modified = "11/18/2022 9:13:51 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 4 && bit1(0x27D540) > prev(bit1(0x27D540)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Rapid Fire Assault", points = 5,
-    description = "Get the key in \"Rapid Fire Assault\"",
-    id = 261443, badge = "296289", published = "10/30/2022 1:16:40 AM", modified = "11/18/2022 9:13:52 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 5 && bit1(0x27D5B8) > prev(bit1(0x27D5B8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Duel by the Dragon", points = 5,
-    description = "Get the key in \"Duel by the Dragon\"",
-    id = 261451, badge = "296291", published = "10/30/2022 1:16:43 AM", modified = "11/18/2022 9:13:52 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 6 && bit1(0x27D630) > prev(bit1(0x27D630)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "A Desperate Race", points = 5,
-    description = "Get the key in \"A Desperate Race\"",
-    id = 261444, badge = "296290", published = "10/30/2022 1:16:40 AM", modified = "11/18/2022 9:13:53 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 7 && bit1(0x27D6A8) > prev(bit1(0x27D6A8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "A Real Stealthy Approach", points = 10, type="missable",
-    description = "Get the key at the end of A Stealthy Approach without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261371, badge = "296029", published = "10/30/2022 1:16:16 AM", modified = "11/18/2022 9:14:12 PM",
-    trigger = dword(0x27DBF8) == 1 && trigger_when(bit1(0x27C67C) > prev(bit1(0x27C67C))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27C67C)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 0)))
-)
-
-achievement(
-    title = "First Class Heist", points = 10, type="missable",
-    description = "Get the key at the end of \"High Class Heist\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261383, badge = "296033", published = "10/30/2022 1:16:20 AM", modified = "11/18/2022 9:14:12 PM",
-    trigger = dword(0x27DBF8) == 1 && trigger_when(bit1(0x27C76C) > prev(bit1(0x27C76C))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27C76C)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 2)))
-)
-
-achievement(
-    title = "Is Is Hot In Here, Or Is It Just Me?", points = 10, type="missable",
-    description = "Get the key at the end of \"Into the Machine\" without triggering alarms, losing a life, or losing a lucky charm",
-    id = 261366, badge = "296046", published = "10/30/2022 1:16:14 AM", modified = "11/18/2022 9:14:13 PM",
-    trigger = dword(0x27DBF8) == 1 && trigger_when(bit1(0x27C7E4) > prev(bit1(0x27C7E4))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27C7E4)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 3)))
-)
-
-achievement(
-    title = "Not Bad For a Master Dart Board", points = 10, type="missable",
-    description = "Get the key at the end of \"A Cunning Disguise\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261385, badge = "296050", published = "10/30/2022 1:16:20 AM", modified = "11/18/2022 9:14:13 PM",
-    trigger = dword(0x27DBF8) == 1 && trigger_when(bit1(0x27C85C) > prev(bit1(0x27C85C))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27C85C)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 4)))
-)
-
-achievement(
-    title = "The Fire is Dim, But Sly Slunk In", points = 10, type="missable",
-    description = "Get the key at the end of \"The Fire Down Below\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261391, badge = "296061", published = "10/30/2022 1:16:22 AM", modified = "11/18/2022 9:14:13 PM",
-    trigger = dword(0x27DBF8) == 1 && trigger_when(bit1(0x27C8D4) > prev(bit1(0x27C8D4))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27C8D4)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 5)))
-)
-
-achievement(
-    title = "Silence the Cannons!", points = 10, type="missable",
-    description = "Get the key at the end of \"The Gunboat Graveyard\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261392, badge = "296067", published = "10/30/2022 1:16:23 AM", modified = "11/19/2022 10:53:46 PM",
-    trigger = dword(0x27DBF8) == 1 && trigger_when(bit1(0x27C9C4) > prev(bit1(0x27C9C4))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27C9C4)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 7)))
-)
-
-achievement(
-    title = "No Echo Out Here!", points = 10, type="missable",
-    description = "Get the Key in \"A Rocky Start\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261397, badge = "296072", published = "10/30/2022 1:16:24 AM", modified = "11/19/2022 1:49:45 AM",
-    trigger = dword(0x27DBF8) == 2 && trigger_when(bit1(0x27CAC8) > prev(bit1(0x27CAC8))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27CAC8)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 0)))
-)
-
-achievement(
-    title = "Betting From the Shadows", points = 10, type="missable",
-    description = "Get the Key in \"Boneyard Casino\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261403, badge = "296076", published = "10/30/2022 1:16:26 AM", modified = "11/18/2022 9:14:15 PM",
-    trigger = dword(0x27DBF8) == 2 && trigger_when(bit1(0x27CBB8) > prev(bit1(0x27CBB8))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27CBB8)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 2)))
-)
-
-achievement(
-    title = "Stealth Promotion", points = 10, type="missable",
-    description = "Get the Key in \"Straight to the Top\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261412, badge = "296086", published = "10/30/2022 1:16:29 AM", modified = "11/18/2022 9:14:16 PM",
-    trigger = dword(0x27DBF8) == 2 && trigger_when(bit1(0x27CD98) > prev(bit1(0x27CD98))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27CD98)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 6)))
-)
-
-achievement(
-    title = "Rough Date in Mesa City", points = 5, type="missable",
-    description = "Get the key at the end of \"Two to Tango\" without taking damage or dying (exit level to reset)",
-    id = 280203, badge = "309939", published = "1/12/2023 8:45:00 PM", modified = "5/5/2025 5:04:54 PM",
-    trigger = dword(0x27DBF8) == 2 && trigger_when(bit1(0x27CD20) > prev(bit1(0x27CD20))) && prev(dword(0x27C320)) == 0 &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && prev(bit1(0x27D630)) != 1 &&
-              (always_false() || (never(dword(0x27DBFC) != 5)))
-)
-
-achievement(
-    title = "Shady Dealings", points = 10, type="missable",
-    description = "Get the Key from \"Back Alley Heist\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261416, badge = "296091", published = "10/30/2022 1:16:31 AM", modified = "5/5/2025 3:39:24 PM",
-    trigger = dword(0x27DBF8) == 2 && trigger_when(bit1(0x27CE10) > prev(bit1(0x27CE10))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27CE10)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 7)))
-)
-
-achievement(
-    title = "The Only Thing They Dread is You, Raccoon", points = 10, type="missable",
-    description = "Get the key at the end of \"The Dread Swamp Path\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261420, badge = "296096", published = "10/30/2022 1:16:32 AM", modified = "11/18/2022 9:14:17 PM",
-    trigger = dword(0x27DBF8) == 3 && trigger_when(bit1(0x27CF14) > prev(bit1(0x27CF14))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 0)))
-)
-
-achievement(
-    title = "The Beast is Blind", points = 10, type="missable",
-    description = "Get the key in \"The Lair of the Beast\" without tripping alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261424, badge = "296100", published = "10/30/2022 1:16:33 AM", modified = "11/18/2022 9:14:18 PM",
-    trigger = dword(0x27DBF8) == 3 && trigger_when(bit1(0x27D004) > prev(bit1(0x27D004))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27D004)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 2)))
-)
-
-achievement(
-    title = "It’s Just the Wind", points = 10, type="missable",
-    description = "Get the key in \"A Grave Undertaking\" without tripping alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261430, badge = "296105", published = "10/30/2022 1:16:36 AM", modified = "11/18/2022 9:14:18 PM",
-    trigger = dword(0x27DBF8) == 3 && trigger_when(bit1(0x27D07C) > prev(bit1(0x27D07C))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27D07C)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 3)))
-)
-
-achievement(
-    title = "Ascent into Legend", points = 10, type="missable",
-    description = "Get the key in \"Descent into Danger\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261434, badge = "296150", published = "10/30/2022 1:16:37 AM", modified = "11/18/2022 9:14:19 PM",
-    trigger = dword(0x27DBF8) == 3 && trigger_when(bit1(0x27D16C) > prev(bit1(0x27D16C))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27D16C)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 5)))
-)
-
-achievement(
-    title = "Perilous? Ha!", points = 10, type="missable",
-    description = "Get the key in \"A Perilous Ascent\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261440, badge = "296242", published = "10/30/2022 1:16:39 AM", modified = "11/18/2022 9:14:19 PM",
-    trigger = dword(0x27DBF8) == 4 && trigger_when(bit1(0x27D360) > prev(bit1(0x27D360))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27D360)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 0)))
-)
-
-achievement(
-    title = "No Smoke, No Fire", points = 10, type="missable",
-    description = "Get the key in \"Flaming Temple of Flame\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261456, badge = "296284", published = "10/30/2022 1:16:45 AM", modified = "11/18/2022 9:14:20 PM",
-    trigger = dword(0x27DBF8) == 4 && trigger_when(bit1(0x27D450) > prev(bit1(0x27D450))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27D450)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 2)))
-)
-
-achievement(
-    title = "Practically Nonexistent Foe", points = 10, type="missable",
-    description = "Get the key in \"The Unseen Foe\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)",
-    id = 261457, badge = "296288", published = "10/30/2022 1:16:45 AM", modified = "11/18/2022 9:14:20 PM",
-    trigger = dword(0x27DBF8) == 4 && trigger_when(bit1(0x27D4C8) > prev(bit1(0x27D4C8))) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && disable_when(dword(0x2623DC) == 1) &&
-              prev(bit1(0x27D4C8)) != 1 && prev(dword(0x27C320)) == 0 &&
-              (always_false() || (never(dword(0x27DBFC) != 3)))
-)
-
-achievement(
-    title = "Someone Set Off The Fireworks Early", points = 5, type="missable",
-    description = "Get the key in \"Duel by the Dragon\" without taking damage or dying (exit level to retry)",
-    id = 280204, badge = "309940", published = "1/12/2023 8:45:00 PM", modified = "1/13/2023 6:58:02 PM",
-    trigger = dword(0x27DBF8) == 4 && trigger_when(bit1(0x27D630) > prev(bit1(0x27D630))) && prev(dword(0x27C320)) == 0 &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) && prev(bit1(0x27D630)) != 1 &&
-              (always_false() || (never(dword(0x27DBFC) != 6)))
-)
-
 // Misc. Progression Achievements
 
 achievement(
@@ -945,110 +766,6 @@ achievement(
     )
 )
 
-achievement(
-    title = "Safe: A Rocky Start", points = 5,
-    description = "Crack the Safe in \"A Rocky Start\"",
-    id = 261395, badge = "296070", published = "10/30/2022 1:16:24 AM", modified = "11/18/2022 9:13:56 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 0 && bit2(0x27CAC8) > prev(bit2(0x27CAC8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: Boneyard Casino", points = 5,
-    description = "Crack the safe in \"Boneyard Casino\"",
-    id = 261399, badge = "296074", published = "10/30/2022 1:16:25 AM", modified = "11/18/2022 9:13:57 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 2 && bit2(0x27CBB8) > prev(bit2(0x27CBB8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: Two to Tango", points = 5,
-    description = "Crack the safe in \"Two to Tango\"",
-    id = 261407, badge = "296080", published = "10/30/2022 1:16:28 AM", modified = "11/18/2022 9:13:57 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 5 && bit2(0x27CD20) > prev(bit2(0x27CD20)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: Straight to the Top", points = 5,
-    description = "Crack the Safe in \"Straight to the Top\"",
-    id = 261410, badge = "296084", published = "10/30/2022 1:16:29 AM", modified = "11/18/2022 9:13:58 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 6 && bit2(0x27CD98) > prev(bit2(0x27CD98)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: Back Alley Heist", points = 5,
-    description = "Crack the Safe from \"Back Alley Heist\"",
-    id = 261414, badge = "296088", published = "10/30/2022 1:16:30 AM", modified = "11/18/2022 9:13:58 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 7 && bit2(0x27CE10) > prev(bit2(0x27CE10)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: The Dread Swamp Path", points = 5,
-    description = "Crack the Safe in \"The Dread Swamp Path\"",
-    id = 261418, badge = "296094", published = "10/30/2022 1:16:31 AM", modified = "11/18/2022 9:13:59 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 0 && bit2(0x27CF14) > prev(bit2(0x27CF14)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: The Lair of the Beast", points = 5,
-    description = "Crack the safe in \"The Lair of the Beast\"",
-    id = 261422, badge = "296098", published = "10/30/2022 1:16:33 AM", modified = "11/18/2022 9:14:00 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 2 && bit2(0x27D004) > prev(bit2(0x27D004)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: A Grave Undertaking", points = 5,
-    description = "Crack the safe in \"A Grave Undertaking\"",
-    id = 261428, badge = "296103", published = "10/30/2022 1:16:35 AM", modified = "1/8/2023 12:29:00 AM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 3 && bit2(0x27D07C) > prev(bit2(0x27D07C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: Descent into Danger", points = 5,
-    description = "Crack the Safe in \"Descent into Danger\"",
-    id = 261432, badge = "296148", published = "10/30/2022 1:16:36 AM", modified = "11/18/2022 9:14:01 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 5 && bit2(0x27D16C) > prev(bit2(0x27D16C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: A Perilous Ascent", points = 5,
-    description = "Crack the Safe in \"A Perilous Ascent\"",
-    id = 261438, badge = "296240", published = "10/30/2022 1:16:38 AM", modified = "11/18/2022 9:14:01 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 0 && bit2(0x27D360) > prev(bit2(0x27D360)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: Flaming Temple of Flame", points = 5,
-    description = "Crack the Safe in \"Flaming Temple of Flame\"",
-    id = 261446, badge = "296282", published = "10/30/2022 1:16:41 AM", modified = "11/18/2022 9:14:02 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 2 && bit2(0x27D450) > prev(bit2(0x27D450)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: The Unseen Foe", points = 5,
-    description = "Crack the safe in \"The Unseen Foe\"",
-    id = 261449, badge = "296286", published = "10/30/2022 1:16:42 AM", modified = "11/18/2022 9:14:02 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 3 && bit2(0x27D4C8) > prev(bit2(0x27D4C8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Safe: Duel by the Dragon", points = 5,
-    description = "Crack the safe in \"Duel by the Dragon\"",
-    id = 261452, badge = "296292", published = "10/30/2022 1:16:43 AM", modified = "11/18/2022 9:14:03 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 6 && bit2(0x27D630) > prev(bit2(0x27D630)) &&
-              prev(dword(0x27C320)) == 0
-)
-
 // Master Thief Sprints
 
 // Sprint collection
@@ -1094,7 +811,7 @@ for param in collection_params
     }
 }
 
-// All Safes
+// All Sprints
 achievement(
     id=261455,
     title="You Are Granted the Rank of Master Thief",
@@ -1111,169 +828,6 @@ achievement(
         // last update should have all sprints - 1
         prev(TallySprints(region)) == TOTAL_SPRINTS - 1
     )
-)
-
-achievement(
-    title = "A Speedy Approach", points = 5,
-    description = "Complete the Master Thief Sprint in \"A Stealthy Approach\"",
-    id = 261387, badge = "296028", published = "10/30/2022 1:16:21 AM", modified = "11/18/2022 9:14:03 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 0 && bit3(0x27C67C) > prev(bit3(0x27C67C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "One Percenter Jaunt", points = 5,
-    description = "Complete the Master Thief Sprint for \"High Class Heist\"",
-    id = 261467, badge = "296032", published = "10/30/2022 1:17:32 AM", modified = "11/18/2022 9:14:04 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 2 && bit3(0x27C76C) > prev(bit3(0x27C76C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "A Speedy Spanner Sly Spun In", points = 5,
-    description = "Complete the Master Thief Sprint for \"Into the Machine\"",
-    id = 261386, badge = "296045", published = "10/30/2022 1:16:21 AM", modified = "11/18/2022 9:14:05 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 3 && bit3(0x27C7E4) > prev(bit3(0x27C7E4)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "A Speedy Disguise", points = 5,
-    description = "Complete the Master Thief Sprint for \"A Cunning Disguise\"",
-    id = 261388, badge = "296049", published = "10/30/2022 1:16:21 AM", modified = "11/18/2022 9:14:05 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 4 && bit3(0x27C85C) > prev(bit3(0x27C85C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The Fire On Your Below", points = 5,
-    description = "Complete the Master Thief Sprint for \"The Fire Down Below\"",
-    id = 261389, badge = "296060", published = "10/30/2022 1:16:22 AM", modified = "11/18/2022 9:14:06 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 5 && bit3(0x27C8D4) > prev(bit3(0x27C8D4)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The Ship Has Sailed", points = 5,
-    description = "Complete the Master Thief Sprint for \"The Gunboat Graveyard\"",
-    id = 261390, badge = "296066", published = "10/30/2022 1:16:22 AM", modified = "11/18/2022 9:14:06 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 7 && bit3(0x27C9C4) > prev(bit3(0x27C9C4)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Jackhammer Chisel", points = 5,
-    description = "Complete the Master Thief Sprint for \"A Rocky Start\"",
-    id = 261396, badge = "296071", published = "10/30/2022 1:16:24 AM", modified = "11/18/2022 9:14:07 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 0 && bit3(0x27CAC8) > prev(bit3(0x27CAC8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Bankruptcy Speedrun", points = 5,
-    description = "Complete the Master Thief Sprint for \"Boneyard Casino\"",
-    id = 261402, badge = "296075", published = "10/30/2022 1:16:26 AM", modified = "11/18/2022 9:14:07 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 2 && bit3(0x27CBB8) > prev(bit3(0x27CBB8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Speed Dating", points = 5,
-    description = "Complete the Master Thief Sprint for \"Two to Tango\"",
-    id = 261408, badge = "296081", published = "10/30/2022 1:16:28 AM", modified = "11/18/2022 9:14:08 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 5 && bit3(0x27CD20) > prev(bit3(0x27CD20)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Stealing Upwards", points = 5,
-    description = "Complete the Master Thief Sprint for \"Straight to the Top\"",
-    id = 261411, badge = "296085", published = "10/30/2022 1:16:29 AM", modified = "11/18/2022 9:14:08 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 6 && bit3(0x27CD98) > prev(bit3(0x27CD98)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Quick! Before the Fuzz Comes!", points = 5,
-    description = "Complete the Master Thief Sprint for \"Back Alley Heist\"",
-    id = 261415, badge = "296089", published = "10/30/2022 1:16:30 AM", modified = "11/18/2022 9:14:09 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 7 && bit3(0x27CE10) > prev(bit3(0x27CE10)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The Dreaded Ghost Cooper", points = 5,
-    description = "Complete the Master Thief Sprint for \"The Dread Swamp Path\"",
-    id = 261419, badge = "296095", published = "10/30/2022 1:16:32 AM", modified = "11/18/2022 9:14:09 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 0 && bit3(0x27CF14) > prev(bit3(0x27CF14)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Beastly Speed", points = 5,
-    description = "Complete the Master Thief Sprint for \"The Lair of the Beast\"",
-    id = 261423, badge = "296099", published = "10/30/2022 1:16:33 AM", modified = "11/18/2022 9:14:09 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 2 && bit3(0x27D004) > prev(bit3(0x27D004)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Morbidly Fast", points = 5,
-    description = "Complete the Master Thief Sprint for \"A Grave Undertaking\"",
-    id = 261429, badge = "296104", published = "10/30/2022 1:16:35 AM", modified = "11/18/2022 9:14:10 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 3 && bit3(0x27D07C) > prev(bit3(0x27D07C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Descent into the Danger Zone", points = 5,
-    description = "Complete the Master Thief Sprint for \"Descent into Danger\"",
-    id = 261433, badge = "296149", published = "10/30/2022 1:16:37 AM", modified = "11/18/2022 9:14:10 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 5 && bit3(0x27D16C) > prev(bit3(0x27D16C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "She’ll Be Running Up The Mountain When She Comes", points = 5,
-    description = "Complete the Master Thief Sprint for \"A Perilous Ascent\"",
-    id = 261439, badge = "296241", published = "10/30/2022 1:16:39 AM", modified = "11/18/2022 9:14:10 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 0 && bit3(0x27D360) > prev(bit3(0x27D360)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Flaming Fast", points = 5,
-    description = "Complete the Master Thief Sprint for \"Flaming Temple of Flame\"",
-    id = 261447, badge = "296283", published = "10/30/2022 1:16:41 AM", modified = "11/18/2022 9:14:11 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 2 && bit3(0x27D450) > prev(bit3(0x27D450)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Too Fast For the Naked Eye", points = 5,
-    description = "Complete the Master Thief Sprint for \"The Unseen Foe\"",
-    id = 261450, badge = "296287", published = "10/30/2022 1:16:43 AM", modified = "11/18/2022 9:14:11 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 3 && bit3(0x27D4C8) > prev(bit3(0x27D4C8)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Speed Dueling", points = 5,
-    description = "Complete the Master Thief Sprint for \"Duel by the Dragon\"",
-    id = 261453, badge = "296293", published = "10/30/2022 1:16:44 AM", modified = "11/18/2022 9:14:12 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 6 && bit3(0x27D630) > prev(bit3(0x27D630)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "You Are Granted the Rank of Master Thief", points = 25,
-    description = "Complete all Master Thief Sprints",
-    id = 261455, badge = "296248", published = "10/30/2022 1:16:44 AM", modified = "10/30/2022 1:16:44 AM",
-    trigger = dword(0x27CABC) == 6 && dword(0x27CF08) == 5 && dword(0x27D354) == 4 && dword(0x27D7A0) == 4 &&
-              ((prev(dword(0x27CABC)) == 5) ||
-               (prev(dword(0x27CF08)) == 4) ||
-               (prev(dword(0x27D354)) == 3) ||
-               (prev(dword(0x27D7A0)) == 3))
 )
 
 // Minigames
