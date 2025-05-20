@@ -73,8 +73,12 @@ function _CWorldStats(addr)
     obj = {
         // Statistics for each level
         "m_levels": [],
+        // Number of keys collected
+        "m_keys": dword(addr + 0x438),
         // Number of safes cracked
-        "m_safes": float(addr + 0x43C),
+        "m_safes": dword(addr + 0x43C),
+        // Number of sprints done
+        "m_sprints": dword(addr + 0x440),
         // IGT (in seconds)
         "m_time": dword(addr + 0x444),
     }
@@ -181,75 +185,67 @@ function AllSafes(region)
     game = GetGameStats(region)
     cond = always_true()
     
+    // Should be 19 over the 4 worlds
+    total = 19
+    
     // Check current (sum should equal total)
     sum = 0
-    for w in range(0, NUM_WORLDS - 1)
+    for w in range(1, NUM_WORLDS - 1)
     {
-        for l in range(0, NUM_WORLDS - 1)
-        {
-            level = GetLevelStats(game, w, l)
-            total = total + 1
-            sum = sum + level["m_safe"]
-        }
+        world = GetWorldStats(region, w)
+        sum = sum + world["m_safes"]
     }
     
     cond = cond && sum == total
     
     // Check previous (sum should equal total - 1)
     sum = 0
-    for w in range(0, NUM_WORLDS - 1)
+    for w in range(1, NUM_WORLDS - 1)
     {
-        for l in range(0, NUM_WORLDS - 1)
-        {
-            level = GetLevelStats(game, w, l)
-            sum = sum + prev(level["m_safe"])
-        }
+        world = GetWorldStats(region, w)
+        sum = sum + prev(world["m_safes"])
     }
     
     return cond && sum == (total - 1)
 }
 
-function TimeTrialObtained(region, world_id, level_id, now=true)
+function SprintObtained(region, world_id, level_id, now=true)
 {
     game = GetGameStats(region)
     level = GetLevelStats(game, world_id, level_id)
-    time_trial = level["m_time_trial"]
+    sprint = level["m_sprint"]
     
     if now
     {
-        return time_trial > prev(safe)
+        return sprint > prev(safe)
     }
-    return time_trial == True
+    return sprint == True
 }
 
-function AllTimeTrials(region)
+function AllSprints(region)
 {
     game = GetGameStats(region)
     cond = always_true()
     
+    // Should be 19 over the 4 worlds
+    total = 19
+    
     // Check current (sum should equal total)
     sum = 0
-    for w in range(0, NUM_WORLDS - 1)
+    for w in range(1, NUM_WORLDS - 1)
     {
-        for l in range(0, NUM_WORLDS - 1)
-        {
-            level = GetLevelStats(game, w, l)
-            total = total + 1
-            sum = sum + level["m_time_trial"]
-        }
+        world = GetWorldStats(region, w)
+        sum = sum + world["m_sprints"]
     }
     
     cond = cond && sum == total
     
     // Check previous (sum should equal total - 1)
     sum = 0
-    for w in range(0, NUM_WORLDS - 1)
+    for w in range(1, NUM_WORLDS - 1)
     {
-        for l in range(0, NUM_WORLDS - 1)
-        {
-            level = GetLevelStats(game, w, l)
-            sum = sum + prev(level["m_time_trial"])
-        }
+        world = GetWorldStats(region, w)
+        sum = sum + prev(world["m_sprints"])
     }
     
     return cond && sum == (total - 1)
@@ -291,6 +287,10 @@ g_p_game_stats = {
     US: dword(0x2623c0),
 }
 
+GameStats = {
+    US: GetGameStats(US),
+}
+
 g_p_world_stats = {
     US: dword(0x2623c4),
 }
@@ -302,12 +302,85 @@ g_p_level_stats = {
 // Gets set to 1 when the player hits any checkpoint in the level for the first time
 // (useful for detecting the end of the prologue, as the van is a checkpoint)
 g_checkpoint_hit = {
-    US: dword(0x26184c)
+    US: dword(0x26184c),
 }
 
 g_alarm_hit = {
-    US: dword(0x2623dc)
+    US: dword(0x2623dc),
 }
+
+// Achievement Data
+
+// Collectibles info
+
+collection_params = [
+    {
+        "id_key": 261370,
+        "id_damageless": 261371,
+        "id_safe": 261368,
+        "id_sprint": 261387,
+        "name": "A Stealthy Approach",
+        "map": [1, 0],
+        "title_damageless": "A Real Stealthy Approach",
+        "title_sprint": "A Speedy Approach",
+    },
+    {
+        "id_key": 261466,
+        "id_damageless": 261383,
+        "id_safe": 261378,
+        "id_sprint": 261467,
+        "name": "High Class Heist",
+        "map": [1, 2],
+        "title_damageless": "First Class Heist",
+        "title_sprint": "One Percenter Jaunt",
+    },
+    {
+        "id_key": 261369,
+        "id_damageless": 261366,
+        "id_safe": 261379,
+        "id_sprint": 261386,
+        "name": "Into the Machine",
+        "map": [1, 3],
+        "title_damageless": "Is Is Hot In Here, Or Is It Just Me?",
+        "title_sprint": "A Speedy Spanner Sly Spun In",
+    },
+    {
+        "id_key": 261375,
+        "id_damageless": 261385,
+        "id_safe": 261380,
+        "id_sprint": 261388,
+        "name": "A Cunning Disguise",
+        "map": [1, 4],
+        "title_damageless": "Not Bad For a Master Dart Board",
+        "title_sprint": "A Speedy Disguise",
+    },
+    {
+        "id_key": 261376,
+        "id_damageless": 261391,
+        "id_safe": 261381,
+        "id_sprint": 261389,
+        "name": "The Fire Down Below",
+        "map": [1, 5],
+        "title_damageless": "The Fire is Dim, But Sly Slunk In",
+        "title_sprint": "The Fire On Your Below",
+    },
+    {
+        "id_key": 261373,
+        "name": "Treasure in the Depths",
+        "map": [1, 6],
+        "title_key": "Crab.",
+    },
+    {
+        "id_key": 261377,
+        "id_damageless": 261392,
+        "id_safe": 261382,
+        "id_sprint": 261390,
+        "name": "The Gunboat Graveyard",
+        "map": [1, 7],
+        "title_damageless": "Silence the Cannons!",
+        "title_sprint": "The Ship Has Sailed",
+    },
+]
 
 // Prologue
 
@@ -350,78 +423,104 @@ achievement(
 
 // Keys (and key damageless)
 
-achievement(
-    title = "A Stealthy Approach", points = 2,
-    description = "Get the Key in \"A Stealthy Approach\"",
-    id = 261370, badge = "296026", published = "10/30/2022 1:16:15 AM", modified = "11/18/2022 9:13:35 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 0 && bit1(0x27C67C) > prev(bit1(0x27C67C)) &&
-              prev(dword(0x27C320)) == 0
-)
+// Normal key collection
+for param in collection_params
+{
+    world = param["map"][0]
+    level = param["map"][1]
+    
+    if (dictionary_contains_key(param, "id_key"))
+    {
+        id = param["id_key"]
+        title = param["name"]
+        if dictionary_contains_key(param, "title_key")
+        {
+            title = param["title_key"]
+        }
+        
+        description = format("Get the key in \"{0}\"", param["name"])
+        if dictionary_contains_key(param, "description_key")
+        {
+            description = param["description_key"]
+        }
+        
+        points = world + 1
+        if dictionary_contains_key(param, "points_key")
+        {
+            points = param["points_key"]
+        }
+        
+        achievement(
+            id=id,
+            title=title,
+            description=description,
+            points=points,
+            trigger=any_of(regions, region => 
+                IsRegion(region) &&
+                SaveProtection(region) &&
+                CheatProtection(region) &&
+                // Grab that key
+                KeyObtained(region, world, level)
+            )
+        )
+    }
+}
 
-achievement(
-    title = "High Class Heist", points = 2,
-    description = "Get the key in \"High Class Heist\"",
-    id = 261466, badge = "296030", published = "10/30/2022 1:17:32 AM", modified = "11/18/2022 9:13:37 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 2 && bit1(0x27C76C) > prev(bit1(0x27C76C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Into the Machine", points = 2,
-    description = "Get the key at the end of \"Into the Machine\"",
-    id = 261369, badge = "296043", published = "10/30/2022 1:16:15 AM", modified = "11/18/2022 9:13:38 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 3 && bit1(0x27C7E4) > prev(bit1(0x27C7E4)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "A Cunning Disguise", points = 2,
-    description = "Get the Key in \"A Cunning Disguise\"",
-    id = 261375, badge = "296047", published = "10/30/2022 1:16:17 AM", modified = "11/18/2022 9:13:39 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 4 && bit1(0x27C85C) > prev(bit1(0x27C85C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The Fire Down Below", points = 2,
-    description = "Get the key in \"The Fire Down Below\"",
-    id = 261376, badge = "296058", published = "10/30/2022 1:16:17 AM", modified = "11/18/2022 9:13:40 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 5 && bit1(0x27C8D4) > prev(bit1(0x27C8D4)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Crab.", points = 2,
-    description = "Get the key in \"Treasure in the Depths\"",
-    id = 261373, badge = "296063", published = "10/30/2022 1:16:16 AM", modified = "8/25/2024 5:57:04 AM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 6 && bit1(0x27C94C) > prev(bit1(0x27C94C)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The Gunboat Graveyard", points = 2,
-    description = "Get the key in \"The Gunboat Graveyard\"",
-    id = 261377, badge = "296064", published = "10/30/2022 1:16:18 AM", modified = "11/18/2022 9:13:42 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 7 && bit1(0x27C9C4) > prev(bit1(0x27C9C4)) &&
-              prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Raleigh Sunk", points = 10, type="progression",
-    description = "Defeat Raleigh in \"Eye of the Storm\"",
-    id = 261374, badge = "296068", published = "10/30/2022 1:16:17 AM", modified = "11/18/2022 9:13:43 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "The Bougiest of Boss Battles", points = 10,
-    description = "Defeat Raleigh in \"Eye of the Storm\" without taking damage or dying (exit level to retry)",
-    id = 280205, badge = "309941", published = "1/12/2023 8:45:01 PM", modified = "1/12/2023 8:45:01 PM",
-    trigger = dword(0x27DBF8) == 1 && trigger_when(float(0x26E4C0) == 0.0) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
-              (always_false() || (never(dword(0x27DBFC) != 8)))
-)
+// Damageless key collection
+for param in collection_params
+{
+    world = param["map"][0]
+    level = param["map"][1]
+    
+    if (dictionary_contains_key(param, "id_damageless"))
+    {
+        id = param["id_damageless"]
+        title = param["name"]
+        if dictionary_contains_key(param, "title_damageless")
+        {
+            title = param["title_damageless"]
+        }
+        
+        description = format("Get the key in \"{0}\" without triggering alarms, losing a life, or losing a lucky charm. (Exit level to retry)", param["name"])
+        if dictionary_contains_key(param, "description_damageless")
+        {
+            description = param["description_damageless"]
+        }
+        
+        points = 10
+        if dictionary_contains_key(param, "points_damageless")
+        {
+            points = param["points_damageless"]
+        }
+        
+        achievement(
+            id=id,
+            title=title,
+            description=description,
+            points=points,
+            type="missable",
+            trigger=any_of(regions, region => 
+                IsRegion(region) &&
+                SaveProtection(region) &&
+                CheatProtection(region) &&
+                // Key not yet obtained (for trigger)
+                prev(!KeyObtained(region, world, level, now=false)) &&
+                // Correct map ID (for trigger)
+                IsMap(region, world, level) &&
+                // Don't get hit or set off those alarms :(
+                disable_when(
+                    GameStats[region]["m_lives"] < prev(GameStats[region]["m_lives"]) ||
+                    GameStats[region]["m_lucky_charms"] < prev(GameStats[region]["m_lucky_charms"]) ||
+                    g_alarm_hit[region] > prev(g_alarm_hit[region]),
+                    // Reset when level is exited
+                    until=!IsMap(region, world, level)
+                ) &&
+                // Grab that key
+                trigger_when(KeyObtained(region, world, level))
+            )
+        )
+    }
+}
 
 achievement(
     title = "A Rocky Start", points = 3,
@@ -480,23 +579,6 @@ achievement(
 )
 
 achievement(
-    title = "Muggshot Over Ice", points = 10, type="progression",
-    description = "Defeat Muggshot in \"Last Call\"",
-    id = 261393, badge = "296092", published = "10/30/2022 1:16:23 AM", modified = "11/18/2022 9:13:47 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Straight Flush", points = 10,
-    description = "Defeat Muggshot in \"Last Call\" without taking damage or dying (exit level to retry)",
-    id = 280206, badge = "309942", published = "1/12/2023 8:45:01 PM", modified = "1/12/2023 8:45:01 PM",
-    trigger = dword(0x27DBF8) == 2 && trigger_when(float(0x26E4C0) == 0.0) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
-              (always_false() || (never(dword(0x27DBFC) != 8)))
-)
-
-achievement(
     title = "The Dread Swamp Path", points = 4,
     description = "Get the key at the end of \"The Dread Swamp Path\"",
     id = 261417, badge = "296093", published = "10/30/2022 1:16:31 AM", modified = "11/18/2022 9:13:47 PM",
@@ -550,13 +632,6 @@ achievement(
     id = 261425, badge = "296106", published = "10/30/2022 1:16:34 AM", modified = "11/19/2022 1:33:09 AM",
     trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 7 && bit1(0x27D25C) > prev(bit1(0x27D25C)) &&
               prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Mz Ruby's Last Dance", points = 10, type="progression",
-    description = "Defeat Mz Ruby in \"A Deadly Dance\"",
-    id = 261435, badge = "296152", published = "10/30/2022 1:16:37 AM", modified = "11/18/2022 9:13:50 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
 )
 
 achievement(
@@ -1197,6 +1272,57 @@ achievement(
 // Bosses (and boss challenges)
 
 achievement(
+    title = "Raleigh Sunk", points = 10, type="progression",
+    description = "Defeat Raleigh in \"Eye of the Storm\"",
+    id = 261374, badge = "296068", published = "10/30/2022 1:16:17 AM", modified = "11/18/2022 9:13:43 PM",
+    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
+)
+
+achievement(
+    title = "The Bougiest of Boss Battles", points = 10,
+    description = "Defeat Raleigh in \"Eye of the Storm\" without taking damage or dying (exit level to retry)",
+    id = 280205, badge = "309941", published = "1/12/2023 8:45:01 PM", modified = "1/12/2023 8:45:01 PM",
+    trigger = dword(0x27DBF8) == 1 && trigger_when(float(0x26E4C0) == 0.0) &&
+              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
+              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
+              (always_false() || (never(dword(0x27DBFC) != 8)))
+)
+
+achievement(
+    title = "Muggshot Over Ice", points = 10, type="progression",
+    description = "Defeat Muggshot in \"Last Call\"",
+    id = 261393, badge = "296092", published = "10/30/2022 1:16:23 AM", modified = "11/18/2022 9:13:47 PM",
+    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
+)
+
+achievement(
+    title = "Straight Flush", points = 10,
+    description = "Defeat Muggshot in \"Last Call\" without taking damage or dying (exit level to retry)",
+    id = 280206, badge = "309942", published = "1/12/2023 8:45:01 PM", modified = "1/12/2023 8:45:01 PM",
+    trigger = dword(0x27DBF8) == 2 && trigger_when(float(0x26E4C0) == 0.0) &&
+              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
+              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
+              (always_false() || (never(dword(0x27DBFC) != 8)))
+)
+
+achievement(
+    title = "Mz Ruby's Last Dance", points = 10, type="progression",
+    description = "Defeat Mz Ruby in \"A Deadly Dance\"",
+    id = 261435, badge = "296152", published = "10/30/2022 1:16:37 AM", modified = "11/18/2022 9:13:50 PM",
+    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
+)
+
+achievement(
+    title = "You Got Some Rhythm, Raccoon", points = 10,
+    description = "Defeat Mz Ruby in \"A Deadly Dance\" without taking damage or dying (exit level to retry)",
+    id = 261436, badge = "296107", published = "10/30/2022 1:16:38 AM", modified = "11/17/2022 1:23:36 AM",
+    trigger = dword(0x27DBF8) == 3 && trigger_when(float(0x26E4C0) == 0.0) &&
+              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
+              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
+              (always_false() || (never(dword(0x27DBFC) != 8)))
+)
+
+achievement(
     title = "Panda King Rained Out", points = 10, type="progression",
     description = "Defeat Panda King in \"Flame Fu!\"",
     id = 261441, badge = "296294", published = "10/30/2022 1:16:39 AM", modified = "11/18/2022 9:13:53 PM",
@@ -1211,16 +1337,6 @@ achievement(
                   float(0x26E4C0) == 0.0 && prev(float(0x26E4C0)) <= 0.25 && prev(float(0x26E4C0)) > 0.049968 &&
                   never(dword(0x27DBF8) != 5 && dword(0x27DBFC) != 8)
               ) && never(dword(0x27DC00) < prev(dword(0x27DC00)))
-)
-
-achievement(
-    title = "You Got Some Rhythm, Raccoon", points = 10,
-    description = "Defeat Mz Ruby in \"A Deadly Dance\" without taking damage or dying (exit level to retry)",
-    id = 261436, badge = "296107", published = "10/30/2022 1:16:38 AM", modified = "11/17/2022 1:23:36 AM",
-    trigger = dword(0x27DBF8) == 3 && trigger_when(float(0x26E4C0) == 0.0) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
-              (always_false() || (never(dword(0x27DBFC) != 8)))
 )
 
 achievement(
