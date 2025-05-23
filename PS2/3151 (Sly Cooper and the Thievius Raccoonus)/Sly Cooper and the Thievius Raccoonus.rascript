@@ -719,7 +719,15 @@ achievement(
         // Is in Police HQ
         IsMap(region, 0, 3) &&
         // Don't hit those alarms
-        disable_when(g_alarm_hit[region] == True, until=!InGame(region)) &&
+        disable_when(
+            prev(g_alarm_hit[region]) == False &&
+            g_alarm_hit[region] == True, 
+            until=
+                !InGame(region) || 
+                // Allow reset if the player dies (as they'll get sent back to start anyways)
+                // g_checkpoint_hit check just in case there's some hidden checkpoint somehow somewhere
+                (GameStats[region]["m_lives"] < prev(GameStats[region]["m_lives"]) && g_checkpoint_hit[region] == 0)
+        ) &&
         // Get that file (crack safe in Police HQ map)
         trigger_when(SafeObtained(region, 0, 3))
     )
@@ -1088,7 +1096,7 @@ for param in collection_params
         level = param["map"][1]
         
         achievement(
-            id=param["id_boss"],
+            id=param["id_boss_damageless"],
             title=param["title_boss_damageless"],
             description=format("Defeat {0} in \"{1}\" without taking damage or dying (exit level to retry)", param["name_boss"], param["name"]),
             points=10,
@@ -1096,6 +1104,7 @@ for param in collection_params
                 IsRegion(region) &&
                 SaveProtection(region) &&
                 CheatProtection(region) &&
+                IsMap(region, world, level) &&
                 trigger_when(BossTrigger(region, world, level, param["boss_phases"]))
             )
         )
@@ -1117,68 +1126,155 @@ achievement(
         IsRegion(region) &&
         SaveProtection(region) &&
         CheatProtection(region) &&
+        IsMap(region, 4, 8) &&
         trigger_when(BossTrigger(region, 4, 8)) &&
         // No pots broken
         all_of(pot_bits, pot_bit => bit(pot_bit, g_pots_offset[region]) == 0)
     )
 )
 
-achievement(
-    title = "Those Belong in a Museum!", points = 10,
-    description = "Defeat Panda King without letting him break any pots (die or exit and re-enter boss to retry)",
-    id = 261459, badge = "296239", published = "10/30/2022 1:16:46 AM", modified = "11/18/2022 3:02:33 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 8 && trigger_when(float(0x26E4C0) == 0.0) &&
-              bit5(0x26143D) == 0 && bit6(0x26143D) == 0 && bit7(0x26143D) == 0 && bit0(0x26143E) == 0 &&
-              bit1(0x26143E) == 0 && bit2(0x26143E) == 0 && bit3(0x26143E) == 0 && bit4(0x26143E) == 0
-)
-
 // Misc./Easter Eggs
 
-achievement(
-    title = "BANG YOUR HEAD (Metal Health will drive you mad)", points = 1,
-    description = "Have Sly and Bentley (or Murray) headbang during a radio call",
-    id = 261372, badge = "296062", published = "10/30/2022 1:16:16 AM", modified = "5/7/2025 12:04:06 AM",
-    trigger = never(byte(0x270B30) != 2) && repeated(100, byte(0x262CBD) <= 7) && repeated(100, byte(0x262CBD) >= 248) &&
-              repeated(100, byte(0x262CF1) <= 7) && repeated(100, byte(0x262CF1) >= 248)
-)
+// Silly dynamic addresses
+g_murray_value = {
+    US: dword(0xb521fc)
+}
+
+g_world_selected = {
+    US: dword(0x109b840),
+}
+
+murray_params = [
+    {
+        "id": 261384,
+        "title": "Want One?",
+        "description": "Have Murray offer you a peanut at HQ",
+        "world": 2,
+        "transition": [7, 2]
+    },
+    {
+        "id": 261400,
+        "title": "How Did He Do That?",
+        "description": "Witness Murray's sick dance moves",
+        "world": 3,
+        "transition": [9, 3]
+    },
+    {
+        "id": 261401,
+        "title": "Hey, Can I Play?",
+        "description": "Come on Murray, at least let me pretend to be Player 2...",
+        "world": 4,
+        "transition": [6, 1]
+    },
+    {
+        "id": 261458,
+        "title": "Those Things are Defective",
+        "description": "Tell Murray to knock it off with that paddlin'",
+        "world": 5,
+        "transition": [8, 4]
+    },
+]
+
+// Murray
+for param in murray_params
+{
+    achievement(
+        id=param["id"],
+        title=param["title"],
+        description=param["description"],
+        type="missable",
+        points=0,
+        trigger=any_of(regions, region =>
+            IsRegion(region) &&
+            IsMap(region, 0, 4) &&
+            g_world_selected[region] == param["world"] &&
+            prev(g_murray_value[region]) == param["transition"][0] &&
+            g_murray_value[region] == param["transition"][1]
+        )
+    )
+}
+
+// Headbangs
+g_left_radio_window = {
+    US: dword(0x270b30),
+}
+
+g_right_radio_window = {
+    US: dword(0x2717a8),
+}
+
+
+// 0x0 (down) to 0xFF (up)
+g_left_stick_y = {
+    US: byte(0x262cbd),
+}
+g_right_stick_y = {
+    US: byte(0x262cf1),
+}
+
+ACTIONS = 6 // How many times the player has to bring the stick up, and the stick down
+STAY = 50 // How many frames the player has to have the stick in the up and the down positions
+DEADZONE = 8 // How far (out of 128) players have to travel
+
+UP = 0xFF - DEADZONE
+DOWN = DEADZONE
+WiggleUp = (region) => 
+    repeated(ACTIONS, prev(g_left_stick_y[region]) < UP && g_right_stick_y[region] >= UP) &&
+    repeated(ACTIONS, prev(g_left_stick_y[region]) >= UP && g_right_stick_y[region] < UP) &&
+    repeated(STAY, g_left_stick_y[region] >= UP) &&
+    repeated(ACTIONS, prev(g_right_stick_y[region]) < UP && g_right_stick_y[region] >= UP) &&
+    repeated(ACTIONS, prev(g_right_stick_y[region]) >= UP && g_right_stick_y[region] < UP) &&
+    repeated(STAY, g_right_stick_y[region] >= UP)
+WiggleDown = (region) => 
+    repeated(ACTIONS, prev(g_left_stick_y[region]) > DOWN && g_right_stick_y[region] <= DOWN) &&
+    repeated(ACTIONS, prev(g_left_stick_y[region]) <= DOWN && g_right_stick_y[region] > DOWN) &&
+    repeated(STAY, g_left_stick_y[region] <= DOWN) &&
+    repeated(ACTIONS, prev(g_right_stick_y[region]) > DOWN && g_right_stick_y[region] <= DOWN) &&
+    repeated(ACTIONS, prev(g_right_stick_y[region]) <= DOWN && g_right_stick_y[region] > DOWN) &&
+    repeated(STAY, g_right_stick_y[region] <= DOWN)
 
 achievement(
-    title = "Want One?", points = 0, type="missable",
-    description = "Have Murray offer you a peanut at HQ",
-    id = 261384, badge = "296299", published = "10/30/2022 1:16:20 AM", modified = "10/30/2022 1:16:20 AM",
-    trigger = dword(0x27DBF8) == 0 && dword(0x27DBFC) == 4 && dword(0x109B840) == 2 && word(0xB521FC) == 2 &&
-              prev(word(0xB521FC)) == 7
+    id=261372,
+    title="BANG YOUR HEAD (Metal Health will drive you mad)", 
+    description="Have Sly and Bentley (or Murray) headbang during a radio call",
+    points=1,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        // Left Radio Window should be open
+        never(g_left_radio_window[region] != 2) &&
+        // Right Radio Window should be open
+        never(g_right_radio_window[region] != 2) &&
+        // Wiggle those sticks
+        WiggleUp(region) &&
+        WiggleDown(region)
+    )
 )
 
-achievement(
-    title = "How Did He Do That?", points = 0, type="missable",
-    description = "Witness Murray's sick dance moves",
-    id = 261400, badge = "296300", published = "10/30/2022 1:16:25 AM", modified = "10/30/2022 1:16:25 AM",
-    trigger = dword(0x27DBF8) == 0 && dword(0x27DBFC) == 4 && dword(0x109B840) == 3 && word(0xB521FC) == 3 &&
-              prev(word(0xB521FC)) == 9
-)
+// Watch that anime
+g_in_movie = {
+    US: dword(0x2623b8),
+}
+
+g_movie_type = {
+    US: dword(0x269A00)
+}
+
+MOVIE_LENGTH = 6609
 
 achievement(
-    title = "Hey, Can I Play?", points = 0, type="missable",
-    description = "Come on Murray, at least let me pretend to be Player 2...",
-    id = 261401, badge = "296301", published = "10/30/2022 1:16:26 AM", modified = "10/30/2022 1:16:26 AM",
-    trigger = dword(0x27DBF8) == 0 && dword(0x27DBFC) == 4 && dword(0x109B840) == 4 && word(0xB521FC) == 1 &&
-              prev(word(0xB521FC)) == 6
-)
-
-achievement(
-    title = "Those Things are Defective", points = 0, type="missable",
-    description = "Tell Murray to knock it off with that paddlin'",
-    id = 261458, badge = "296302", published = "10/30/2022 1:16:45 AM", modified = "10/30/2022 1:16:45 AM",
-    trigger = dword(0x27DBF8) == 0 && dword(0x27DBFC) == 4 && dword(0x109B840) == 5 && word(0xB521FC) == 4 &&
-              prev(word(0xB521FC)) == 8
-)
-
-achievement(
-    title = "Sly Cooper is The Best Anime", points = 0,
-    description = "Watch \"The Tokyo Police File\"  in its entirety",
-    id = 280208, badge = "309944", published = "1/12/2023 8:45:03 PM", modified = "1/12/2023 8:45:03 PM",
-    trigger = repeated(6609, dword(0x2623B8) == 1 && dword(0x269A00) == 1) && never(dword(0x2623B8) == 0)
+    id=280208,
+    title="Sly Cooper is The Best Anime",
+    description="Watch \"The Tokyo Police File\" in its entirety",
+    points=0,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        repeated(
+            MOVIE_LENGTH,
+            g_in_movie[region] == True &&
+            never(g_in_movie[region] == False) &&
+            g_movie_type[region] == 1
+        )
+    )
 )
 
 // Leaderboards
