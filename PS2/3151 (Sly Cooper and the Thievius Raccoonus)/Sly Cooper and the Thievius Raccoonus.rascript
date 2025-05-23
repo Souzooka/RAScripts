@@ -10,6 +10,8 @@ False = 0
 
 US = 0
 JP = 1
+EU = 2
+KR = 3
 regions = [US]
 function IsRegion(region)
 {
@@ -225,6 +227,14 @@ function IsMap(region, world_id, level_id, previous=false)
     return acc(game["m_world_id"]) == world_id && acc(game["m_level_id"]) == level_id
 }
 
+function IsBoot(region)
+{
+    return
+        g_p_game_stats[region] == NULL ||
+        (g_p_game_stats[region] != NULL && IsMap(region, 0, 0)) ||
+        (g_p_game_stats[region] != NULL && IsSplash(region))
+}
+
 function IsSplash(region)
 {
     return IsMap(region, 0, 2)
@@ -400,9 +410,19 @@ g_p_world_stats = {
     JP: dword(0x262968),
 }
 
+WorldStats = {
+    US: GetCurrentWorldStats(US),
+    JP: GetCurrentWorldStats(JP),
+}
+
 g_p_level_stats = {
     US: dword(0x2623c8),
     JP: dword(0x26296c),
+}
+
+LevelStats = {
+    US: GetCurrentLevelStats(US),
+    JP: GetCurrentLevelStats(JP),
 }
 
 // NULL on boot, and removing memcard
@@ -1561,3 +1581,109 @@ for param in collection_params
         )
     }
 }
+
+// Rich Presence
+
+function MapIDToInt(world, level)
+{
+    return world * 0x100 + level
+}
+
+rp_map_lookup = {}
+for param in collection_params
+{
+    rp_map_lookup[MapIDToInt(param["map"][0], param["map"][1])] = param["name"]
+}
+
+rp_sly = "🦝"
+rp_sly_long = format("{0}Sly Cooper in:", rp_sly)
+rp_key = "🔑"
+rp_safe = "📄"
+rp_sprint = "⏳"
+
+for region in regions
+{
+    world = GameStats[region]["m_world_id"]
+    level = GameStats[region]["m_level_id"]
+    
+    rp_keys = rich_presence_value("KEYS", WorldStats[region]["m_keys"])
+    rp_safes = rich_presence_value("SAFES", WorldStats[region]["m_safes"])
+    rp_sprints = rich_presence_value("SPRINTS", WorldStats[region]["m_sprints"])
+    rp_got_safe = rich_presence_lookup("FILE", LevelStats[region]["m_safe"], 
+        {
+            False: "❌",
+            True: "✅",
+        }
+    )
+    
+    rp_map = rich_presence_lookup("MAP", MapIDToInt(world, level), rp_map_lookup, "UNKNOWN MAP")
+    rp_world = rich_presence_lookup("WORLD", world,
+        {
+            0: "🦊",
+            1: "🐸",
+            2: "🐕",
+            3: "🐊",
+            4: "🐼",
+            5: "🦉",
+        }
+    )
+    
+    rp_keys_per_world = 7
+    rp_safes_per_world = rich_presence_lookup("SAFES_PER_WORLD", world, 
+        {
+            0: "0",
+            1: "6",
+            2: "5",
+            3: "4",
+            4: "4",
+        }
+    )
+    rp_sprints_per_world = rp_safes_per_world
+    
+    rich_presence_conditional_display(
+        IsRegion(region) && IsBoot(region),
+        "Sneakily prepping the game"
+    )
+    rich_presence_conditional_display(
+        IsRegion(region) && IsParis(region) && !InGame(region),
+        "{0} The Title Screen",
+        rp_sly_long
+    )
+    rich_presence_conditional_display(
+        IsRegion(region) && IsParis(region) && InGame(region),
+        "{0} {1}Just a Little Rendezvous {2}[{3}]",
+        rp_sly_long,
+        rp_world,
+        rp_safe,
+        rp_got_safe
+    )
+    rich_presence_conditional_display(
+        IsRegion(region) && IsHideout(region),
+        "{0} World Select",
+        rp_sly_long
+    )
+    rich_presence_conditional_display(
+        IsRegion(region) && 1 <= world && world <= 4,
+        "{0} {1}{2} | {3}[{4}/{5}] {6}[{7}/{8}] {9}[{10}/{11}]",
+        rp_sly_long, // 0
+        rp_world, // 1
+        rp_map, // 2
+        rp_key, // 3
+        rp_keys, // 4
+        rp_keys_per_world, // 5
+        rp_safe, // 6
+        rp_safes, // 7
+        rp_safes_per_world, // 8
+        rp_sprint, // 9
+        rp_sprints, // 10
+        rp_sprints_per_world // 11
+    )
+    rich_presence_conditional_display(
+        IsRegion(region) && world == 5,
+        "{0} {1}{2}",
+        rp_sly_long,
+        rp_world,
+        rp_map
+    )
+}
+rich_presence_display(rp_sly)
