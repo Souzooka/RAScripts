@@ -218,18 +218,6 @@ function TallySprints(region)
     return sum
 }
 
-function SaveProtection(region)
-{
-    // TODO
-    return prev(InGame(region))
-}
-
-function CheatProtection(region)
-{
-    // TODO
-    return true
-}
-
 function IsMap(region, world_id, level_id, previous=false)
 {
     game = GetGameStats(region)
@@ -375,6 +363,21 @@ function InGame(region)
     return switch[region] == 0
 }
 
+function SaveProtection(region)
+{
+    return
+        // Protects against unlocks at boot
+        g_p_game_stats[region] != NULL &&
+        // Protects against loading a save in any context
+        prev(g_last_loaded_save[region]) == g_last_loaded_save[region]
+}
+
+function CheatProtection(region)
+{
+    // TODO
+    return true
+}
+
 // Game variables
 
 NUM_WORLDS = 6
@@ -400,6 +403,12 @@ g_p_world_stats = {
 g_p_level_stats = {
     US: dword(0x2623c8),
     JP: dword(0x26296c),
+}
+
+// NULL on boot, and removing memcard
+// Changes value when loading different save file index
+g_last_loaded_save = {
+    US: dword(0x269984),
 }
 
 g_game_paused = {
