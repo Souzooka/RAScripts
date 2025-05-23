@@ -9,6 +9,7 @@ True = 1
 False = 0
 
 US = 0
+JP = 1
 regions = [US]
 function IsRegion(region)
 {
@@ -254,18 +255,22 @@ TOTAL_SPRINTS = 19
 
 g_p_game_stats = {
     US: dword(0x2623c0),
+    JP: dword(0x262964),
 }
 
 GameStats = {
     US: GetGameStats(US),
+    JP: GetGameStats(JP),
 }
 
 g_p_world_stats = {
     US: dword(0x2623c4),
+    JP: dword(0x262968),
 }
 
 g_p_level_stats = {
     US: dword(0x2623c8),
+    JP: dword(0x26296c),
 }
 
 // Gets set to 1 when the player hits any checkpoint in the level for the first time
@@ -276,6 +281,10 @@ g_checkpoint_hit = {
 
 g_alarm_hit = {
     US: dword(0x2623dc),
+}
+
+g_boss_health = {
+    US: float(0x26e4c0),
 }
 
 // Also used for "Down Home Cooking"
@@ -314,7 +323,11 @@ g_bentley_health = {
 
 collection_params = [
     {
-        "name": "Police Headquarters",
+        "name": "Splash",
+        "map": [0, 2],
+    },
+    {
+        "name": "Paris, France",
         "map": [0, 3],
     },
     {
@@ -394,8 +407,9 @@ collection_params = [
     {
         "id_boss": 261374,
         "id_boss_damageless": 280205,
-        "boss_phases": 3,
+        "boss_phases": 1,
         "name": "Eye of the Storm",
+        "name_boss": "Raleigh",
         "map": [1, 8],
         "title_boss": "Raleigh Sunk",
         "title_boss_damageless": "The Bougiest of Boss Battles",
@@ -470,8 +484,9 @@ collection_params = [
     {
         "id_boss": 261393,
         "id_boss_damageless": 280206,
-        "boss_phases": 3,
+        "boss_phases": 1,
         "name": "A Strange Reunion",
+        "name_boss": "Muggshot",
         "map": [2, 8],
         "title_boss": "Muggshot Over Ice",
         "title_boss_damageless": "Straight Flush",
@@ -539,8 +554,9 @@ collection_params = [
     {
         "id_boss": 261435,
         "id_boss_damageless": 261436,
-        "boss_phases": 4,
+        "boss_phases": 1,
         "name": "A Deadly Dance",
+        "name_boss": "Mz Ruby",
         "map": [3, 8],
         "title_boss": "Mz Ruby's Last Dance",
         "title_boss_damageless": "You Got Some Rhythm, Raccoon",
@@ -608,8 +624,9 @@ collection_params = [
     {
         "id_boss": 261441,
         "id_boss_damageless": 280207,
-        "boss_phases": 3,
+        "boss_phases": 1,
         "name": "Flame Fu!",
+        "name_boss": "Panda King",
         "map": [4, 8],
         "title_boss": "Panda King Rained Out",
         "title_boss_damageless": "With All Fingers Intact",
@@ -642,7 +659,9 @@ collection_params = [
         "id_boss": 261464,
         "boss_phases": 3,
         "name": "A Strange Reunion",
-        "map": [5, 8]
+        "name_boss": "Clockwerk",
+        "map": [5, 8],
+        "title_boss": "Clockwerk Scrapped",
     }
 ]
 
@@ -1022,62 +1041,86 @@ achievement(
 
 // Bosses (and boss challenges)
 
-achievement(
-    title = "Raleigh Sunk", points = 10, type="progression",
-    description = "Defeat Raleigh in \"Eye of the Storm\"",
-    id = 261374, badge = "296068", published = "10/30/2022 1:16:17 AM", modified = "11/18/2022 9:13:43 PM",
-    trigger = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
-)
+function BossTrigger(region, world, level, phases=1)
+{
+
+    cond = g_boss_health[region] == 0.0 && prev(g_boss_health[region]) > 0.0
+
+    if phases <= 1
+    {
+        return cond && IsMap(region, world, level)
+    }
+    
+    return repeated(
+        phases,
+        cond &&
+        never(GameStats[region]["m_lives"] < prev(GameStats[region]["m_lives"])) &&
+        never(!IsMap(region, world, level))
+    )
+}
+
+for param in collection_params
+{
+    if dictionary_contains_key(param, "id_boss")
+    {
+        world = param["map"][0]
+        level = param["map"][1]
+        type = if_else(world == NUM_WORLDS - 1, "win_condition", "progression")
+        
+        achievement(
+            id=param["id_boss"],
+            title=param["title_boss"],
+            description=format("Defeat {0} in \"{1}\"", param["name_boss"], param["name"]),
+            type=type,
+            points=if_else(type == "win_condition", 25, 10),
+            trigger=any_of(regions, region =>    
+                IsRegion(region) &&
+                SaveProtection(region) &&
+                CheatProtection(region) &&
+                BossTrigger(region, world, level, param["boss_phases"])
+            )
+        )
+    }
+    
+    if dictionary_contains_key(param, "id_boss_damageless")
+    {
+        world = param["map"][0]
+        level = param["map"][1]
+        
+        achievement(
+            id=param["id_boss"],
+            title=param["title_boss_damageless"],
+            description=format("Defeat {0} in \"{1}\" without taking damage or dying (exit level to retry)", param["name_boss"], param["name"]),
+            points=10,
+            trigger=any_of(regions, region =>    
+                IsRegion(region) &&
+                SaveProtection(region) &&
+                CheatProtection(region) &&
+                trigger_when(BossTrigger(region, world, level, param["boss_phases"]))
+            )
+        )
+    }
+}
+
+// Custom pot challenge for Panda King
+pot_bits = [5, 6, 7, 8, 9, 10, 11, 12]
+g_pots_offset = {
+    US: 0x26143D,
+}
 
 achievement(
-    title = "The Bougiest of Boss Battles", points = 10,
-    description = "Defeat Raleigh in \"Eye of the Storm\" without taking damage or dying (exit level to retry)",
-    id = 280205, badge = "309941", published = "1/12/2023 8:45:01 PM", modified = "1/12/2023 8:45:01 PM",
-    trigger = dword(0x27DBF8) == 1 && trigger_when(float(0x26E4C0) == 0.0) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
-              (always_false() || (never(dword(0x27DBFC) != 8)))
-)
-
-achievement(
-    title = "Muggshot Over Ice", points = 10, type="progression",
-    description = "Defeat Muggshot in \"Last Call\"",
-    id = 261393, badge = "296092", published = "10/30/2022 1:16:23 AM", modified = "11/18/2022 9:13:47 PM",
-    trigger = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "Straight Flush", points = 10,
-    description = "Defeat Muggshot in \"Last Call\" without taking damage or dying (exit level to retry)",
-    id = 280206, badge = "309942", published = "1/12/2023 8:45:01 PM", modified = "1/12/2023 8:45:01 PM",
-    trigger = dword(0x27DBF8) == 2 && trigger_when(float(0x26E4C0) == 0.0) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
-              (always_false() || (never(dword(0x27DBFC) != 8)))
-)
-
-achievement(
-    title = "Mz Ruby's Last Dance", points = 10, type="progression",
-    description = "Defeat Mz Ruby in \"A Deadly Dance\"",
-    id = 261435, badge = "296152", published = "10/30/2022 1:16:37 AM", modified = "11/18/2022 9:13:50 PM",
-    trigger = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
-)
-
-achievement(
-    title = "You Got Some Rhythm, Raccoon", points = 10,
-    description = "Defeat Mz Ruby in \"A Deadly Dance\" without taking damage or dying (exit level to retry)",
-    id = 261436, badge = "296107", published = "10/30/2022 1:16:38 AM", modified = "11/17/2022 1:23:36 AM",
-    trigger = dword(0x27DBF8) == 3 && trigger_when(float(0x26E4C0) == 0.0) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
-              (always_false() || (never(dword(0x27DBFC) != 8)))
-)
-
-achievement(
-    title = "Panda King Rained Out", points = 10, type="progression",
-    description = "Defeat Panda King in \"Flame Fu!\"",
-    id = 261441, badge = "296294", published = "10/30/2022 1:16:39 AM", modified = "11/18/2022 9:13:53 PM",
-    trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 8 && float(0x26E4C0) == 0.0 && prev(dword(0x27C320)) == 0
+    id=261459,
+    title="Those Belong in a Museum!",
+    description="Defeat Panda King without letting him break any pots (die or exit and re-enter boss to retry)",
+    points=10,
+    trigger=any_of(regions, region =>
+        IsRegion(region) &&
+        SaveProtection(region) &&
+        CheatProtection(region) &&
+        trigger_when(BossTrigger(region, 4, 8)) &&
+        // No pots broken
+        all_of(pot_bits, pot_bit => bit(pot_bit, g_pots_offset[region]) == 0)
+    )
 )
 
 achievement(
@@ -1087,26 +1130,6 @@ achievement(
     trigger = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 8 && trigger_when(float(0x26E4C0) == 0.0) &&
               bit5(0x26143D) == 0 && bit6(0x26143D) == 0 && bit7(0x26143D) == 0 && bit0(0x26143E) == 0 &&
               bit1(0x26143E) == 0 && bit2(0x26143E) == 0 && bit3(0x26143E) == 0 && bit4(0x26143E) == 0
-)
-
-achievement(
-    title = "With All Fingers Intact", points = 10,
-    description = "Defeat Panda King in \"Flame Fu!\" without taking damage or dying (exit level to retry)",
-    id = 280207, badge = "309943", published = "1/12/2023 8:45:02 PM", modified = "1/12/2023 8:45:02 PM",
-    trigger = dword(0x27DBF8) == 4 && trigger_when(float(0x26E4C0) == 0.0) &&
-              disable_when(dword(0x27DC00) < prev(dword(0x27DC00))) &&
-              disable_when(dword(0x27DC04) < prev(dword(0x27DC04))) &&
-              (always_false() || (never(dword(0x27DBFC) != 8)))
-)
-
-achievement(
-    title = "Clockwerk Scrapped", points = 25, type="win_condition",
-    description = "Defeat Clockwerk in \"A Strange Reunion\"",
-    id = 261464, badge = "296298", published = "10/30/2022 1:16:47 AM", modified = "9/27/2024 8:10:54 PM",
-    trigger = repeated(3,
-                  float(0x26E4C0) == 0.0 && prev(float(0x26E4C0)) <= 0.25 && prev(float(0x26E4C0)) > 0.049968 &&
-                  never(dword(0x27DBF8) != 5 && dword(0x27DBFC) != 8)
-              ) && never(dword(0x27DC00) < prev(dword(0x27DC00)))
 )
 
 // Misc./Easter Eggs
