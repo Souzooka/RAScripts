@@ -237,6 +237,135 @@ function IsMap(region, world_id, level_id, previous=false)
     return acc(game["m_world_id"]) == world_id && acc(game["m_level_id"]) == level_id
 }
 
+function IsSplash(region)
+{
+    return IsMap(region, 0, 2)
+}
+
+function IsParis(region)
+{
+    return IsMap(region, 0, 3)
+}
+
+function IsHideout(region)
+{
+    return IsMap(region, 0, 4)
+}
+
+function IsApproach(region)
+{
+    return GameStats[region]["m_level_id"] == 0
+}
+
+function IsHub(region)
+{
+    return GameStats[region]["m_level_id"] == 1
+}
+
+function IsBoss(region)
+{
+    return GameStats[region]["m_level_id"] == 8
+}
+
+function IsTreasureGame(region)
+{
+    return IsMap(region, 1, 6)
+}
+
+function IsSlyTurretSegment(region)
+{
+    ids = [
+        [2, 3],
+        [4, 4],
+        [5, 0],
+    ]
+    
+    return any_of(ids, ids => IsMap(region, ids[0], ids[1]))
+}
+
+function IsCarmelitaTurretSegment(region)
+{
+    return IsMap(region, 5, 5)
+}
+
+function IsRace(region)
+{
+    ids = [
+        [2, 4],
+        [4, 7],
+    ]
+    
+    return any_of(ids, ids => IsMap(region, ids[0], ids[1]))
+}
+
+function IsBurningRubber(region)
+{
+    return IsMap(region, 5, 2)
+}
+
+function IsBentley(region)
+{
+    return IsMap(region, 5, 4)
+}
+
+function IsPiranha(region)
+{
+    return IsMap(region, 3, 4)
+}
+
+function IsChicken(region)
+{
+    return IsMap(region, 3, 7)
+}
+
+function IsScooter(region)
+{
+    ids = [
+        [3, 6],
+        [4, 5],
+    ]
+    
+    return any_of(ids, ids => IsMap(region, ids[0], ids[1]))
+}
+
+function IsRussiaSlyLevel(region)
+{
+    ids = [
+        [5, 3],
+        [5, 6],
+    ]
+    
+    return any_of(ids, ids => IsMap(region, ids[0], ids[1]))
+}
+
+function IsNormalSlyLevel(region)
+{
+    ids = [
+        [1, 0],
+        [1, 2],
+        [1, 3],
+        [1, 4],
+        [1, 5],
+        [1, 7],
+        [2, 0],
+        [2, 2],
+        [2, 5],
+        [2, 6],
+        [2, 7],
+        [2, 8],
+        [3, 0],
+        [3, 2],
+        [3, 3],
+        [3, 5],
+        [4, 0],
+        [4, 2],
+        [4, 3],
+        [4, 6],
+    ]
+    
+    return any_of(ids, ids => IsMap(region, ids[0], ids[1]))
+}
+
 function InGame(region)
 {
     switch = {
@@ -273,6 +402,10 @@ g_p_level_stats = {
     JP: dword(0x26296c),
 }
 
+g_game_paused = {
+    US: dword(0x262C6C),
+}
+
 // Gets set to 1 when the player hits any checkpoint in the level for the first time
 // (useful for detecting the end of the prologue, as the van is a checkpoint)
 g_checkpoint_hit = {
@@ -287,9 +420,26 @@ g_boss_health = {
     US: float(0x26e4c0),
 }
 
+g_sprint_state = {
+    US: dword(0x26E9C0),
+}
+
+g_sprint_sub_state = {
+    US: dword(0x26E9B0)
+}
+
 // Also used for "Down Home Cooking"
 g_sprint_timer = {
     US: float(0x26E9C8),
+}
+
+g_sprint_seconds = {
+    US: dword(0x26e9d0),
+}
+
+// 1 = inactive, 0 = active
+g_sprint_inactive = {
+    US: dword(0x26e9f0)
 }
 
 // For "Down Home Cooking"
@@ -339,6 +489,7 @@ collection_params = [
         "id_damageless": 261371,
         "id_safe": 261368,
         "id_sprint": 261387,
+        "id_sprint_leaderboard": 52868,
         "name": "A Stealthy Approach",
         "map": [1, 0],
         "title_damageless": "A Real Stealthy Approach",
@@ -353,6 +504,7 @@ collection_params = [
         "id_damageless": 261383,
         "id_safe": 261378,
         "id_sprint": 261467,
+        "id_sprint_leaderboard": 52869,
         "name": "High Class Heist",
         "map": [1, 2],
         "title_damageless": "First Class Heist",
@@ -363,6 +515,7 @@ collection_params = [
         "id_damageless": 261366,
         "id_safe": 261379,
         "id_sprint": 261386,
+        "id_sprint_leaderboard": 52870,
         "name": "Into the Machine",
         "map": [1, 3],
         "title_damageless": "Is Is Hot In Here, Or Is It Just Me?",
@@ -373,6 +526,7 @@ collection_params = [
         "id_damageless": 261385,
         "id_safe": 261380,
         "id_sprint": 261388,
+        "id_sprint_leaderboard": 52871,
         "name": "A Cunning Disguise",
         "map": [1, 4],
         "title_damageless": "Not Bad For a Master Dart Board",
@@ -383,6 +537,7 @@ collection_params = [
         "id_damageless": 261391,
         "id_safe": 261381,
         "id_sprint": 261389,
+        "id_sprint_leaderboard": 52872,
         "name": "The Fire Down Below",
         "map": [1, 5],
         "title_damageless": "The Fire is Dim, But Sly Slunk In",
@@ -399,6 +554,7 @@ collection_params = [
         "id_damageless": 261392,
         "id_safe": 261382,
         "id_sprint": 261390,
+        "id_sprint_leaderboard": 52873,
         "name": "The Gunboat Graveyard",
         "map": [1, 7],
         "title_damageless": "Silence the Cannons!",
@@ -419,6 +575,7 @@ collection_params = [
         "id_damageless": 261397,
         "id_safe": 261395,
         "id_sprint": 261396,
+        "id_sprint_leaderboard": 52874,
         "name": "A Rocky Start",
         "map": [2, 0],
         "title_damageless": "No Echo Out Here!",
@@ -433,6 +590,7 @@ collection_params = [
         "id_damageless": 261403,
         "id_safe": 261399,
         "id_sprint": 261402,
+        "id_sprint_leaderboard": 52875,
         "name": "Boneyard Casino",
         "map": [2, 2],
         "title_damageless": "Betting From the Shadows",
@@ -455,6 +613,7 @@ collection_params = [
         "id_damageless": 280203,
         "id_safe": 261407,
         "id_sprint": 261408,
+        "id_sprint_leaderboard": 52876,
         "name": "Two to Tango",
         "map": [2, 5],
         "points_damageless": 5,
@@ -466,6 +625,7 @@ collection_params = [
         "id_damageless": 261412,
         "id_safe": 261410,
         "id_sprint": 261411,
+        "id_sprint_leaderboard": 52877,
         "name": "Straight to the Top",
         "map": [2, 6],
         "title_damageless": "Stealth Promotion",
@@ -476,6 +636,7 @@ collection_params = [
         "id_damageless": 261416,
         "id_safe": 261414,
         "id_sprint": 261415,
+        "id_sprint_leaderboard": 52878,
         "name": "Back Alley Heist",
         "map": [2, 7],
         "title_damageless": "Shady Dealings",
@@ -496,6 +657,7 @@ collection_params = [
         "id_damageless": 261420,
         "id_safe": 261418,
         "id_sprint": 261419,
+        "id_sprint_leaderboard": 52879,
         "name": "The Dread Swamp Path",
         "map": [3, 0],
         "title_damageless": "The Only Thing They Dread is You, Raccoon",
@@ -510,6 +672,7 @@ collection_params = [
         "id_damageless": 261424,
         "id_safe": 261422,
         "id_sprint": 261423,
+        "id_sprint_leaderboard": 52880,
         "name": "The Lair of the Beast",
         "map": [3, 2],
         "title_damageless": "The Beast is Blind",
@@ -520,6 +683,7 @@ collection_params = [
         "id_damageless": 261430,
         "id_safe": 261428,
         "id_sprint": 261429,
+        "id_sprint_leaderboard": 52881,
         "name": "A Grave Undertaking",
         "map": [3, 3],
         "title_damageless": "It’s Just the Wind",
@@ -535,6 +699,7 @@ collection_params = [
         "id_damageless": 261434,
         "id_safe": 261432,
         "id_sprint": 261433,
+        "id_sprint_leaderboard": 52882,
         "name": "Descent into Danger",
         "map": [3, 5],
         "title_damageless": "Ascent into Legend",
@@ -566,6 +731,7 @@ collection_params = [
         "id_damageless": 261440,
         "id_safe": 261438,
         "id_sprint": 261439,
+        "id_sprint_leaderboard": 52883,
         "name": "A Perilous Ascent",
         "map": [4, 0],
         "title_damageless": "Perilous? Ha!",
@@ -580,6 +746,7 @@ collection_params = [
         "id_damageless": 261456,
         "id_safe": 261446,
         "id_sprint": 261447,
+        "id_sprint_leaderboard": 52884,
         "name": "Flaming Temple of Flame",
         "map": [4, 2],
         "title_damageless": "No Smoke, No Fire",
@@ -590,6 +757,7 @@ collection_params = [
         "id_damageless": 261457,
         "id_safe": 261449,
         "id_sprint": 261450,
+        "id_sprint_leaderboard": 52885,
         "name": "The Unseen Foe",
         "map": [4, 3],
         "title_damageless": "Practically Nonexistent Foe",
@@ -610,6 +778,7 @@ collection_params = [
         "id_damageless": 280204,
         "id_safe": 261452,
         "id_sprint": 261453,
+        "id_sprint_leaderboard": 52886,
         "name": "Duel by the Dragon",
         "map": [4, 6],
         "points_damageless": 5,
@@ -699,7 +868,7 @@ achievement(
         SaveProtection(region) &&
         CheatProtection(region) &&
         // Is in Police HQ
-        IsMap(region, 0, 3) &&
+        IsParis(region) &&
         // Checkpoint was hit (the van is a checkpoint)
         g_checkpoint_hit[region] > prev(g_checkpoint_hit[region])
     )
@@ -717,7 +886,7 @@ achievement(
         // In game (prevent trigger icon showing up on title)
         InGame(region) &&
         // Is in Police HQ
-        IsMap(region, 0, 3) &&
+        IsParis(region) &&
         // Don't hit those alarms
         disable_when(
             prev(g_alarm_hit[region]) == False &&
@@ -1005,7 +1174,7 @@ achievement(
         IsRegion(region) &&
         CheatProtection(region) &&
         // In correct level
-        IsMap(region, 3, 7) &&
+        IsChicken(region) &&
         // Got all the chickens
         trigger_when(g_chickens[region] == 50) &&
         // Had enough time left
@@ -1022,7 +1191,7 @@ achievement(
         IsRegion(region) &&
         CheatProtection(region) &&
         // In correct level
-        IsMap(region, 5, 2) &&
+        IsBurningRubber(region) &&
         // Got all the computers
         trigger_when(g_player_computers[region] == 60) &&
         // Prevented slugs from getting too many
@@ -1039,7 +1208,7 @@ achievement(
         IsRegion(region) &&
         CheatProtection(region) &&
         // In correct level
-        IsMap(region, 5, 4) &&
+        IsBentley(region) &&
         // Bentley's feeling fine
         g_bentley_health[region] == 5 &&
         // Got all the packets
@@ -1186,7 +1355,7 @@ for param in murray_params
         points=0,
         trigger=any_of(regions, region =>
             IsRegion(region) &&
-            IsMap(region, 0, 4) &&
+            IsHideout(region) &&
             g_world_selected[region] == param["world"] &&
             prev(g_murray_value[region]) == param["transition"][0] &&
             g_murray_value[region] == param["transition"][1]
@@ -1214,7 +1383,7 @@ g_right_stick_y = {
 
 ACTIONS = 6 // How many times the player has to bring the stick up, and the stick down
 STAY = 50 // How many frames the player has to have the stick in the up and the down positions
-DEADZONE = 8 // How far (out of 128) players have to travel
+DEADZONE = 8 // Tolerance zone for the vertical extremes of the controller axis
 
 UP = 0xFF - DEADZONE
 DOWN = DEADZONE
@@ -1279,221 +1448,107 @@ achievement(
 
 // Leaderboards
 
-leaderboard(
-    id = 48088, title = "Down Home Cooking: Best Time",
-    description = "How fast can you catch 50 chickens?",
-    start  = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 7,
-    cancel = dword(0x27DBFC) != 7,
-    submit = dword(0x26D5A8) == 50,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
+// Why not CENTISECS :(
+LEADERBOARD_FORMAT = "SECS"
+LEADERBOARD_START = (world, level) => 
+    any_of(regions, region =>
+        IsRegion(region) &&
+        IsMap(region, world, level) &&
+        // Sprint started
+        prev(g_sprint_state[region]) == 0 &&
+        g_sprint_state[region] == 2
+    )
+LEADERBOARD_CANCEL = (world, level) =>
+    any_of(regions, region =>
+        IsRegion(region) &&
+        __ornext(
+            !CheatProtection(region) ||
+            __ornext(!IsMap(region, world, level)) ||
+            g_sprint_timer[region] == 0.0 ||
+            g_sprint_seconds[region] == -1
+        )
+    )
+LEADERBOARD_SUBMIT = (world, level) =>
+    any_of(regions, region =>
+        IsRegion(region) &&
+        g_sprint_inactive[region] == True &&
+        g_game_paused[region] == True &&
+        prev(g_sprint_sub_state[region]) == 2 &&
+        g_sprint_sub_state[region] == 3
+    )
+LEADERBOARD_VALUE = max_of(
+    // Previously was using the prior value of the sprint timer, but the time value is preserved when finishing the sprint,
+    // so that doesn't seem to be necessary?
+    array_map(regions, region => measured(g_sprint_timer[region], when=IsRegion(region)))
 )
 
+// Super secret hidden glitch leaderboard
 leaderboard(
-    id = 52868, title = "Master Thief Sprint - A Stealthy Approach",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 0 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 0 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
+    id=0,
+    title="You're Supposed to Steal the File, You Know",
+    description="Complete the prologue in the fastest time without stealing the police file!",
+    start=any_of(regions, region =>
+        IsRegion(region) &&
+        IsParis(region) &&
+        !SafeObtained(region, 0, 3) &&
+        g_checkpoint_hit[region] == True
+    ),
+    cancel=always_false(),
+    submit=always_true(),
+    value=max_of(
+        array_map(regions, region =>
+            measured(
+                GameStats[region]["m_worlds"][0]["m_levels"][3]["m_time"], 
+                when=IsRegion(region)
+            )
+        )
+    ),
+    lower_is_better=true,
+    format="CENTISECS"
 )
 
+// Custom chicken leaderboard
 leaderboard(
-    id = 52869, title = "Master Thief Sprint - High Class Heist",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 2 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 2 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
+    id=48088,
+    title="Down Home Cooking: Best Time",
+    description="How fast can you catch 50 chickens?",
+    start=any_of(regions, region =>
+        IsRegion(region) &&
+        CheatProtection(region) &&
+        __ornext(!IsMap(region, 3, 7, previous=true)) &&
+        IsMap(region, 3, 7)
+    ),
+    cancel=any_of(regions, region =>
+        (IsRegion(region) &&
+        __ornext(!IsMap(region, 3, 7))) ||
+        !CheatProtection(region)
+    ),
+    submit=any_of(regions, region =>
+        IsRegion(region) &&
+        g_chickens[region] == 50
+    ),
+    value=LEADERBOARD_VALUE,
+    format=LEADERBOARD_FORMAT
 )
 
-leaderboard(
-    id = 52870, title = "Master Thief Sprint - Into the Machine",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 3 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 3 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
+// Speedrun leaderboards
 
-leaderboard(
-    id = 52871, title = "Master Thief Sprint - A Cunning Disguise",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 4 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 4 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52872, title = "Master Thief Sprint - The Fire Down Below",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 5 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 5 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52873, title = "Master Thief Sprint - The Gunboat Graveyard",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 1 && dword(0x27DBFC) == 7 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 7 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52874, title = "Master Thief Sprint - A Rocky Start",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 0 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 0 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52875, title = "Master Thief Sprint - Boneyard Casino",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 2 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 2 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52876, title = "Master Thief Sprint - Two to Tango",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 5 && prev(dword(0x26E9B0)) != 2 && dword(0x26E9B0) == 2,
-    cancel = (dword(0x27DBFC) != 5 || dword(0x26E9C8) == 0 || prev(dword(0x26E9C0)) == 2) && dword(0x26E9C0) == 0,
-    submit = dword(0x26E9F0) == 0 && dword(0x14E6700) == 0 && dword(0x275F84) == 0 && dword(0x3C3B70) > 3339580513 &&
-             prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52877, title = "Master Thief Sprint - Straight to the Top",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 6 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 6 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52878, title = "Master Thief Sprint - Back Alley Heist",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 2 && dword(0x27DBFC) == 7 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 7 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52879, title = "Master Thief Sprint - The Dread Swamp Path",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 0 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 0 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52880, title = "Master Thief Sprint - The Lair of the Beast",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 2 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 2 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52881, title = "Master Thief Sprint - A Grave Undertaking",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 3 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 3 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52882, title = "Master Thief Sprint - Descent into Danger",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 3 && dword(0x27DBFC) == 5 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 5 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52883, title = "Master Thief Sprint - A Perilous Ascent",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 0 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 0 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52884, title = "Master Thief Sprint - Flaming Temple of Flame",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 2 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 2 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52885, title = "Master Thief Sprint - The Unseen Foe",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 3 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 3 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
-
-leaderboard(
-    id = 52886, title = "Master Thief Sprint - Duel by the Dragon",
-    description = "Complete the sprint with the most time remaining!",
-    start  = dword(0x27DBF8) == 4 && dword(0x27DBFC) == 6 && prev(dword(0x26E9C0)) == 0 && dword(0x26E9C0) == 2,
-    cancel = (dword(0x27DBFC) != 6 || dword(0x26E9C8) == 0 || prev(dword(0x26E9D0)) != 4294967295) &&
-             dword(0x26E9D0) == 4294967295,
-    submit = dword(0x26E9F0) == 1 && dword(0x262C6C) == 1 && prev(dword(0x26E9B0)) == 2 && dword(0x26E9B0) == 3,
-    value  = measured(prior(float(0x26E9C8))),
-    format = "SECS"
-)
+for param in collection_params
+{
+    if dictionary_contains_key(param, "id_sprint_leaderboard")
+    {
+        world = param["map"][0]
+        level = param["map"][1]
+        
+        leaderboard(
+            id=param["id_sprint_leaderboard"],
+            title=format("Master Thief Sprint - {0}", param["name"]),
+            description="Complete the sprint with the most time remaining!",
+            start=LEADERBOARD_START(world, level),
+            cancel=LEADERBOARD_CANCEL(world, level),
+            submit=LEADERBOARD_SUBMIT(world, level),
+            value=LEADERBOARD_VALUE,
+            format=LEADERBOARD_FORMAT
+        )
+    }
+}
