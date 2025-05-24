@@ -12,11 +12,10 @@ US = 0
 JP = 1
 EU = 2
 KR = 3
-regions = [US]
+regions = [US, JP]
 function IsRegion(region)
 {
-    // TODO
-    return byte(0x0) == byte(0x0)
+    return byte(0x147ef5) == region
 }
 
 function if_else(cond, v1, v2)
@@ -368,6 +367,7 @@ function InGame(region)
 {
     switch = {
         US: dword(0x27C320),
+        JP: dword(0x284920),
     }
     
     return switch[region] == 0
@@ -429,71 +429,86 @@ LevelStats = {
 // Changes value when loading different save file index
 g_last_loaded_save = {
     US: dword(0x269984),
+    JP: dword(0x269E94),
 }
 
 g_game_paused = {
     US: dword(0x262C6C),
+    JP: dword(0x263184),
 }
 
 // Gets set to 1 when the player hits any checkpoint in the level for the first time
 // (useful for detecting the end of the prologue, as the van is a checkpoint)
 g_checkpoint_hit = {
     US: dword(0x26184c),
+    JP: dword(0x261DCC),
 }
 
 g_alarm_hit = {
     US: dword(0x2623dc),
+    JP: dword(0x262984),
 }
 
 g_boss_health = {
     US: float(0x26e4c0),
+    JP: float(0x271070),
 }
 
 g_sprint_state = {
     US: dword(0x26E9C0),
+    JP: dword(0x271b90),
 }
 
 g_sprint_sub_state = {
-    US: dword(0x26E9B0)
+    US: dword(0x26E9B0),
+    JP: dword(0x271b80),
 }
 
 // Also used for "Down Home Cooking"
 g_sprint_timer = {
     US: float(0x26E9C8),
+    JP: float(0x271b98),
 }
 
 g_sprint_seconds = {
     US: dword(0x26e9d0),
+    JP: dword(0x271ba0),
 }
 
 // 1 = inactive, 0 = active
 g_sprint_inactive = {
-    US: dword(0x26e9f0)
+    US: dword(0x26e9f0),
+    JP: dword(0x271bc0),
 }
 
 // For "Down Home Cooking"
 g_chickens = {
     US: dword(0x26d5a8),
+    JP: dword(0x26EBE8),
 }
 
 // For "Burning Rubber"
 g_player_computers = {
     US: dword(0x2726ac),
+    JP: dword(0x2787EC),
 }
 
 // For "Burning Rubber"
 g_enemy_computers = {
     US: dword(0x27292c),
+    JP: dword(0x278D7C),
 }
 
 // For "Bentley Comes Through"
 g_bentley_packets = {
     US: dword(0x26dfa8),
+    JP: dword(0x26CF88),
 }
 
 // For "Bentley Comes Through"
 g_bentley_health = {
     US: dword(0x26e228),
+    JP: dword(0x26D208),
 }
 
 // Achievement Data
@@ -1313,6 +1328,7 @@ for param in collection_params
 pot_bits = [5, 6, 7, 8, 9, 10, 11, 12]
 g_pots_offset = {
     US: 0x26143D,
+    JP: 0x2619bd,
 }
 
 achievement(
@@ -1376,46 +1392,50 @@ murray_params = [
 // Murray
 for param in murray_params
 {
-    achievement(
-        id=param["id"],
-        title=param["title"],
-        description=param["description"],
-        type="missable",
-        points=0,
-        trigger=any_of(regions, region =>
-            IsRegion(region) &&
-            IsHideout(region) &&
-            g_world_selected[region] == param["world"] &&
-            prev(g_murray_value[region]) == param["transition"][0] &&
-            g_murray_value[region] == param["transition"][1]
-        )
-    )
+//    achievement(
+//        id=param["id"],
+//        title=param["title"],
+//        description=param["description"],
+//        type="missable",
+//        points=0,
+//        trigger=any_of(regions, region =>
+//            IsRegion(region) &&
+//            IsHideout(region) &&
+//            g_world_selected[region] == param["world"] &&
+//            prev(g_murray_value[region]) == param["transition"][0] &&
+//            g_murray_value[region] == param["transition"][1]
+//        )
+//    )
 }
 
 // Headbangs
 g_left_radio_window = {
     US: dword(0x270b30),
+    JP: dword(0x276340),
 }
 
 g_right_radio_window = {
     US: dword(0x2717a8),
+    JP: dword(0x2772c8),
 }
 
 
-// 0x0 (down) to 0xFF (up)
+// 0x0 (up) to 0xFF (down)
 g_left_stick_y = {
     US: byte(0x262cbd),
+    JP: byte(0x2631d5),
 }
 g_right_stick_y = {
     US: byte(0x262cf1),
+    JP: byte(0x263209),
 }
 
 ACTIONS = 6 // How many times the player has to bring the stick up, and the stick down
 STAY = 50 // How many frames the player has to have the stick in the up and the down positions
 DEADZONE = 8 // Tolerance zone for the vertical extremes of the controller axis
 
-UP = 0xFF - DEADZONE
-DOWN = DEADZONE
+UP = DEADZONE
+DOWN = 0xFF - DEADZONE
 WiggleUp = (region) => 
     repeated(ACTIONS, prev(g_left_stick_y[region]) < UP && g_right_stick_y[region] >= UP) &&
     repeated(ACTIONS, prev(g_left_stick_y[region]) >= UP && g_right_stick_y[region] < UP) &&
@@ -1451,10 +1471,12 @@ achievement(
 // Watch that anime
 g_in_movie = {
     US: dword(0x2623b8),
+    JP: dword(0x262950),
 }
 
 g_movie_type = {
-    US: dword(0x269A00)
+    US: dword(0x269A00),
+    JP: dword(0x269F10),
 }
 
 MOVIE_LENGTH = 6609
