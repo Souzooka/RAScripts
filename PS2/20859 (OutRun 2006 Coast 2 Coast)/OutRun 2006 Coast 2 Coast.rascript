@@ -47,19 +47,6 @@ function ptr(base, offsets, accessor=dword)
     return val
 }
 
-function assert(cond, msg="No Assertion Message")
-{
-    if cond == false
-    {
-        l = {}
-        return l[msg]
-    }
-    
-    return true
-}
-
-function halfbyte(addr, i) => if_else(i % 2 == 0, high4(addr + (i / 2)), low4(addr + (i / 2)))
-
 FRAMES_PER_SECOND = 60.0
 function FramesToCentiseconds(val)
 {
@@ -217,12 +204,6 @@ eventTime = {
     JP: dword(0x5A2514),
 }
 
-girlfriendRanks = {
-    US: 0x005893d6,
-    EU: NO_ADDR,
-    JP: NO_ADDR,
-}
-
 // GAME FUNCTIONS
 
 function IsInGame(region)
@@ -234,6 +215,12 @@ function IsInGame(region)
 function HitGoal(region)
 {
     return prev(gameState[region]) != STATE_GOAL && gameState[region] == STATE_GOAL
+}
+
+function EventTime(region)
+{
+    fps = if_else(region == EU, 50.0, 60.0)
+    return eventTime[region] * (100.0 / fps)
 }
 
 EVENT_RATINGS = ["E", "D", "C", "B", "A", "AA", "AAA", "-"]
@@ -743,6 +730,7 @@ for flevel in flagman_levels
         type="progression",
         trigger=any_of(Regions, region => 
             IsRegion(region) &&
+            !UsedENTIRETY(region) &&
             prev(gameState[region]) != STATE_CONGRATULATIONS &&
             gameState[region] == STATE_CONGRATULATIONS &&
             any_of(flevel["screens"], (x) => congratsType[region] == x)
@@ -1095,6 +1083,7 @@ for glevel in girlfriend_levels
         type="progression",
         trigger=any_of(Regions, region => 
             IsRegion(region) &&
+            !UsedENTIRETY(region) &&
             prev(gameState[region]) != STATE_CONGRATULATIONS &&
             gameState[region] == STATE_CONGRATULATIONS &&
             any_of(glevel["screens"], (x) => congratsType[region] == x)
@@ -1136,18 +1125,21 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2SP OutRun Continuous",
+        "event": "OutRun2SP OutRun Continuous",
         "points": 25,
         "mode": EVENT_SUB_CONTINUOUS_SP,
     },
     {
         "id": 0,
         "title": "OutRun2 OutRun Continuous",
+        "event": "OutRun2 OutRun Continuous",
         "points": 25,
         "mode": EVENT_SUB_CONTINUOUS,
     },
     {
         "id": 0,
         "title": "OutRun2SP Goal A",
+        "event": "OutRun2SP Goal A",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "A",
@@ -1156,6 +1148,7 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2SP Goal B",
+        "event": "OutRun2SP Goal B",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "B",
@@ -1164,6 +1157,7 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2SP Goal C",
+        "event": "OutRun2SP Goal C",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "C",
@@ -1172,6 +1166,7 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2SP Goal D",
+        "event": "OutRun2SP Goal D",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "D",
@@ -1180,6 +1175,7 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2SP Goal E",
+        "event": "OutRun2SP Goal E",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "E",
@@ -1188,6 +1184,7 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2 Goal A",
+        "event": "OutRun2 Goal A",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "A",
@@ -1196,6 +1193,7 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2 Goal B",
+        "event": "OutRun2 Goal B",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "B",
@@ -1204,6 +1202,7 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2 Goal C",
+        "event": "OutRun2 Goal C",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "C",
@@ -1212,6 +1211,7 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2 Goal D",
+        "event": "OutRun2 Goal D",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "D",
@@ -1220,6 +1220,7 @@ outrun_params = [
     {
         "id": 0,
         "title": "OutRun2 Goal E",
+        "event": "OutRun2 Goal E",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "E",
@@ -1238,28 +1239,46 @@ for params in outrun_params
     if (any_of([EVENT_SUB_CONTINUOUS, EVENT_SUB_CONTINUOUS_SP], mode => mode == params["mode"]))
     {
         zone_check = always_true()
-        description = format("Reach the goal in 15 continuous course OutRun Mode for {0}.", name)
+        description = format("Reach the goal in 15 continuous course OutRun Mode for {0}", name)
     }
     else
     {
         zone_check = any_of(Regions, region => IsRegion(region) && currSky[region] == params["zone"])
-        description = format("Reach Goal {0} in OutRun Mode for {1}.", params["goal"], name)
+        description = format("Reach Goal {0} in OutRun Mode for {1}", params["goal"], name)
     }
     
+    trigger = any_of(Regions, region => 
+        IsRegion(region) &&
+        eventType[region] == EVENT_OUTRUN &&
+        eventSubType[region] == params["mode"] &&
+        zone_check &&
+        HitGoal(region)
+    )
+
     achievement(
         id=params["id"],
         title=params["title"],
         description=description,
         points=params["points"],
-        trigger=any_of(Regions, region => 
-            IsRegion(region) &&
-            eventType[region] == EVENT_OUTRUN &&
-            eventSubType[region] == params["mode"] &&
-            zone_check &&
-            HitGoal(region)
-        )
+        trigger=trigger
+    )
+
+    leaderboard(
+        id=0,
+        title=params["event"],
+        description=description + " as quickly as possible",
+
+        start=trigger,
+        cancel=always_false(),
+        submit=always_true(),
+
+        value=max_of(array_map(Regions, region => measured(EventTime(region), when=IsRegion(region)))),
+        format="MILLISECS",
+        lower_is_better=true
     )
 }
+
+// Other Achievements
 
 achievement(
     id=0,
@@ -1275,4 +1294,3 @@ achievement(
 )
 
 //
-
