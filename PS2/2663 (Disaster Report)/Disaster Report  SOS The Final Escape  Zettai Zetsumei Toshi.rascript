@@ -205,6 +205,14 @@ NextMenu = {
     JP: dword(0x382270),
 }
 
+// 128 item array of collected document ids
+// doesn't do null checks but that'd be like pulling nails with rcheevos' conditional logic, it should hopefully be fine
+Documents = {
+    US: array_map(range(0, 0x80 - 1), i => dword(dword(0x37E520 + i * 4) + 0xF0)),
+    EU: array_map(range(0, 0x80 - 1), i => dword(dword(0x3A4D20 + i * 4) + 0xD0)),
+    JP: array_map(range(0, 0x80 - 1), i => dword(dword(0x380520 + i * 4) + 0xF0)),
+}
+
 function MapID(region)
 {
     area = Area[region]
@@ -719,12 +727,28 @@ achievement(
     trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_SAVED_KELLY))
 )
 
+GREG_FILE = 0x196
 achievement(
     id=460891,
     title="Don't Forget",
     description="Give John Patton Greg's File at the Santa Katrina Hospital.",
     points=4,
-    trigger=any_of(Regions, region => FlagSetTrigger(region, FLAG_GAVE_FILE))
+    trigger=any_of(Regions, region => 
+        FlagSetTrigger(region, FLAG_GAVE_FILE) &&
+        __ornext(any_of(Documents[region], id => id == GREG_FILE))
+    )
+)
+
+leaderboard(
+    title="You Forgot",
+    description="Try not to forget the file next time.",
+    start=any_of(Regions, region => 
+        FlagSetTrigger(region, FLAG_GAVE_FILE) &&
+        !any_of(Documents[region], id => id == GREG_FILE)
+    ),
+    cancel=always_false(),
+    submit=always_true(),
+    value=0
 )
 
 function RawDangerTrigger(region)
