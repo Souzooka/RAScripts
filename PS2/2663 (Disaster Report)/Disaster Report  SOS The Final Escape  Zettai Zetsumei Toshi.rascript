@@ -735,7 +735,7 @@ achievement(
     points=4,
     trigger=any_of(Regions, region => 
         FlagSetTrigger(region, FLAG_GAVE_FILE) &&
-        __ornext(any_of(Documents[region], id => id == GREG_FILE))
+        __ornext(any_of(Documents[region], id => prev(id) == GREG_FILE))
     )
 )
 
@@ -744,7 +744,7 @@ leaderboard(
     description="Try not to forget the file next time.",
     start=any_of(Regions, region => 
         FlagSetTrigger(region, FLAG_GAVE_FILE) &&
-        !any_of(Documents[region], id => id == GREG_FILE)
+        !any_of(Documents[region], id => prev(id) == GREG_FILE)
     ),
     cancel=always_false(),
     submit=always_true(),
