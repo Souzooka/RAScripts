@@ -8,6 +8,13 @@ REGION_EU = 0
 
 FRAMES_PER_SECOND = 30
 
+function if_else(cond, a, b)
+{
+    if cond == true
+        return a
+    return b
+}
+
 function GetRegion() {
   // This is just some arbitrary byte in code that happens to be 1 in JP and 0 in EU
   return byte(0x348FAA)
@@ -40,6 +47,7 @@ FadeStatus = dword(GetRealAddress(0x6A4318, 0x6A1AD8))
 // 24-bit bitset which records all endings seen during one playthrough
 // (I did check and this does properly zero-out during new game)
 EndingBitset = GetRealAddress(0x67DDB6, 0x67B576)
+LastEnding = byte(GetRealAddress(0x48DAB0, 0x48C500))
 GameMode = byte(GetRealAddress(0x67DDBA, 0x67B57A))
 Difficulty = byte(GetRealAddress(0x67DDBB, 0x67B57B))
 InGameTime = dword(GetRealAddress(0x67DDC0, 0x67B580)) // number of frames, divide by 30 for seconds
@@ -358,15 +366,11 @@ function FlagChangedToSet(flag) => prev(FlagGet(flag)) == 0 && FlagGet(flag) == 
                                    
                                    
 // Endings
-function EndingGet(flag)
+function IsEnding(flag)
 {
-    return bit(flag % 8, EndingBitset + flag / 8)
+    return LastEnding == flag
 }
-function EndingGetBool(flag)
-{
-    return EndingGet(flag) == 1
-}
-function EndingChangedToSet(flag) => prev(EndingGet(flag)) == 0 && EndingGet(flag) == 1
+function EndingChangedToSet(flag) => prev(LastEnding) == 0xFF && LastEnding == flag
 function CreditsStarted()
 {
     // I know this gets set to NULL every time the map changes, and
@@ -456,7 +460,7 @@ function TimeTrialTrigger(player_id, endings=[], hours=0, minutes=0, seconds=0, 
            Difficulty == DIFFICULTY_Hard &&
            GetInGameTime(player_id) <= TimeToFrames(hours=hours, minutes=minutes, seconds=seconds) &&
            additional_requirement &&
-           trigger_when(any_of(endings, EndingGetBool) && CurrentMenu == MENU_Result)
+           trigger_when(any_of(endings, IsEnding) && prev(CurrentMenu) != MENU_Result && CurrentMenu == MENU_Result)
 }
 
 // ACHIEVEMENTS START
@@ -651,6 +655,7 @@ achievement(
     id=392832,
     title="Out of the Frying Pan",
     description="Escape the underground convention center as Joshua.",
+    type="progression",
     points=5,
     trigger=MapTransitioned(010105, 010101)
 )
@@ -702,6 +707,7 @@ achievement(
     id=392835,
     title="We Just Gotta Wait",
     description="Arrive at the evacuation point in West Junction as Joshua.",
+    type="progression",
     points=5,
     trigger=LoadProtection() && FlagChangedToSet(FLAG_WestJunctionIntroDone)
 )
@@ -728,6 +734,7 @@ achievement(
     id=392837,
     title="I Need a Hero",
     description="At the East Junction, rescue a trapped woman and girl as Joshua.",
+    type="progression",
     points=5,
     trigger=LoadProtection() && FlagChangedToSet(FLAG_EastJunctionHelicopterApproaching)
 )
@@ -868,6 +875,7 @@ achievement(
     id=392847,
     title="Just Another Day in Paradise",
     description="Escape the police detective in the Downtown Geo Area as Amber.",
+    type="progression",
     points=3,
     trigger=LoadProtection() && MapTransitioned(020400, 020300)
 )
@@ -878,6 +886,7 @@ achievement(
     id=392848,
     title="Aidan Today, Saiban Tomorrow",
     description="Obtain Ending 2-B. Free Mode is disallowed.",
+    type="missable",
     points=10,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_2B) && !IsFreeMode()
 )
@@ -1028,6 +1037,7 @@ achievement(
     id=393429,
     title="She Didn't Have Any Money",
     description="Obtain ending 3-B. Free Mode is disallowed.",
+    type="missable",
     points=10,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_3B) && !IsFreeMode()
 )
@@ -1158,6 +1168,7 @@ achievement(
     id=393622,
     title="Evacuate to the Gym",
     description="Reach the gymnasium as Paige.",
+    type="progression",
     points=3,
     trigger=MapTransitioned(040300, 040200)
 )
@@ -1306,6 +1317,7 @@ achievement(
     id=393635,
     title="Memory Fragment - Narcissist",
     description="Obtain the Narcissist memory fragment as Ivan.",
+    type="missable",
     points=3,
     trigger=CreateFragmentTrigger(FLAG_FragmentNarcissist)
 )
@@ -1363,6 +1375,7 @@ achievement(
     id=393638,
     title="No Central Heating",
     description="Reach Ivan's apartment as Ivan.",
+    type="progression",
     points=3,
     trigger=LoadProtection() && FlagChangedToSet(FLAG_IvanEnterApartment)
 )
@@ -1378,6 +1391,7 @@ achievement(
     id=393644,
     title="A Worldwide Pandemic (& Knuckles)",
     description="Obtain Ending 5-C. Free Mode is disallowed.",
+    type="missable",
     points=10,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_5C) && !IsFreeMode()
 )
@@ -1411,6 +1425,7 @@ achievement(
     id=393640,
     title="I'm Just Warming Up",
     description="Beat the game and witness the credits on the Easy difficulty or higher.",
+    type="win_condition",
     points=5,
     trigger=CreditsEnded() && !IsFreeMode()
 )
@@ -1431,6 +1446,7 @@ achievement(
     id=393641,
     title="I Saw the Sun Shining Through the Clouds",
     description="Obtain Ending 6-A.",
+    type="missable",
     points=25,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_6A)
 )
@@ -1443,6 +1459,7 @@ achievement(
     id=393642,
     title="This'll Make a Good Story",
     description="Obtain Ending 7-A.",
+    type="missable",
     points=25,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_7A)
 )
@@ -1452,6 +1469,7 @@ achievement(
     id=393647,
     title="This Would Have Made a Good Story",
     description="Obtain Ending 7-B. Free Mode is disallowed.",
+    type="missable",
     points=25,
     trigger=LoadProtection() && EndingChangedToSet(ENDING_7B) && !IsFreeMode()
 )
@@ -1821,6 +1839,7 @@ for name in collection_names
         id=collection_achievement_ids[name],
         title=format("Collection - {0}", name),
         description=format("Obtain all items in the {0} category of the Collection.", name),
+        type=if_else(name == "Shoes", "missable", ""),
         points=collection_points[name],
         trigger=CreateMeasuredCollectionTrigger(collection_lists[name])
     )
@@ -2018,6 +2037,7 @@ achievement(
     id=394424,
     title="Compass Master",
     description=format("Obtain all {0} compasses.", compass_count),
+    type="missable",
     points=25,
     trigger=CreateMeasuredCompassTrigger(compass_count, old_count=40)
 )
@@ -2034,7 +2054,7 @@ leaderboard(
     description="Without dying and on Hard difficulty, complete Joshua's chapter in Free Mode and obtain Ending 1-B or 1-C as fast as possible!",
     start=StartCampaign(PLAYER_Joshua) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign() || FlagChangedToSet(FLAG_WentWithStephanie),
-    submit=any_of([ENDING_1B, ENDING_1C], EndingGetBool) && CurrentMenu == MENU_Result,
+    submit=any_of([ENDING_1B, ENDING_1C], IsEnding) && prev(CurrentMenu) != MENU_Result && CurrentMenu == MENU_Result,
     value=GetInGameTime(PLAYER_Joshua) * (60/FRAMES_PER_SECOND),
     format="FRAMES",
     lower_is_better=true
@@ -2048,7 +2068,7 @@ leaderboard(
           Difficulty == DIFFICULTY_Hard &&
           FlagChangedToSet(FLAG_WentWithStephanie), // Start this leaderboard once we can no longer get 1-B/C
     cancel=CancelCampaign(),
-    submit=EndingGetBool(ENDING_1A) && CurrentMenu == MENU_Result,
+    submit=IsEnding(ENDING_1A) && prev(CurrentMenu) != MENU_Result && CurrentMenu == MENU_Result,
     value=GetInGameTime(PLAYER_Joshua) * (60/FRAMES_PER_SECOND),
     format="FRAMES",
     lower_is_better=true
@@ -2062,7 +2082,7 @@ leaderboard(
     description="Without dying and on Hard difficulty, complete Amber's chapter in Free Mode and obtain Ending 2-B as fast as possible!",
     start=StartCampaign(PLAYER_Amber) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign() || FlagChangedToSet(FLAG_WentWithAidan),
-    submit=EndingGetBool(ENDING_2B) && CurrentMenu == MENU_Result,
+    submit=IsEnding(ENDING_2B) && prev(CurrentMenu) != MENU_Result && CurrentMenu == MENU_Result,
     value=GetInGameTime(PLAYER_Amber) * (60/FRAMES_PER_SECOND),
     format="FRAMES",
     lower_is_better=true
@@ -2076,7 +2096,7 @@ leaderboard(
           Difficulty == DIFFICULTY_Hard &&
           FlagChangedToSet(FLAG_WentWithAidan), // Start this leaderboard once we can no longer get 2-B
     cancel=CancelCampaign(),
-    submit=EndingGetBool(ENDING_2A) && CurrentMenu == MENU_Result,
+    submit=IsEnding(ENDING_2A) && prev(CurrentMenu) != MENU_Result && CurrentMenu == MENU_Result,
     value=GetInGameTime(PLAYER_Amber) * (60/FRAMES_PER_SECOND),
     format="FRAMES",
     lower_is_better=true
@@ -2090,7 +2110,7 @@ leaderboard(
     description="Without dying and on Hard difficulty, complete Isaac's chapter in Free Mode and obtain Ending 3-B as fast as possible!",
     start=StartCampaign(PLAYER_Isaac) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign() || FlagChangedToSet(FLAG_RescuedSophia),
-    submit=EndingGetBool(ENDING_3B) && CurrentMenu == MENU_Result,
+    submit=IsEnding(ENDING_3B) && prev(CurrentMenu) != MENU_Result && CurrentMenu == MENU_Result,
     value=GetInGameTime(PLAYER_Isaac) * (60/FRAMES_PER_SECOND),
     format="FRAMES",
     lower_is_better=true
@@ -2104,7 +2124,7 @@ leaderboard(
           Difficulty == DIFFICULTY_Hard &&
           FlagChangedToSet(FLAG_RescuedSophia), // Start this leaderboard once we can no longer get 3-B
     cancel=CancelCampaign(),
-    submit=EndingGetBool(ENDING_3A) && CurrentMenu == MENU_Result,
+    submit=IsEnding(ENDING_3A) && prev(CurrentMenu) != MENU_Result && CurrentMenu == MENU_Result,
     value=GetInGameTime(PLAYER_Isaac) * (60/FRAMES_PER_SECOND),
     format="FRAMES",
     lower_is_better=true
@@ -2117,7 +2137,7 @@ leaderboard(
     description="Without dying and on Hard difficulty, complete Paige's chapter in Free Mode and obtain Ending 4-A as fast as possible!",
     start=StartCampaign(PLAYER_Paige) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign(),
-    submit=EndingGetBool(ENDING_4A) && CurrentMenu == MENU_Result,
+    submit=IsEnding(ENDING_4A) && prev(CurrentMenu) != MENU_Result && CurrentMenu == MENU_Result,
     value=GetInGameTime(PLAYER_Paige) * (60/FRAMES_PER_SECOND),
     format="FRAMES",
     lower_is_better=true
@@ -2130,7 +2150,7 @@ leaderboard(
     description="Without dying and on Hard difficulty, complete Ivan's chapter in Free Mode and obtain Ending 5-B as fast as possible!",
     start=StartCampaign(PLAYER_Ivan) && IsFreeMode() && Difficulty == DIFFICULTY_Hard,
     cancel=CancelCampaign(),
-    submit=EndingGetBool(ENDING_5B) && CurrentMenu == MENU_Result,
+    submit=IsEnding(ENDING_5B) && prev(CurrentMenu) != MENU_Result && CurrentMenu == MENU_Result,
     value=GetInGameTime(PLAYER_Ivan) * (60/FRAMES_PER_SECOND),
     format="FRAMES",
     lower_is_better=true
