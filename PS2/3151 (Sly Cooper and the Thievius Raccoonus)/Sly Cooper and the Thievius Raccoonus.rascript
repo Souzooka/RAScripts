@@ -378,8 +378,13 @@ function SaveProtection(region)
     return
         // Protects against unlocks at boot
         g_p_game_stats[region] != NULL &&
-        // Protects against loading a save in any context
-        prev(g_last_loaded_save[region]) == g_last_loaded_save[region]
+        // This works fine on the Japanese version of the game, but NOT the US version
+        g_memcard_busy[region] == False &&
+        // This works fine on the US version of the game, but NOT the Japanese version
+        // (why change the load game logic between versions??? :()
+        // Both can be utilized together though without any issues
+        prev(g_last_loaded_save[region]) == g_last_loaded_save[region] &&
+        prev(InGame(region))
 }
 
 function CheatProtection(region)
@@ -427,9 +432,17 @@ LevelStats = {
 
 // NULL on boot, and removing memcard
 // Changes value when loading different save file index
+// NULL on boot, and removing memcard
+// Changes value when loading different save file index
 g_last_loaded_save = {
     US: dword(0x269984),
     JP: dword(0x269E94),
+}
+
+// 1 when mem card is being accessed (set 1 frame late on US version?)
+g_memcard_busy = {
+    US: dword(0x275AF0),
+    JP: dword(0x27E100),
 }
 
 g_game_paused = {
