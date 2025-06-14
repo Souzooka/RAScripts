@@ -103,6 +103,15 @@ currSky = {
     JP: dword(0x51F674),
 }
 
+// Rank (for Heart Attack)
+RANK_E = 1
+RANK_D = 2
+RANK_C = 3
+RANK_B = 4
+RANK_A = 5
+RANK_AA = 6
+RANK_AAA = 7
+
 // The currently-selected car
 CAR_F50 = 0
 CAR_DINO = 1
@@ -204,6 +213,12 @@ eventTime = {
     JP: dword(0x5A2514),
 }
 
+stageRankInfo = {
+    US: 0x589F78,
+    EU: NO_ADDR,
+    JP: NO_ADDR,
+}
+
 // GAME FUNCTIONS
 
 function IsInGame(region)
@@ -215,6 +230,25 @@ function IsInGame(region)
 function HitGoal(region)
 {
     return prev(gameState[region]) != STATE_GOAL && gameState[region] == STATE_GOAL
+}
+
+function HeartAttackRank(region, continuous=false)
+{
+    num_stages = if_else(continuous, 15, 5)
+    
+    SIZEOF_INFO = 0x44
+    
+    result = 0
+    for i in range(0, num_stages - 1)
+    {
+        info = stageRankInfo[region] + (SIZEOF_INFO * i)
+        num_events = byte(info + 0x40)
+        total_rank = dword(info + 0x1C)
+        
+        result = result + (total_rank / num_events)
+    }
+    
+    return result / num_stages
 }
 
 function EventTime(region)
@@ -1293,4 +1327,17 @@ achievement(
     )
 )
 
-//
+// Test achievement
+
+achievement(
+    id=0,
+    title="Heart Attack A ranking test",
+    description="",
+    points=0,
+    trigger=any_of(Regions, region =>
+        IsRegion(region) &&
+        eventType[region] == EVENT_HEART_ATTACK &&
+        HitGoal(region) &&
+        HeartAttackRank(region) > RANK_A
+    )
+)
