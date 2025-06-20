@@ -58,6 +58,12 @@ function TimeToCentiseconds(minutes=0, seconds=0, frames=0)
     return FramesToCentiseconds(minutes * (60 * FRAMES_PER_SECOND) + (seconds * FRAMES_PER_SECOND) + frames)
 }
 
+function MillisToTimestamp(x) => format("{0}'{1}\"{2}", 
+	x / (60 * 1000),
+	substring(format("0{0}", (x / 1000) % 60), -2, 2),
+	substring(format("00{0}", x), -3, 3)
+)
+
 // GAME VARIABLES
 
 inRace = {
@@ -219,6 +225,13 @@ stageRankInfo = {
     JP: NO_ADDR,
 }
 
+// fixed5, divide by 10000 for actual heart count
+heartAttackHearts = {
+    US: dword(0x58AF30),
+    EU: NO_ADDR,
+    JP: NO_ADDR,
+}
+
 // GAME FUNCTIONS
 
 function IsInGame(region)
@@ -254,7 +267,7 @@ function HeartAttackRank(region, continuous=false)
 function EventTime(region)
 {
     fps = if_else(region == EU, 50.0, 60.0)
-    return eventTime[region] * (100.0 / fps)
+    return eventTime[region] * 100.0 / fps
 }
 
 EVENT_RATINGS = ["E", "D", "C", "B", "A", "AA", "AAA", "-"]
@@ -1296,19 +1309,357 @@ for params in outrun_params
         points=params["points"],
         trigger=trigger
     )
+}
+
+// Time Attack Achievements
+
+time_attack_params = [
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2SP OutRun Continuous",
+        "event": "OutRun2SP OutRun Continuous",
+        "goaltime": 881280,
+        "points": 25,
+        "mode": EVENT_SUB_CONTINUOUS_SP,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2 OutRun Continuous",
+        "event": "OutRun2 OutRun Continuous",
+        "goaltime": 864557,
+        "points": 25,
+        "mode": EVENT_SUB_CONTINUOUS,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2SP Goal A",
+        "event": "OutRun2SP Goal A",
+        "goaltime": 282182,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "A",
+        "zone": SKY_EAST,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2SP Goal B",
+        "event": "OutRun2SP Goal B",
+        "goaltime": 279663,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "B",
+        "zone": SKY_MAYA,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2SP Goal C",
+        "event": "OutRun2SP Goal C",
+        "goaltime": 281460,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "C",
+        "zone": SKY_PRIN,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2SP Goal D",
+        "event": "OutRun2SP Goal D",
+        "goaltime": 285176,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "D",
+        "zone": SKY_FLOR,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2SP Goal E",
+        "event": "OutRun2SP Goal E",
+        "goaltime": 287366,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "E",
+        "zone": SKY_NEWY,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2 Goal A",
+        "event": "OutRun2 Goal A",
+        "goaltime": 274483,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "A",
+        "zone": SKY_TULI,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2 Goal B",
+        "event": "OutRun2 Goal B",
+        "goaltime": 278439,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "B",
+        "zone": SKY_METR,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2 Goal C",
+        "event": "OutRun2 Goal C",
+        "goaltime": 280012,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "C",
+        "zone": SKY_RUIN,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2 Goal D",
+        "event": "OutRun2 Goal D",
+        "goaltime": 278890,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "D",
+        "zone": SKY_IMPE,
+    },
+    {
+        "id": 0,
+        "title": "Time Attack - OutRun2 Goal E",
+        "event": "OutRun2 Goal E",
+        "goaltime": 281138,
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "E",
+        "zone": SKY_CAPE,
+    },
+]
+
+
+
+for params in time_attack_params
+{
+    name = "OutRun2SP"
+    if (any_of([EVENT_SUB_NORMAL, EVENT_SUB_CONTINUOUS], mode => mode == params["mode"]))
+    {
+        name = "OutRun2"
+    }
+
+    time_format = MillisToTimestamp(params["goaltime"])
+    if (any_of([EVENT_SUB_CONTINUOUS, EVENT_SUB_CONTINUOUS_SP], mode => mode == params["mode"]))
+    {
+        zone_check = always_true()
+        target = format("Reach the goal in 15 continuous course Time Attack Mode for {0}", name)
+    }
+    else
+    {
+        zone_check = any_of(Regions, region => IsRegion(region) && currSky[region] == params["zone"])
+        target = format("Reach Goal {0} in Time Attack Mode for {1}", params["goal"], name)
+    }
+    
+    trigger = any_of(Regions, region => 
+        IsRegion(region) &&
+        eventType[region] == EVENT_TIME_ATTACK &&
+        eventSubType[region] == params["mode"] &&
+        zone_check &&
+        eventTime[region] <= params["goaltime"] / 1000.0 * if_else(region == EU, 50, 60) &&
+        HitGoal(region)
+    )
+
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=format("{0} in under {1}", target, time_format),
+        points=params["points"],
+        trigger=any_of(Regions, region => 
+            IsRegion(region) &&
+            eventType[region] == EVENT_TIME_ATTACK &&
+            eventSubType[region] == params["mode"] &&
+            zone_check &&
+            eventTime[region] <= params["goaltime"] / 1000.0 * if_else(region == EU, 50, 60) &&
+            HitGoal(region)
+        )
+    )
 
     leaderboard(
         id=0,
-        title=params["event"],
-        description=description + " as quickly as possible",
+        title="Time Attack - " + params["event"],
+        description=target + " as quickly as possible",
 
-        start=trigger,
+        start=any_of(Regions, region => 
+            IsRegion(region) &&
+            eventType[region] == EVENT_TIME_ATTACK &&
+            eventSubType[region] == params["mode"] &&
+            zone_check &&
+            HitGoal(region)
+        ),
         cancel=always_false(),
         submit=always_true(),
 
         value=max_of(array_map(Regions, region => measured(EventTime(region), when=IsRegion(region)))),
         format="MILLISECS",
         lower_is_better=true
+    )
+}
+
+// Heart Attack Mode Achievements
+
+heart_attack_params = [
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2SP OutRun Continuous",
+        "event": "OutRun2SP OutRun Continuous",
+        "points": 25,
+        "mode": EVENT_SUB_CONTINUOUS_SP,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2 OutRun Continuous",
+        "event": "OutRun2 OutRun Continuous",
+        "points": 25,
+        "mode": EVENT_SUB_CONTINUOUS,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2SP Goal A",
+        "event": "OutRun2SP Goal A",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "A",
+        "zone": SKY_EAST,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2SP Goal B",
+        "event": "OutRun2SP Goal B",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "B",
+        "zone": SKY_MAYA,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2SP Goal C",
+        "event": "OutRun2SP Goal C",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "C",
+        "zone": SKY_PRIN,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2SP Goal D",
+        "event": "OutRun2SP Goal D",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "D",
+        "zone": SKY_FLOR,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2SP Goal E",
+        "event": "OutRun2SP Goal E",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "E",
+        "zone": SKY_NEWY,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2 Goal A",
+        "event": "OutRun2 Goal A",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "A",
+        "zone": SKY_TULI,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2 Goal B",
+        "event": "OutRun2 Goal B",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "B",
+        "zone": SKY_METR,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2 Goal C",
+        "event": "OutRun2 Goal C",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "C",
+        "zone": SKY_RUIN,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2 Goal D",
+        "event": "OutRun2 Goal D",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "D",
+        "zone": SKY_IMPE,
+    },
+    {
+        "id": 0,
+        "title": "Heart Attack - OutRun2 Goal E",
+        "event": "OutRun2 Goal E",
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "E",
+        "zone": SKY_CAPE,
+    },
+]
+
+for params in heart_attack_params
+{
+    name = "OutRun2SP"
+    if (any_of([EVENT_SUB_NORMAL, EVENT_SUB_CONTINUOUS], mode => mode == params["mode"]))
+    {
+        name = "OutRun2"
+    }
+    
+    if (any_of([EVENT_SUB_CONTINUOUS, EVENT_SUB_CONTINUOUS_SP], mode => mode == params["mode"]))
+    {
+        zone_check = always_true()
+        target = format("in 15 continuous course OutRun Mode for {0}", name)
+    }
+    else
+    {
+        zone_check = any_of(Regions, region => IsRegion(region) && currSky[region] == params["zone"])
+        target = format("at Goal {0} in OutRun Mode for {1}", params["goal"], name)
+    }
+
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description="Earn a AA ranking or better " + target,
+        points=params["points"],
+        trigger=any_of(Regions, region => 
+            IsRegion(region) &&
+            eventType[region] == EVENT_HEART_ATTACK &&
+            eventSubType[region] == params["mode"] &&
+            zone_check &&
+            HitGoal(region) &&
+            HeartAttackRank(region) >= RANK_AA
+        )
+    )
+
+    leaderboard(
+        id=0,
+        title="Heart Attack - " + params["event"],
+        description="Earn as many hearts as possible " + target,
+
+        start=any_of(Regions, region => 
+            IsRegion(region) &&
+            eventType[region] == EVENT_HEART_ATTACK &&
+            eventSubType[region] == params["mode"] &&
+            zone_check &&
+            HitGoal(region)
+        ),
+        cancel=always_false(),
+        submit=always_true(),
+
+        value=max_of(array_map(Regions, region => measured(heartAttackHearts[region]/10000, when=IsRegion(region)))),
+        format="SCORE",
+        lower_is_better=false
     )
 }
 
@@ -1324,20 +1675,5 @@ achievement(
         eventDistance[region] == 1 &&
         prev(gameState[region]) == STATE_DRIVING &&
         gameState[region] == STATE_TIMEUP
-    )
-)
-
-// Test achievement
-
-achievement(
-    id=0,
-    title="Heart Attack A ranking test",
-    description="",
-    points=0,
-    trigger=any_of(Regions, region =>
-        IsRegion(region) &&
-        eventType[region] == EVENT_HEART_ATTACK &&
-        HitGoal(region) &&
-        HeartAttackRank(region) > RANK_A
     )
 )
