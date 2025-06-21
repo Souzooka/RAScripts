@@ -420,15 +420,15 @@ for region in Regions
     rp_car = rich_presence_lookup("CAR", car[region], car_lookup, "Unknown Car")
     rp_event = rich_presence_lookup("EVENT", eventType[region], event_lookup, "Unknown Event")
     rp_event_sub = rich_presence_lookup("EVENT_SUB", eventSubType[region], event_sub_lookup, "")
+    rp_cheat = rich_presence_lookup("CHEAT", max_of(
+        measured(1, when=IsRegion(region) && UsedENTIRETY(region)),
+        measured(0)
+    ), {1: "⚠️ Cheats Used | "}, "")
 
     rich_presence_conditional_display(
-        IsRegion(region) && UsedENTIRETY(region),
-        "{0} ⚠️ Clarissa would not approve of cheating!",
-        rp_region
-    )
-    rich_presence_conditional_display(
         IsRegion(region) && IsInGame(region),
-        "{0} OutRunning | {1}{2} | {3} ({4}) | {5} {6}",
+        "{0}{1} OutRunning | {2}{3} | {4} ({5}) | {6} {7}",
+        rp_cheat,
         rp_region,
         rp_event,
         rp_event_sub,
@@ -439,7 +439,8 @@ for region in Regions
     )
     rich_presence_conditional_display(
         IsRegion(region),
-        "{0} In menu or loading screen",
+        "{0}{1} In menu or loading screen",
+        rp_cheat,
         rp_region
     )
 }
@@ -1146,6 +1147,7 @@ achievement(
     type="win_condition",
     trigger=any_of(Regions, region => 
         IsRegion(region) &&
+        !UsedENTIRETY(region) &&
         prev(gameState[region]) != STATE_CONGRATULATIONS &&
         gameState[region] == STATE_CONGRATULATIONS &&
         any_of([CONGRATS_CLEAR, CONGRATS_PERFECT], 
@@ -1160,6 +1162,7 @@ achievement(
     points=50,
     trigger=any_of(Regions, region => 
         IsRegion(region) &&
+        !UsedENTIRETY(region) &&
         prev(gameState[region]) != STATE_CONGRATULATIONS &&
         gameState[region] == STATE_CONGRATULATIONS &&
         congratsType[region] == CONGRATS_PERFECT
