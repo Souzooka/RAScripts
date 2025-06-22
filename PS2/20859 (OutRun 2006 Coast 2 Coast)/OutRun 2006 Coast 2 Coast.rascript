@@ -232,6 +232,9 @@ heartAttackHearts = {
     JP: NO_ADDR,
 }
 
+// for PAL use only
+video_mode = ptr(dword(0x3590B0), [0x70], v => v)
+
 // GAME FUNCTIONS
 
 function IsInGame(region)
@@ -264,10 +267,19 @@ function HeartAttackRank(region, continuous=false)
     return result / num_stages
 }
 
-function EventTime(region)
+function GetFPS(region, in_float=false)
 {
-    fps = if_else(region == EU, 50.0, 60.0)
-    return eventTime[region] * 100.0 / fps
+    fps = if_else(in_float, 60.0, 60)
+    if region == EU
+    {
+        fps = if_else(in_float, 60.0, 60) - (bit0(video_mode) * 10)
+    }
+    return fps
+}
+
+function EventTime(region, in_float=false)
+{
+    return eventTime[region] * 100 / GetFPS(region, in_float)
 }
 
 EVENT_RATINGS = ["E", "D", "C", "B", "A", "AA", "AAA", "-"]
@@ -1462,7 +1474,7 @@ for params in time_attack_params
         eventType[region] == EVENT_TIME_ATTACK &&
         eventSubType[region] == params["mode"] &&
         zone_check &&
-        eventTime[region] <= params["goaltime"] / 1000.0 * if_else(region == EU, 50, 60) &&
+        eventTime[region] <= params["goaltime"] * GetFPS(region, in_float=true) / 1000 &&
         HitGoal(region)
     )
 
@@ -1471,14 +1483,7 @@ for params in time_attack_params
         title=params["title"],
         description=format("{0} in under {1}", target, time_format),
         points=params["points"],
-        trigger=any_of(Regions, region => 
-            IsRegion(region) &&
-            eventType[region] == EVENT_TIME_ATTACK &&
-            eventSubType[region] == params["mode"] &&
-            zone_check &&
-            eventTime[region] <= params["goaltime"] / 1000.0 * if_else(region == EU, 50, 60) &&
-            HitGoal(region)
-        )
+        trigger=trigger
     )
 
     leaderboard(
@@ -1496,7 +1501,7 @@ for params in time_attack_params
         cancel=always_false(),
         submit=always_true(),
 
-        value=max_of(array_map(Regions, region => measured(EventTime(region), when=IsRegion(region)))),
+        value=max_of(array_map(Regions, region => measured(EventTime(region, in_float=true), when=IsRegion(region)))),
         format="MILLISECS",
         lower_is_better=true
     )
