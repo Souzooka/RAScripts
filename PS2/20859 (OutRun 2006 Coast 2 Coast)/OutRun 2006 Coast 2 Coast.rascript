@@ -142,6 +142,7 @@ EVENT_OUTRUN = 1
 EVENT_HEART_ATTACK = 2
 EVENT_GIRLFRIEND = 5
 EVENT_FLAGMAN = 6
+EVENT_TIME_ATTACK_STAGE = 7
 eventType = {
     US: dword(0x443F08),
     EU: dword(0x443508),
@@ -389,6 +390,7 @@ car_lookup = {
 
 event_lookup = {
     EVENT_TIME_ATTACK: "⏱️ Time Attack Mode",
+    EVENT_TIME_ATTACK_STAGE: "⏱️ Time Attack Mode",
     EVENT_OUTRUN: "🚗 OutRun Mode",
     EVENT_HEART_ATTACK: "❤️ Heart Attack Mode",
     EVENT_GIRLFRIEND: "💋 Girlfriend Event",
@@ -1497,22 +1499,6 @@ for params in time_attack_params
 // Heart Attack Mode Achievements
 
 heart_attack_params = [
-    {
-        "id": 527866,
-        "lbid": 134321,
-        "title": "Heart Attack - OutRun2SP OutRun Continuous",
-        "event": "OutRun2SP OutRun Continuous",
-        "points": 25,
-        "mode": EVENT_SUB_CONTINUOUS_SP,
-    },
-    {
-        "id": 527867,
-        "lbid": 134322,
-        "title": "Heart Attack - OutRun2 OutRun Continuous",
-        "event": "OutRun2 OutRun Continuous",
-        "points": 25,
-        "mode": EVENT_SUB_CONTINUOUS,
-    },
     {
         "id": 527868,
         "lbid": 134323,
