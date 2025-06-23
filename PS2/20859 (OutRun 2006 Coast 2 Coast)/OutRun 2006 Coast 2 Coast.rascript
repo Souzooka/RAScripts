@@ -47,22 +47,14 @@ function ptr(base, offsets, accessor=dword)
     return val
 }
 
-FRAMES_PER_SECOND = 60.0
-function FramesToCentiseconds(val)
-{
-    return val * (100.0 / FRAMES_PER_SECOND)
-}
-
-function TimeToCentiseconds(minutes=0, seconds=0, frames=0)
-{
-    return FramesToCentiseconds(minutes * (60 * FRAMES_PER_SECOND) + (seconds * FRAMES_PER_SECOND) + frames)
-}
-
 function MillisToTimestamp(x) => format("{0}'{1}\"{2}", 
 	x / (60 * 1000),
 	substring(format("0{0}", (x / 1000) % 60), -2, 2),
 	substring(format("00{0}", x), -3, 3)
 )
+
+// 60.2 frames in a second...
+IGT_DIVISOR = 60.2
 
 // GAME VARIABLES
 
@@ -214,9 +206,9 @@ eventDistance = {
 
 // 60 frames / second (NOTE: PAL might be 50 depending on display mode...)
 eventTime = {
-    US: dword(0x5C694C),
-    EU: dword(0x5C5F4C),
-    JP: dword(0x5A2514),
+    US: dword(0x5C6948),
+    EU: dword(0x5C5F48),
+    JP: dword(0x5A2510),
 }
 
 stageRankInfo = {
@@ -265,21 +257,6 @@ function HeartAttackRank(region, continuous=false)
     }
     
     return result / num_stages
-}
-
-function GetFPS(region, in_float=false)
-{
-    fps = if_else(in_float, 60.0, 60)
-    if region == EU
-    {
-        fps = if_else(in_float, 60.0, 60) - (bit0(video_mode) * 10)
-    }
-    return fps
-}
-
-function EventTime(region, in_float=false)
-{
-    return eventTime[region] * 100 / GetFPS(region, in_float)
 }
 
 EVENT_RATINGS = ["E", "D", "C", "B", "A", "AA", "AAA", "-"]
@@ -1474,7 +1451,7 @@ for params in time_attack_params
         eventType[region] == EVENT_TIME_ATTACK &&
         eventSubType[region] == params["mode"] &&
         zone_check &&
-        eventTime[region] <= params["goaltime"] * GetFPS(region, in_float=true) / 1000 &&
+        (eventTime[region] - 1) <= params["goaltime"] * IGT_DIVISOR / 1000 &&
         HitGoal(region)
     )
 
@@ -1500,8 +1477,8 @@ for params in time_attack_params
         ),
         cancel=always_false(),
         submit=always_true(),
-
-        value=max_of(array_map(Regions, region => measured(EventTime(region, in_float=true), when=IsRegion(region)))),
+        
+        value=max_of(array_map(Regions, region => measured((eventTime[region] - 1) / IGT_DIVISOR * 100, when=IsRegion(region)))),
         format="MILLISECS",
         lower_is_better=true
     )
