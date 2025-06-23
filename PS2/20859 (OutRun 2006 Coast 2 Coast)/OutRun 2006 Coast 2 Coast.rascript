@@ -1612,6 +1612,8 @@ for params in heart_attack_params
         target = format("at Goal {0} in OutRun Mode for {1}", params["goal"], name)
     }
 
+    continuous = any_of([EVENT_SUB_CONTINUOUS_SP, EVENT_SUB_CONTINUOUS], e => e == params["mode"])
+
     achievement(
         id=params["id"],
         title=params["title"],
@@ -1623,7 +1625,7 @@ for params in heart_attack_params
             eventSubType[region] == params["mode"] &&
             zone_check &&
             HitGoal(region) &&
-            HeartAttackRank(region) >= RANK_AA
+            HeartAttackRank(region, continuous=continuous) >= RANK_AA
         )
     )
 
