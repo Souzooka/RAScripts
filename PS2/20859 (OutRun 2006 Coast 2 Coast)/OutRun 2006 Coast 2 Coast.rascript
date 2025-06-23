@@ -213,15 +213,15 @@ eventTime = {
 
 stageRankInfo = {
     US: 0x589F78,
-    EU: NO_ADDR,
-    JP: NO_ADDR,
+    EU: 0x589578,
+    JP: 0x55FA88,
 }
 
 // fixed5, divide by 10000 for actual heart count
 heartAttackHearts = {
     US: dword(0x58AF30),
-    EU: NO_ADDR,
-    JP: NO_ADDR,
+    EU: dword(0x58A530),
+    JP: dword(0x560A40),
 }
 
 // for PAL use only
