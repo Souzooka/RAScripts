@@ -803,7 +803,7 @@ for flevel in flagman_levels
     achievement(
         id=flevel["id"],
         title=flevel["title"],
-        description=format("Complete all {0} events in Flagman {1} with an average rating of A or higher",
+        description=format("Attain an average rating of A or higher in the {0} events for Flagman {1}",
             flevel["name"], flevel["group"]),
         points=10,
         type="progression",
