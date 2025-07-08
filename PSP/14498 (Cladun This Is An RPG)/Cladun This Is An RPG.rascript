@@ -19,6 +19,7 @@ function GameState(addr)
         "m_dungeon_record_count": dword(addr + 0x880),
         "m_dungeon_record": [],
         "m_coco_unlocked": byte(addr + 0x3970),
+        "m_sunday_unlocked": byte(addr + 0x7CB4),
     }
     
     for i in range(0, 99) // TODO array length
@@ -113,12 +114,17 @@ MAP_PROLOGUE_DUNGEON = 60001
 
 DUNGEON_ARCANUS = 0
 DUNGEON_HIYO = 1
+DUNGEON_COB = 2
 
 // These aren't set in stone, but educated guesses for indices these records appear at
 // (See note in CheckDungeonCleared)
 RECORD_HIYO1F = 0
 RECORD_HIYO2F = 1
 RECORD_HIYO3F = 2
+RECORD_COB1F = 4
+RECORD_COB2F = 5
+RECORD_COB3F = 6
+RECORD_COB4F = 7
 
 achievement(
     id=194798,
@@ -167,26 +173,26 @@ achievement(
 )
 
 achievement(
-    title = "The Handsome Swordswoman and The Shield Addict Guy", points = 4, type="progression",
-    description = "Sunday and Battleblo have joined your party",
-    id = 194802, badge = "216546", published = "1/26/2022 5:47:11 PM", modified = "7/7/2025 8:08:13 PM",
-    trigger = dword((dword(0x9950BC) & 0x7FFFFFF) + 0x01F7B0) == 0 &&
-              dword((dword(0x9950BC) & 0x7FFFFFF) + 0x01F7B4) == 0 && dword(g_text) == 544567129 &&
-              dword((g_text) + 0x000004) == 544698222 &&
-              dword((g_text) + 0x000008) == 1702257000 &&
-              dword((g_text) + 0x00000C) == 1667457312 &&
-              dword((g_text) + 0x000010) == 544437093 &&
-              dword((g_text) + 0x000014) == 1394634612 &&
-              dword((g_text) + 0x000018) == 1633971829 &&
-              dword((g_text) + 0x00001C) == 11897
+    id=194802,
+    title="The Handsome Swordswoman and The Shield Addict Guy", 
+    description="Sunday and Battleblo have joined your party",
+    type="progression",
+    points=4,
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_sunday_unlocked"]) == 0 &&
+        g_game_state["m_sunday_unlocked"] == 1
 )
 
 achievement(
-    title = "Easy Cave", points = 5, type="progression",
-    description = "Complete Cave of Beginnings for the first time",
-    id = 194803, badge = "216547", published = "1/26/2022 5:47:12 PM", modified = "1/26/2022 6:48:52 PM",
-    trigger = (byte(0x1BF53F0) == 2 && byte(0x1BF53F4) == 4) &&
-              (prev(word(0x1BF5DD0) == 0) && word(0x1BF5DD0) == 1)
+    id=194803,
+    title="Easy Cave", 
+    description="Complete Cave of Beginnings for the first time",
+    type="progression",
+    points=5,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_COB3F, dungeon=DUNGEON_COB, floor=4)
 )
 
 achievement(
