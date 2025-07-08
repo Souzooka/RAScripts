@@ -14,6 +14,7 @@ function DungeonState(addr)
 function GameState(addr)
 {
     obj = {
+        "m_fame10_reward": bit4(addr + 0x1F),
         "m_tavern_unlocked": bit3(addr + 0x25),
         "m_map_id": dword(addr + 0x85C),
         "m_dungeon_record_count": dword(addr + 0x880),
@@ -451,13 +452,14 @@ achievement(
 )
 
 achievement(
-    title = "Something in the Underground...", points = 3,
-    description = "Talk with Hiyoji about the 10 fame reward",
-    id = 194836, badge = "216580", published = "1/26/2022 5:47:23 PM", modified = "1/26/2022 6:49:03 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) && word(0x1BF5C9A) >= 10 &&
-              (dword((g_text) + 0x00) == 1920298841 && dword((g_text) + 0x04) == 1835099680 && dword((g_text) + 0x08) == 1936269413 &&
-                  dword((g_text) + 0x0C) == 1702260512 && dword((g_text) + 0x10) == 808525938 && dword((g_text) + 0x14) == 33
-              )
+    id=194836,
+    title="Something in the Underground...", 
+    description="Talk with Hiyoji about the 10 fame reward",
+    points=3,
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_fame10_reward"]) == 0 &&
+        g_game_state["m_fame10_reward"] == 1
 )
 
 achievement(
