@@ -1,6 +1,8 @@
 // Cladun: This Is An RPG
 // #ID = 14498
 
+NULL = 0
+
 function DungeonState(addr)
 {
     obj = {
@@ -11,54 +13,157 @@ function DungeonState(addr)
 
 function GameState(addr)
 {
-    obj = {}
+    obj = {
+        "m_tavern_unlocked": bit3(addr + 0x25),
+        "m_map_id": dword(addr + 0x85C),
+        "m_dungeon_record_count": dword(addr + 0x880),
+        "m_dungeon_record": [],
+        "m_coco_unlocked": byte(addr + 0x3970),
+    }
+    
+    for i in range(0, 99) // TODO array length
+    {
+        array_push(obj["m_dungeon_record"], DungeonRecordInfo(addr + 0x884 + (SIZEOF_DungeonRecordInfo * i)))
+    }
     return obj
 }
 
-g_game_state = GameState(dword(0x9950b8) & 0x7FFFFFF)
+SIZEOF_DungeonRecordInfo = 0x2C
+function DungeonRecordInfo(addr)
+{
+    obj = {
+        "m_dungeon_id": word(addr + 0x0),
+        "m_floor": word(addr + 0x2),
+        "m_clear_count": dword(addr + 0x4),
+    }
+    return obj
+}
+
+function SaveProtection()
+{
+    return pg_game_state != NULL && prev(g_game_state["m_map_id"]) != MAP_TITLE
+}
+
+function InTitle()
+{
+    return g_game_state["m_map_id"] == MAP_TITLE
+}
+
+function PlayerLocked(delta=false)
+{
+    mem = dword((dword(0x998BE0) & 0x7FFFFFF) + 0x10E1C)
+    if delta
+        return prev(mem) != NULL
+    return mem != NULL
+}
+
+function CheckCutsceneFlag(flag)
+{
+    return
+        once(
+            // Make sure we aren't on title
+            SaveProtection() &&
+            // Flag set
+            prev(flag) == 0 && flag == 1 &&
+            // reset if the player somehow gets back to the title?
+            never(InTitle())
+        ) &&
+        // check that cutscene ended
+        PlayerLocked(delta=true) && !PlayerLocked()
+}
+
+function CheckDungeonCleared(record_idx, dungeon=-1, floor=-1)
+{
+    // Dungeons are inserted into game state in an arbitrary order
+    // However, since dungeons can only be completed in a specific order,
+    // (up until the end of the game), for those within that order, we should be able
+    // to avoid checking multiple entries. We want to avoid checking every entry, for every dungeon,
+    // even though it's what the game does, because RA has no early exit from loops and it's considered bad form
+    MAX_SAFE_DUNGEON = 99 // TODO; minimum ID to check multiple for
+    MAX_DUNGEON_COUNT = 99 // TODO; max range to check multiple for
+
+    check_multiple = dungeon > MAX_SAFE_DUNGEON
+    
+    if check_multiple
+    {
+        assert(false, "NOT IMPLEMENTED")
+    }
+
+    info = g_game_state["m_dungeon_record"][record_idx]
+    cond = always_true()
+    if dungeon != -1
+        // Sanity check (this record is where we expect it to be in memory)
+        // If this fails we may need to check ~100 records for every dungeon to be thorough
+        cond = cond && info["m_dungeon_id"] == dungeon
+    if floor != -1
+        // Sanity check (this record is where we expect it to be in memory)
+        // If this fails we may need to check ~100 records for every dungeon to be thorough
+        cond = cond && info["m_floor"] == floor
+    return cond && prev(info["m_clear_count"] == 0) && info["m_clear_count"] == 1
+}
+
+pg_game_state = dword(0x9950b8) // Can't mask here because (X & 0x7FFFFFF) == 0 seems to be considered always false
+g_game_state = GameState(pg_game_state & 0x7FFFFFF)
 g_dungeon_state = DungeonState(dword(0x9950bc) & 0x7FFFFFF)
 g_text = dword(0x9996D0) & 0x7FFFFFF
 
+MAP_TITLE = 0
+MAP_HUB = 50001
+MAP_PROLOGUE_DUNGEON = 60001
+
+DUNGEON_ARCANUS = 0
+DUNGEON_HIYO = 1
+
+// These aren't set in stone, but educated guesses for indices these records appear at
+// (See note in CheckDungeonCleared)
+RECORD_HIYO1F = 0
+RECORD_HIYO2F = 1
+RECORD_HIYO3F = 2
+
 achievement(
-    title = "Starting a New Adventure", points = 1, type="progression",
-    description = "Complete the Prologue Stage and reach Arcanus Cella (Some Achievements need some time to trigger)",
-    id = 194798, badge = "216542", published = "1/26/2022 5:47:10 PM", modified = "7/7/2025 7:35:37 PM",
-    trigger = dword(0x9950B8) != 0 && prev(dword((dword(0x9950B8) & 0x7FFFFFF) + 0x00085C)) == 60001 &&
-              dword((dword(0x9950B8) & 0x7FFFFFF) + 0x00085C) == 50001
+    id=194798,
+    title="Starting a New Adventure",
+    description="Complete the Prologue Stage and reach Arcanus Cella (Some Achievements need some time to trigger)",
+    type="progression",
+    points=1,
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_map_id"]) == MAP_PROLOGUE_DUNGEON &&
+        g_game_state["m_map_id"] == MAP_HUB
 )
 
 achievement(
-    title = "The Most Unlucky Guy", points = 2, type="progression",
-    description = "Coco has joined your party",
-    id = 194799, badge = "216543", published = "1/26/2022 5:47:10 PM", modified = "7/7/2025 7:58:47 PM",
-    trigger = dword(0x9950B8) != 0 && prev(dword((dword(0x9950B8) & 0x7FFFFFF) + 0x00085C)) != 0 &&
-              prev(byte((dword(0x9950B8) & 0x7FFFFFF) + 0x003970)) == 0 &&
-              byte((dword(0x9950B8) & 0x7FFFFFF) + 0x003970) == 1
+    id=194799,
+    title="The Most Unlucky Guy", 
+    description="Coco has joined your party",
+    type="progression",
+    points=2,
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_coco_unlocked"]) == 0 &&
+        g_game_state["m_coco_unlocked"] == 1
 )
 
 achievement(
-    title = "The Cave Hiyo Lives in", points = 2, type="progression",
-    description = "Complete Hiyo's Cave for the first time",
-    id = 194800, badge = "216544", published = "1/26/2022 5:47:11 PM", modified = "7/7/2025 8:15:27 PM",
-    trigger = dword(0x9950B8) != 0 && prev(dword((dword(0x9950B8) & 0x7FFFFFF) + 0x00085C)) != 0 &&
-              prev(dword((dword(0x9950B8) & 0x7FFFFFF) + 0x0008E0)) == 0 &&
-              dword((dword(0x9950B8) & 0x7FFFFFF) + 0x0008E0) == 1
+    id=194800,
+    title="The Cave Hiyo Lives in", 
+    description="Complete Hiyo's Cave for the first time",
+    type="progression",
+    points=2,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_HIYO3F, dungeon=DUNGEON_HIYO, floor=3)
 )
 
 achievement(
-    title = "'Taberna do Seu Miguel'", points = 2, type="progression",
-    description = "You now have access to the Tavern",
-    id = 194801, badge = "216545", published = "1/26/2022 5:47:11 PM", modified = "7/7/2025 8:08:26 PM",
-    trigger = dword((dword(0x9950BC) & 0x7FFFFFF) + 0x01F7B0) == 0 &&
-              dword((dword(0x9950BC) & 0x7FFFFFF) + 0x01F7B4) == 0 && dword(g_text) == 544567129 &&
-              dword((g_text) + 0x000004) == 544698222 &&
-              dword((g_text) + 0x000008) == 1702257000 &&
-              dword((g_text) + 0x00000C) == 1667457312 &&
-              dword((g_text) + 0x000010) == 544437093 &&
-              dword((g_text) + 0x000014) == 1948282740 &&
-              dword((g_text) + 0x000018) == 1411409256 &&
-              dword((g_text) + 0x00001C) == 1919252065 &&
-              dword((g_text) + 0x000020) == 11886
+    id=194801,
+    title="'Taberna do Seu Miguel'", 
+    description="You now have access to the Tavern",
+    type="progression",
+    points=2,
+    trigger=
+        SaveProtection() &&
+        CheckCutsceneFlag(g_game_state["m_tavern_unlocked"])
 )
 
 achievement(
