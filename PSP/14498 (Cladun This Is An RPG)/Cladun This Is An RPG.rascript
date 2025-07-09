@@ -457,13 +457,14 @@ achievement(
 )
 
 achievement(
-    title = "Searching Everywhere", points = 1,
-    description = "Find the Letter from Hiyoji in Arcanus Cella's",
-    id = 194843, badge = "216584", published = "1/26/2022 5:47:25 PM", modified = "1/26/2022 6:49:06 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 1919248468 && dword((g_text) + 0x04) == 1936269413 && dword((g_text) + 0x08) == 1814061344 &&
-                  dword((g_text) + 0x0C) == 1702130789 && dword((g_text) + 0x10) == 1701322866 && dword((g_text) + 0x14) == 3040626
-              )
+    id=194843,
+    title="Searching Everywhere", 
+    description="Find the Letter from Hiyoji in Arcanus Cella's",
+    points=1,
+    trigger=
+        g_game_state["m_map_id"] == MAP_HUB &&
+        prev(g_conversation_index == 0xAF) &&
+        g_conversation_index == -1
 )
 
 
