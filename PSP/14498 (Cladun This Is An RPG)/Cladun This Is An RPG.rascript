@@ -175,16 +175,20 @@ MAP_PROLOGUE_DUNGEON = 60001
 DUNGEON_ARCANUS = 0
 DUNGEON_HIYO = 1
 DUNGEON_COB = 2
+DUNGEON_DRAGON = 3
 
 // These aren't set in stone, but educated guesses for indices these records appear at
 // (See note in CheckDungeonCleared)
 RECORD_HIYO1F = 0
 RECORD_HIYO2F = 1
 RECORD_HIYO3F = 2
-RECORD_COB1F = 4
-RECORD_COB2F = 5
-RECORD_COB3F = 6
-RECORD_COB4F = 7
+RECORD_COB1F = 3
+RECORD_COB2F = 4
+RECORD_COB3F = 5
+RECORD_COB4F = 6
+RECORD_DRAGON1F = 7
+RECORD_DRAGON2F = 8
+RECORD_DRAGON3F = 9
 
 pg_game_state = dword(0x9950b8) // Can't mask here because (X & 0x7FFFFFF) == 0 seems to be considered always false
 g_game_state = GameState(pg_game_state & 0x7FFFFFF)
@@ -260,7 +264,7 @@ achievement(
     points=5,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_COB3F, dungeon=DUNGEON_COB, floor=4)
+        CheckDungeonCleared(RECORD_COB4F, dungeon=DUNGEON_COB, floor=4)
 )
 
 achievement(
@@ -276,11 +280,12 @@ achievement(
 )
 
 achievement(
-    title = "Draco Florest", points = 5, type="progression",
-    description = "Complete Dragon Florest for the first time",
+    title = "Draco Forest", points = 5, type="progression",
+    description = "Complete Dragon Forest for the first time",
     id = 194805, badge = "216549", published = "1/26/2022 5:47:12 PM", modified = "1/26/2022 6:48:53 PM",
-    trigger = (byte(0x1BF53F0) == 3 && byte(0x1BF53F4) == 3) &&
-              (prev(word(0x1BF5E54)) == 0 && word(0x1BF5E54) == 1)
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_DRAGON3F, dungeon=DUNGEON_DRAGON, floor=3)
 )
 
 achievement(
