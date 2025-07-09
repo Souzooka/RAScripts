@@ -17,16 +17,39 @@ function GameState(addr)
         "m_fame10_reward": bit4(addr + 0x1F),
         "m_tavern_unlocked": bit3(addr + 0x25),
         "m_map_id": dword(addr + 0x85C),
+        "m_character_id": dword(addr + 0x868),
         "m_dungeon_record_count": dword(addr + 0x880),
         "m_dungeon_record": [],
-        "m_coco_unlocked": byte(addr + 0x3970),
-        "m_sunday_unlocked": byte(addr + 0x7CB4),
+        "m_characters": [],
     }
     
     for i in range(0, 99) // TODO array length
     {
         array_push(obj["m_dungeon_record"], DungeonRecordInfo(addr + 0x884 + (SIZEOF_DungeonRecordInfo * i)))
     }
+    
+    for i in range(0, CHARACTER_CUSTOM2)
+    {
+        array_push(obj["m_characters"], CharacterState(addr + 0x2AE4 + (SIZEOF_CharacterState * i)))
+    }
+    return obj
+}
+
+SIZEOF_CharacterState = 0x99C
+function CharacterState(addr)
+{
+    obj = {
+        "m_hp": dword(addr + 0x2C),
+        "m_magic_circle_characters": [],
+        "m_unlocked": byte(addr + 0x4F0),
+    }
+    
+    for i in range(0, 8-1)
+    {
+        // Eight slots (I think should be the max) of 8-bit character IDs
+        array_push(obj["m_magic_circle_characters"], byte(addr + 0xE8 + i))
+    }
+    
     return obj
 }
 
@@ -86,7 +109,7 @@ function CheckCutsceneFlag(flag)
         PlayerLocked(delta=true) && !PlayerLocked()
 }
 
-function CheckDungeonCleared(record_idx, dungeon=-1, floor=-1)
+function CheckDungeonCleared(record_idx, dungeon=-1, floor=-1, first=true)
 {
     // Dungeons are inserted into game state in an arbitrary order
     // However, since dungeons can only be completed in a specific order,
@@ -113,17 +136,29 @@ function CheckDungeonCleared(record_idx, dungeon=-1, floor=-1)
         // Sanity check (this record is where we expect it to be in memory)
         // If this fails we may need to check ~100 records for every dungeon to be thorough
         cond = cond && info["m_floor"] == floor
-    return cond && prev(info["m_clear_count"] == 0) && info["m_clear_count"] == 1
+    extra = always_true()
+    if first
+        extra = prev(info["m_clear_count"]) == 0 && info["m_clear_count"] == 1
+    else
+        extra = prev(info["m_clear_count"]) < info["m_clear_count"]
+    return cond && extra
 }
 
-pg_game_state = dword(0x9950b8) // Can't mask here because (X & 0x7FFFFFF) == 0 seems to be considered always false
-g_game_state = GameState(pg_game_state & 0x7FFFFFF)
-g_dungeon_state = DungeonState(dword(0x9950bc) & 0x7FFFFFF)
-g_text = dword(0x9996D0) & 0x7FFFFFF
-g_dialog_window = DialogWindow(g_text)
-g_conversation_index = dword((dword((dword(0x996190) & 0x7FFFFFF) + 0x0) & 0x7FFFFFF) + 0x880)
+CHARACTER_PUDDING = 0
+CHARACTER_COCO = 1
+CHARACTER_DESPINA = 2
+CHARACTER_SOUMA = 3
+CHARACTER_SHERBERT = 4
+CHARACTER_BATTLEBLO = 5
+CHARACTER_DOTACHE = 6
+CHARACTER_BOB = 7
+CHARACTER_SUNDAY = 8
+CHARACTER_ASAGI = 9
+CHARACTER_CUSTOM1 = 11
+CHARACTER_CUSTOM2 = 12
 
 MAP_TITLE = 0
+MAP_HIYO1F = 10001
 MAP_HUB = 50001
 MAP_PROLOGUE_DUNGEON = 60001
 
@@ -140,6 +175,14 @@ RECORD_COB1F = 4
 RECORD_COB2F = 5
 RECORD_COB3F = 6
 RECORD_COB4F = 7
+
+pg_game_state = dword(0x9950b8) // Can't mask here because (X & 0x7FFFFFF) == 0 seems to be considered always false
+g_game_state = GameState(pg_game_state & 0x7FFFFFF)
+g_dungeon_state = DungeonState(dword(0x9950bc) & 0x7FFFFFF)
+g_text = dword(0x9996D0) & 0x7FFFFFF
+g_dialog_window = DialogWindow(g_text)
+g_conversation_index = dword((dword((dword(0x996190) & 0x7FFFFFF) + 0x0) & 0x7FFFFFF) + 0x880)
+
 
 achievement(
     id=194798,
@@ -161,8 +204,8 @@ achievement(
     points=2,
     trigger=
         SaveProtection() &&
-        prev(g_game_state["m_coco_unlocked"]) == 0 &&
-        g_game_state["m_coco_unlocked"] == 1
+        prev(g_game_state["m_characters"][CHARACTER_COCO]["m_unlocked"]) == 0 &&
+        g_game_state["m_characters"][CHARACTER_COCO]["m_unlocked"] == 1
 )
 
 achievement(
@@ -195,8 +238,8 @@ achievement(
     points=4,
     trigger=
         SaveProtection() &&
-        prev(g_game_state["m_sunday_unlocked"]) == 0 &&
-        g_game_state["m_sunday_unlocked"] == 1
+        prev(g_game_state["m_characters"][CHARACTER_SUNDAY]["m_unlocked"]) == 0 &&
+        g_game_state["m_characters"][CHARACTER_SUNDAY]["m_unlocked"] == 1
 )
 
 achievement(
@@ -543,14 +586,32 @@ achievement(
 )
 
 achievement(
-    title = "Damageless Run I", points = 10,
-    description = "Complete the Hiyo's Cave 1F with Souma and without taking damage [No Sub/Support Character]",
-    id = 194846, badge = "216587", published = "1/26/2022 5:47:26 PM", modified = "3/5/2023 11:51:50 PM",
-    trigger = (byte(0x1BF53F0) == 1 && byte(0x1BF53F4) == 1) && unless(byte(0x1BF5CA8) != 3) &&
-              trigger_when(word(0x1BF5CC8) > prev(word(0x1BF5CC8))) &&
-              disable_when(byte(0x1BF53F0) == 1 && word(0x1BF9C24) < prev(word(0x1BF9C24))) &&
-              unless(dword(0x1BF9CE0) != 4294967295) && unless(dword(0x1BF9CE4) != 4294967295) &&
-              (always_false() || (never(byte(0x1BF53F0) != 1)))
+    id=194846,
+    title="Damageless Run I", 
+    description="As Souma and without any Sub Characters, complete Hiyo's Cave 1F without taking damage",
+    points=10,
+    trigger=
+        // Enter stage (as Souma and with no subs)
+        once(
+            pg_game_state != NULL &&
+            // Entered the map
+            prev(g_game_state["m_map_id"]) != MAP_HIYO1F &&
+            g_game_state["m_map_id"] == MAP_HIYO1F &&
+            // Is Souma
+            g_game_state["m_character_id"] == CHARACTER_SOUMA &&
+            // No subs
+            all_of(g_game_state["m_characters"][CHARACTER_SOUMA]["m_magic_circle_characters"], v => v == 0xFF) &&
+            // Reset if we leave
+            never(g_game_state["m_map_id"] != MAP_HIYO1F) &&
+            // Reset if we take damage
+            never(
+                g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"] < prev(g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"])
+            )
+        ) &&
+        // Complete stage
+        trigger_when(
+            CheckDungeonCleared(RECORD_HIYO1F, dungeon=DUNGEON_HIYO, floor=1, first=false)
+        )
 )
 
 achievement(
