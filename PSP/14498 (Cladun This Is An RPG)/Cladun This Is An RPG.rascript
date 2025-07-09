@@ -255,14 +255,15 @@ achievement(
 )
 
 achievement(
-    title = "Bob Ross is that You?", points = 5, type="progression",
-    description = "Bob has joined your party",
-    id = 194804, badge = "216548", published = "1/26/2022 5:47:12 PM", modified = "1/26/2022 6:48:53 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 544567129 && dword((g_text) + 0x04) == 544698222 && dword((g_text) + 0x08) == 1702257000 &&
-                  dword((g_text) + 0x0C) == 1667457312 && dword((g_text) + 0x10) == 544437093 && dword((g_text) + 0x14) == 1109421940 &&
-                  dword((g_text) + 0x18) == 3039855
-              )
+    id=194804,
+    title="Bob Ross Is That You?",
+    description="Bob has joined your party",
+    type="progression",
+    points=5, 
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_characters"][CHARACTER_BOB]["m_unlocked"]) == 0 &&
+        g_game_state["m_characters"][CHARACTER_BOB]["m_unlocked"] == 1
 )
 
 achievement(
