@@ -6,8 +6,10 @@ NULL = 0
 function DungeonState(addr)
 {
     obj = {
+        "m_newgeon_floor": dword(addr + 0x10),
         "m_dungeon_id": dword(addr + 0x1F7B0),
         "m_floor": dword(addr + 0x1F7B4),
+        "m_in_dungeon": dword(addr + 0x1F7B8),
     }
     return obj
 }
@@ -16,6 +18,9 @@ function GameState(addr)
 {
     obj = {
         "m_fame10_reward": bit4(addr + 0x1F),
+        "m_fame30_reward": bit5(addr + 0x1F),
+        "m_fame50_reward": bit6(addr + 0x1F),
+        "m_fame200_reward": bit7(addr + 0x1F),
         "m_tavern_unlocked": bit3(addr + 0x25),
         "m_map_id": dword(addr + 0x85C),
         "m_character_id": dword(addr + 0x868),
@@ -400,9 +405,11 @@ achievement(
 )
 
 achievement(
-    title = "A Stalker?", points = 5, type="progression",
-    description = "Sherbet has joined your party",
-    id = 194806, badge = "216550", published = "1/26/2022 5:47:13 PM", modified = "1/26/2022 6:48:53 PM",
+    id=194806,
+    title="A Stalker?", 
+    description="Sherbet has joined your party",
+    type="progression",
+    points=5, 
     trigger=
         SaveProtection() &&
         prev(g_game_state["m_characters"][CHARACTER_SHERBET]["m_unlocked"]) == 0 &&
@@ -421,9 +428,11 @@ achievement(
 )
 
 achievement(
-    title = "The Barkeeper and Princess", points = 5, type="progression",
-    description = "Dotache has joined your party",
-    id = 194808, badge = "216552", published = "1/26/2022 5:47:13 PM", modified = "1/26/2022 6:48:54 PM",
+    id=194808,
+    title="The Barkeeper and Princess", 
+    description="Dotache has joined your party",
+    type="progression",
+    points=5,
     trigger=
         SaveProtection() &&
         prev(g_game_state["m_characters"][CHARACTER_DOTACHE]["m_unlocked"]) == 0 &&
@@ -684,56 +693,50 @@ achievement(
     description="Talk with Hiyoji about the 10 fame reward",
     points=3,
     trigger=
-        SaveProtection() &&
-        prev(g_game_state["m_fame10_reward"]) == 0 &&
-        g_game_state["m_fame10_reward"] == 1
+        CheckCutsceneFlag(g_game_state["m_fame10_reward"])
 )
 
 achievement(
-    title = "The Legendary Artifact, \"Widen!\"", points = 5,
+    title="The Legendary Artifact, \"Widen!\"", points = 5,
     description = "Talk with Hiyoji about the 30 fame reward",
-    id = 194837, badge = "216580", published = "1/26/2022 5:47:23 PM", modified = "1/26/2022 6:49:04 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) && word(0x1BF5C9A) >= 30 &&
-              (dword((g_text) + 0x00) == 1920298841 && dword((g_text) + 0x04) == 1835099680 && dword((g_text) + 0x08) == 1936269413 &&
-                  dword((g_text) + 0x0C) == 1702260512 && dword((g_text) + 0x10) == 808657010 && dword((g_text) + 0x14) == 33 &&
-                  dword((g_text) + 0x80) == 1701995848 && dword((g_text) + 0x84) == 1870209068 && dword((g_text) + 0x88) == 1633886325
-              )
+    id = 194837,
+    trigger=
+        CheckCutsceneFlag(g_game_state["m_fame30_reward"])
 )
 
 achievement(
-    title = "The Legendary Blunt Weapon, \"Prinny Stick!\"", points = 10,
-    description = "Talk with Hiyoji about the 50 fame reward",
-    id = 194838, badge = "216580", published = "1/26/2022 5:47:24 PM", modified = "1/26/2022 6:49:04 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) && word(0x1BF5C9A) >= 50 &&
-              (dword((g_text) + 0x00) == 544567129 && dword((g_text) + 0x04) == 544501607 && dword((g_text) + 0x08) == 1701274988 &&
-                  dword((g_text) + 0x0C) == 1918985326 && dword((g_text) + 0x10) == 1818370169 && dword((g_text) + 0x14) == 544501365 &&
-                  dword((g_text) + 0x18) == 1885431159 && dword((g_text) + 0x1C) == 539782767 && dword((g_text) + 0x20) == 1769099298 &&
-                  dword((g_text) + 0x24) == 544829038 && dword((g_text) + 0x28) == 1667855443 && dword((g_text) + 0x2C) == 2236779
-              )
+    id=194838,
+    title="The Legendary Blunt Weapon, \"Prinny Stick!\"",
+    description="Talk with Hiyoji about the 50 fame reward",
+    points=10,
+    trigger=
+        CheckCutsceneFlag(g_game_state["m_fame50_reward"])
 )
 
 achievement(
-    title = "Buy Weapons with Ultimate Titles at the Store!", points = 25,
-    description = "Talk with Hiyoji about the 200 fame reward",
-    id = 194839, badge = "216580", published = "1/26/2022 5:47:24 PM", modified = "1/26/2022 6:49:04 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) && word(0x1BF5C9A) >= 200 &&
-              (dword((g_text) + 0x80) == 1634541641 && dword((g_text) + 0x84) == 1931502948 && dword((g_text) + 0x88) == 543519349 &&
-                  dword((g_text) + 0x8C) == 544567161 && dword((g_text) + 0x90) == 544104803 && dword((g_text) + 0x94) == 544830818 &&
-                  dword((g_text) + 0x98) == 1885431159 && dword((g_text) + 0x9C) == 544435823 && dword((g_text) + 0xA0) == 1752459639
-              )
+    id=194839,
+    title="Buy Weapons With Ultimate Titles at the Store!",
+    description="Talk with Hiyoji about the 200 fame reward",
+    points=25,
+    trigger=
+        CheckCutsceneFlag(g_game_state["m_fame200_reward"])
 )
 
 achievement(
-    title = "I'm Moving Up and Down, Side to Side Like a Roller Coaster", points = 25,
-    description = "Reach New-geon floor 100 or higher",
-    id = 194841, badge = "216582", published = "1/26/2022 5:47:25 PM", modified = "1/30/2022 7:32:38 PM",
-    trigger = (once(byte(0x1BF53F8) == 1 && prev(byte(0x1BD5C50)) < 100) && byte(0x1BD5C50) >= 100)
+    id=194841,
+    title="I'm Moving Up and Down, Side to Side Like a Roller Coaster",
+    description="Reach New-geon floor 100 or higher",
+    points=25,
+    trigger=
+        g_dungeon_state["m_in_dungeon"] == 1 &&
+        prev(g_dungeon_state["m_newgeon_floor"]) < 100 &&
+        g_dungeon_state["m_newgeon_floor"] >= 100
 )
 
 achievement(
     id=194842,
     title="Dungeon Master",
-    description="Complete the 50th floor and to the next of Ran-geon",
+    description="Complete the 50th floor and move onto the next of floor of the Ran-geon",
     points = 10,
     trigger=
         pg_rangeon_state != NULL &&
