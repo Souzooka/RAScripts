@@ -6,7 +6,8 @@ NULL = 0
 function DungeonState(addr)
 {
     obj = {
-        
+        "m_dungeon_id": dword(addr + 0x1F7B0),
+        "m_floor": dword(addr + 0x1F7B4),
     }
     return obj
 }
@@ -459,7 +460,7 @@ achievement(
 achievement(
     id=194843,
     title="Searching Everywhere", 
-    description="Find the Letter from Hiyoji in Arcanus Cella's",
+    description="Find the Letter from Hiyoji in Arcanus Cella",
     points=1,
     trigger=
         g_game_state["m_map_id"] == MAP_HUB &&
@@ -490,32 +491,29 @@ achievement(
         g_dialog_window["m_visibility"] == 5
 )
 
+YAM_HERO_CONVERSATIONS = range(0xCC, 0xD1)
 achievement(
-    title = "\"Senta que la vem historia\"", points = 2,
-    description = "Find and read all the chapters of Adventures of the Yam Hero in Arcanus Cella's",
-    id = 194844, badge = "216585", published = "1/26/2022 5:47:26 PM", modified = "1/26/2022 6:49:06 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              once(dword((g_text) + 0x00) == 1646292820 && dword((g_text) + 0x04) == 1868767333 && dword((g_text) + 0x08) == 1852404846 &&
-                  dword((g_text) + 0x0C) == 543450485 && dword((g_text) + 0x10) == 1663070068 && dword((g_text) + 0x14) == 1953522024 &&
-                  dword((g_text) + 0x18) == 840987237 && dword((g_text) + 0x1C) == 46
-              ) &&
-              once(dword((g_text) + 0x00) == 1646292820 && dword((g_text) + 0x04) == 1868767333 && dword((g_text) + 0x08) == 1852404846 &&
-                  dword((g_text) + 0x0C) == 543450485 && dword((g_text) + 0x10) == 1663070068 && dword((g_text) + 0x14) == 1953522024 &&
-                  dword((g_text) + 0x18) == 857764453 && dword((g_text) + 0x1C) == 46
-              ) &&
-              once(dword((g_text) + 0x00) == 1646292820 && dword((g_text) + 0x04) == 1868767333 && dword((g_text) + 0x08) == 1852404846 &&
-                  dword((g_text) + 0x0C) == 543450485 && dword((g_text) + 0x10) == 1663070068 && dword((g_text) + 0x14) == 1953522024 &&
-                  dword((g_text) + 0x18) == 874541669 && dword((g_text) + 0x1C) == 46
-              ) &&
-              once(dword((g_text) + 0x00) == 1646292820 && dword((g_text) + 0x04) == 1868767333 && dword((g_text) + 0x08) == 1852404846 &&
-                  dword((g_text) + 0x0C) == 543450485 && dword((g_text) + 0x10) == 1663069801 && dword((g_text) + 0x14) == 1953522024 &&
-                  dword((g_text) + 0x18) == 891318885 && dword((g_text) + 0x1C) == 46
-              ) &&
-              once(dword((g_text) + 0x00) == 1646292820 && dword((g_text) + 0x04) == 1868767333 && dword((g_text) + 0x08) == 1852404846 &&
-                  dword((g_text) + 0x0C) == 543450485 && dword((g_text) + 0x10) == 1948282740 && dword((g_text) + 0x14) == 1713399144 &&
-                  dword((g_text) + 0x18) == 1818324585 && dword((g_text) + 0x1C) == 1634231072 && dword((g_text) + 0x20) == 1919251568 &&
-                  dword((g_text) + 0x24) == 46
-              ) && once(dword((g_text) + 0x00) == 543516756 && dword((g_text) + 0x04) == 778333765)
+    id=194844,
+    title="'Senta que la Vem Historia'", 
+    description="Find and read all the chapters of Adventures of the Yam Hero in Arcanus Cella",
+    points=2,
+    trigger=
+        measured(
+            tally_of(
+                YAM_HERO_CONVERSATIONS,
+                length(YAM_HERO_CONVERSATIONS),
+                i =>
+                    once(
+                        // In Arcanus
+                        g_dungeon_state["m_dungeon_id"] == DUNGEON_ARCANUS &&
+                        // Read the book
+                        prev(g_conversation_index) == i &&
+                        g_conversation_index == -1 &&
+                        // Reset measured on return to title
+                        never(InTitle())
+                    )
+            )
+        )
 )
 
 achievement(
