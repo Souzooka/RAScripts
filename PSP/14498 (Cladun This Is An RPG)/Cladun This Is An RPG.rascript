@@ -159,6 +159,7 @@ CHARACTER_CUSTOM2 = 12
 
 MAP_TITLE = 0
 MAP_HIYO1F = 10001
+MAP_COB1F = 10101
 MAP_HUB = 50001
 MAP_PROLOGUE_DUNGEON = 60001
 
@@ -615,14 +616,32 @@ achievement(
 )
 
 achievement(
-    title = "Damageless Run II", points = 10,
-    description = "Complete the Cave of Beginnings 1F with Souma and without taking damage [No Sub/Support Character]",
-    id = 194847, badge = "216588", published = "1/26/2022 5:47:27 PM", modified = "3/5/2023 11:58:04 PM",
-    trigger = (byte(0x1BF53F0) == 2 && byte(0x1BF53F4) == 1) && unless(byte(0x1BF5CA8) != 3) &&
-              trigger_when(word(0x1BF5D4C) > prev(word(0x1BF5D4C))) &&
-              disable_when(byte(0x1BF53F0) == 2 && word(0x1BF9C24) < prev(word(0x1BF9C24))) &&
-              disable_when(dword(0x1BF9CE0) != 4294967295) && disable_when(dword(0x1BF9CE4) != 4294967295) &&
-              (always_false() || (never(byte(0x1BF53F0) != 2)))
+    id=194847,
+    title="Damageless Run II",
+    description="As Souma and without any Sub Characters, complete Cave of Beginnings 1F without taking damage",
+    points=10,
+    trigger=
+        // Enter stage (as Souma and with no subs)
+        once(
+            pg_game_state != NULL &&
+            // Entered the map
+            prev(g_game_state["m_map_id"]) != MAP_COB1F &&
+            g_game_state["m_map_id"] == MAP_COB1F &&
+            // Is Souma
+            g_game_state["m_character_id"] == CHARACTER_SOUMA &&
+            // No subs
+            all_of(g_game_state["m_characters"][CHARACTER_SOUMA]["m_magic_circle_characters"], v => v == 0xFF) &&
+            // Reset if we leave
+            never(g_game_state["m_map_id"] != MAP_COB1F) &&
+            // Reset if we take damage
+            never(
+                g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"] < prev(g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"])
+            )
+        ) &&
+        // Complete stage
+        trigger_when(
+            CheckDungeonCleared(RECORD_COB1F, dungeon=DUNGEON_COB, floor=1, first=false)
+        )
 )
 
 achievement(
