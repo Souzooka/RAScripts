@@ -41,6 +41,18 @@ function DungeonRecordInfo(addr)
     return obj
 }
 
+function DialogWindow(addr)
+{
+    obj = {
+        // The chosen dialogue option; sticky
+        "m_option": dword(addr + 0x45C),
+        // 5 = visible, 0 = invisible -- transition states from fade in/out
+        "m_visibility": dword(addr + 0x4A0),
+    }
+    
+    return obj
+}
+
 function SaveProtection()
 {
     return pg_game_state != NULL && prev(g_game_state["m_map_id"]) != MAP_TITLE
@@ -108,6 +120,8 @@ pg_game_state = dword(0x9950b8) // Can't mask here because (X & 0x7FFFFFF) == 0 
 g_game_state = GameState(pg_game_state & 0x7FFFFFF)
 g_dungeon_state = DungeonState(dword(0x9950bc) & 0x7FFFFFF)
 g_text = dword(0x9996D0) & 0x7FFFFFF
+g_dialog_window = DialogWindow(g_text)
+g_conversation_index = dword((dword((dword(0x996190) & 0x7FFFFFF) + 0x0) & 0x7FFFFFF) + 0x880)
 
 MAP_TITLE = 0
 MAP_HUB = 50001
@@ -407,20 +421,27 @@ achievement(
               )
 )
 
+
 achievement(
-    title = "The Kindest People of the World", points = 1,
-    description = "Be kind with Arcanus Cella's pumpkins",
-    id = 194840, badge = "216581", published = "1/26/2022 5:47:24 PM", modified = "1/26/2022 6:49:05 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              once(dword((g_text) + 0x80) == 1836216142 && dword((g_text) + 0x84) == 2037148769 && dword((g_text) + 0x88) == 1701847084 &&
-                  dword((g_text) + 0x8C) == 1701605487 && dword((g_text) + 0x90) == 1970239264 && dword((g_text) + 0x94) == 1931502700 &&
-                  dword((g_text) + 0x98) == 544236916 && dword((g_text) + 0x9C) == 1830841967 && dword((g_text) + 0xA0) == 1646275685 &&
-                  dword((g_text) + 0xA4) == 2032170101 && dword((g_text) + 0xA8) == 1679848815 && dword((g_text) + 0xAC) == 661546089 &&
-                  dword((g_text) + 0xB0) == 8564
-              ) &&
-              once(dword((g_text) + 0x00) == 661939532 && dword((g_text) + 0x04) == 1919361139 && dword((g_text) + 0x08) == 1864398703 &&
-                  dword((g_text) + 0x0C) == 1948279916 && dword((g_text) + 0x10) == 1952802671 && dword((g_text) + 0x14) == 561145192
-              )
+    id=194840,
+    title="The Kindest People of the World", 
+    description="Be kind with Arcanus Cella's pumpkins",
+    points=1,
+    trigger=
+        // In Arcanus Cella
+        g_game_state["m_map_id"] == MAP_HUB &&
+        // We're in the right conversation and chose option 0 (indicated by window fading out with option 0 selected)
+        once(
+            g_conversation_index == 0xAB &&
+            g_dialog_window["m_option"] == 0 &&
+            prev(g_dialog_window["m_visibility"]) == 1 &&
+            g_dialog_window["m_visibility"] == 0 &&
+            // reset if we somehow leave conversation
+            never(g_conversation_index == -1)
+        ) &&
+        // second window appears
+        prev(g_dialog_window["m_visibility"]) == 4 &&
+        g_dialog_window["m_visibility"] == 5
 )
 
 achievement(
