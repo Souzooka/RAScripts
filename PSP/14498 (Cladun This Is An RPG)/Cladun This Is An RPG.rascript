@@ -24,7 +24,7 @@ function GameState(addr)
         "m_characters": [],
     }
     
-    for i in range(0, 99) // TODO array length
+    for i in range(0, 200-1)
     {
         array_push(obj["m_dungeon_record"], DungeonRecordInfo(addr + 0x884 + (SIZEOF_DungeonRecordInfo * i)))
     }
@@ -117,32 +117,49 @@ function CheckDungeonCleared(record_idx, dungeon=-1, floor=-1, first=true)
     // (up until the end of the game), for those within that order, we should be able
     // to avoid checking multiple entries. We want to avoid checking every entry, for every dungeon,
     // even though it's what the game does, because RA has no early exit from loops and it's considered bad form
-    MAX_SAFE_DUNGEON = 99 // TODO; minimum ID to check multiple for
-    MAX_DUNGEON_COUNT = 99 // TODO; max range to check multiple for
+    // NOTE: The game has MP maps (and while I'm not sure if there's even a way to set that up now) and if a player completing one
+    // of these generates a clear record, I guess we'll have to check every possible slot for every dungeon. Oh well. Runtime conditionals wen
+    MAX_SAFE_DUNGEON = RECORD_LASTBOSS1F//-1 // max ID to not check multiple for
+    MAX_DUNGEON_COUNT = RECORD_REMEMBRANCE9994F//200 // max range to check multiple for
 
-    check_multiple = dungeon > MAX_SAFE_DUNGEON
-    
+    check_multiple = record_idx > MAX_SAFE_DUNGEON
     if check_multiple
     {
-        assert(false, "NOT IMPLEMENTED")
+        // Check every single possible slot (out of slots we assume they should be in) for non-linear dungeon progression (postgame content)
+        infos = array_map(range(MAX_SAFE_DUNGEON + 1, MAX_DUNGEON_COUNT), i => {"index": i, "data": g_game_state["m_dungeon_record"][i]})
     }
-
-    info = g_game_state["m_dungeon_record"][record_idx]
-    cond = always_true()
-    if dungeon != -1
-        // Sanity check (this record is where we expect it to be in memory)
-        // If this fails we may need to check ~100 records for every dungeon to be thorough
-        cond = cond && info["m_dungeon_id"] == dungeon
-    if floor != -1
-        // Sanity check (this record is where we expect it to be in memory)
-        // If this fails we may need to check ~100 records for every dungeon to be thorough
-        cond = cond && info["m_floor"] == floor
-    extra = always_true()
-    if first
-        extra = prev(info["m_clear_count"]) == 0 && info["m_clear_count"] == 1
     else
-        extra = prev(info["m_clear_count"]) < info["m_clear_count"]
-    return cond && extra
+    {
+        // Otherwise we assume that a particular dungeon floor should be in a particular slot
+        infos = [{"index": record_idx, "data": g_game_state["m_dungeon_record"][record_idx]}]
+    }
+    
+    conds = []
+    for info in infos
+    {
+        idx = info["index"]
+        data = info["data"]
+        // Check list length to make sure the data we're accessing is even valid
+        cond = g_game_state["m_dungeon_record_count"] > idx
+        if dungeon != -1
+            // Sanity check (this record is where we expect it to be in memory)
+            // If this fails we may need to check ~100 records for every dungeon to be thorough
+            cond = cond && data["m_dungeon_id"] == dungeon
+        if floor != -1
+            // Sanity check (this record is where we expect it to be in memory)
+            // If this fails we may need to check ~100 records for every dungeon to be thorough
+            cond = cond && data["m_floor"] == floor
+        if first
+            // Check for first clear
+            cond = cond && prev(data["m_clear_count"]) == 0 && data["m_clear_count"] == 1
+        else
+            // Otherwise any increase in clears is fine
+            cond = cond && prev(data["m_clear_count"]) < data["m_clear_count"]
+            
+        array_push(conds, cond)
+    }
+    
+    return any_of(conds, v=>v)
 }
 
 CHARACTER_PUDDING = 0
@@ -176,6 +193,22 @@ DUNGEON_ARCANUS = 0
 DUNGEON_HIYO = 1
 DUNGEON_COB = 2
 DUNGEON_DRAGON = 3
+DUNGEON_BURN = 4
+DUNGEON_ZERO = 5
+DUNGEON_SHRINE = 6
+DUNGEON_LAB = 7
+DUNGEON_HOUSE = 8
+DUNGEON_DESERT = 9
+DUNGEON_CASTLE = 10
+DUNGEON_CAVE = 11
+DUNGEON_COURAGE = 12
+DUNGEON_SQUARE = 13
+DUNGEON_POB = 14
+DUNGEON_NEWENEMY = 19
+DUNGEON_LASTBOSS = 20
+DUNGEON_OBLIVION = 21
+DUNGEON_KHAMUN = 23
+
 
 // These aren't set in stone, but educated guesses for indices these records appear at
 // (See note in CheckDungeonCleared)
@@ -189,6 +222,70 @@ RECORD_COB4F = 6
 RECORD_DRAGON1F = 7
 RECORD_DRAGON2F = 8
 RECORD_DRAGON3F = 9
+RECORD_BURN1F = 10
+RECORD_BURN2F = 11
+RECORD_BURN3F = 12
+RECORD_ZERO1F = 13
+RECORD_ZERO2F = 14
+RECORD_ZERO3F = 15
+RECORD_SHRINE1F = 16
+RECORD_SHRINE2F = 17
+RECORD_SHRINE3F = 18
+RECORD_SHRINE4F = 19
+RECORD_LAB1F = 20
+RECORD_LAB2F = 21
+RECORD_LAB3F = 22
+RECORD_HOUSE1F = 23
+RECORD_HOUSE2F = 24
+RECORD_HOUSE3F = 25
+RECORD_HOUSE4F = 26
+RECORD_DESERT1F = 27
+RECORD_DESERT2F = 28
+RECORD_CASTLE1F = 29
+RECORD_CASTLE2F = 30
+RECORD_CASTLE3F = 31
+RECORD_CASTLE4F = 32
+RECORD_CAVE1F = 33
+RECORD_CAVE2F = 34
+RECORD_CAVE3F = 35
+RECORD_CAVE4F = 36
+RECORD_COURAGE1F = 37
+RECORD_COURAGE2F = 38
+RECORD_COURAGE3F = 39
+RECORD_COURAGE4F = 40
+RECORD_SQUARE1F = 41
+RECORD_SQUARE2F = 42
+RECORD_SQUARE3F = 43
+RECORD_SQUARE4F = 44
+RECORD_POB1F = 45
+RECORD_POB2F = 46
+RECORD_POB3F = 47
+RECORD_LASTBOSS1F = 48
+RECORD_NEWENEMY1F = 49
+RECORD_OBLIVION1F = 50
+RECORD_OBLIVION2F = 51
+RECORD_OBLIVION3F = 52
+RECORD_OBLIVION4F = 53
+RECORD_KHAMUN1F = 54
+RECORD_REMEMBRANCE1F = 55
+RECORD_REMEMBRANCE2F = 56
+RECORD_REMEMBRANCE3F = 57
+RECORD_REMEMBRANCE4F = 58
+RECORD_EVIL1F = 59
+RECORD_EVIL2F = 60
+RECORD_EVIL3F = 61
+RECORD_OVERFIEND1F = 62
+RECORD_OVERFIEND2F = 63
+RECORD_OVERFIEND3F = 64
+RECORD_OVERFIEND4F = 65
+RECORD_EVIL9991F = 66
+RECORD_EVIL9992F = 67
+RECORD_EVIL9993F = 68
+RECORD_REMEMBRANCE9991F = 69
+RECORD_REMEMBRANCE9992F = 70
+RECORD_REMEMBRANCE9993F = 71
+RECORD_REMEMBRANCE9994F = 72
+
 
 pg_game_state = dword(0x9950b8) // Can't mask here because (X & 0x7FFFFFF) == 0 seems to be considered always false
 g_game_state = GameState(pg_game_state & 0x7FFFFFF)
@@ -280,9 +377,11 @@ achievement(
 )
 
 achievement(
-    title = "Draco Forest", points = 5, type="progression",
-    description = "Complete Dragon Forest for the first time",
-    id = 194805, badge = "216549", published = "1/26/2022 5:47:12 PM", modified = "1/26/2022 6:48:53 PM",
+    id=194805,
+    title="Draco Forest",
+    type="progression",
+    points=5,
+    description="Complete Dragon Forest for the first time",
     trigger=
         SaveProtection() &&
         CheckDungeonCleared(RECORD_DRAGON3F, dungeon=DUNGEON_DRAGON, floor=3)
@@ -300,11 +399,14 @@ achievement(
 )
 
 achievement(
-    title = "\"Ta Pegando Fogo Bicho\"", points = 5, type="progression",
-    description = "Complete Burning Cave for the first time",
-    id = 194807, badge = "216551", published = "1/26/2022 5:47:13 PM", modified = "1/26/2022 6:48:54 PM",
-    trigger = (byte(0x1BF53F0) == 4 && byte(0x1BF53F4) == 3) &&
-              (prev(word(0x1BF5ED8)) == 0 && word(0x1BF5ED8) == 1)
+    id=194807,
+    title="'Ta Pegando Fogo Bicho'", 
+    description="Complete Burning Cave for the first time",
+    type="progression",
+    points=5,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_BURN3F, dungeon=DUNGEON_BURN, floor=3)
 )
 
 achievement(
@@ -319,75 +421,102 @@ achievement(
 )
 
 achievement(
-    title = "Sub-Zero Cave", points = 5, type="progression",
-    description = "Complete Absolute Zero for the first time",
-    id = 194809, badge = "216553", published = "1/26/2022 5:47:14 PM", modified = "1/26/2022 6:48:54 PM",
-    trigger = (byte(0x1BF53F0) == 5 && byte(0x1BF53F4) == 3) &&
-              (prev(word(0x1BF5F5C)) == 0 && word(0x1BF5F5C) == 1)
+    id=194809,
+    title="Sub-Zero Cave",
+    description="Complete Absolute Zero for the first time",
+    type="progression",
+    points=5,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_ZERO3F, dungeon=DUNGEON_ZERO, floor=3)
 )
 
 achievement(
-    title = "Shrine of Hidden Gold", points = 5, type="progression",
-    description = "Complete Golden Shrine for the first time",
-    id = 194810, badge = "216554", published = "1/26/2022 5:47:14 PM", modified = "1/26/2022 6:48:55 PM",
-    trigger = (byte(0x1BF53F0) == 6 && byte(0x1BF53F4) == 4) &&
-              (prev(word(0x1BF600C)) == 0 && word(0x1BF600C) == 1)
+    id=194810,
+    title="Shrine of Hidden Gold", 
+    description="Complete Golden Shrine for the first time",
+    type="progression",
+    points=5,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_SHRINE4F, dungeon=DUNGEON_SHRINE, floor=4)
 )
 
 achievement(
-    title = "Dangerous Research Zone", points = 5, type="progression",
-    description = "Complete Mystery Lab for the first time",
-    id = 194811, badge = "216555", published = "1/26/2022 5:47:14 PM", modified = "1/26/2022 6:48:55 PM",
-    trigger = (byte(0x1BF53F0) == 7 && byte(0x1BF53F4) == 3) &&
-              (prev(word(0x1BF6090)) == 0 && word(0x1BF6090) == 1)
+    id=194811,
+    title="Dangerous Research Zone", 
+    description="Complete Mystery Lab for the first time",
+    type="progression",
+    points=5,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_LAB3F, dungeon=DUNGEON_LAB, floor=3)
 )
 
 achievement(
-    title = "Monster Zone", points = 5, type="progression",
-    description = "Complete Monster House for the first time",
-    id = 194812, badge = "216556", published = "1/26/2022 5:47:15 PM", modified = "1/26/2022 6:48:55 PM",
-    trigger = (byte(0x1BF53F0) == 8 && byte(0x1BF53F4) == 4) &&
-              (prev(word(0x1BF6140)) == 0 && word(0x1BF6140) == 1)
+    id=194812,
+    title="Monster Zone", 
+    description="Complete Monster House for the first time",
+    type="progression",
+    points=5, 
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_HOUSE4F, dungeon=DUNGEON_HOUSE, floor=4)
 )
 
 achievement(
-    title = "Results of Warming", points = 5, type="progression",
-    description = "Complete Scorching Desert for the first time",
-    id = 194813, badge = "216557", published = "1/26/2022 5:47:15 PM", modified = "1/26/2022 6:48:56 PM",
-    trigger = (byte(0x1BF53F0) == 9 && byte(0x1BF53F4) == 2) &&
-              (prev(word(0x1BF6198)) == 0 && word(0x1BF6198) == 1)
+    id=194813, 
+    title="Results of Warming", 
+    description="Complete Scorching Desert for the first time",
+    type="progression",
+    points=5,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_DESERT2F, dungeon=DUNGEON_DESERT, floor=2)
 )
 
 achievement(
-    title = "Visited by \"Hero Tororo\" in the Past", points = 5, type="progression",
-    description = "Complete Nostalgic Castle for the first time",
-    id = 194814, badge = "216558", published = "1/26/2022 5:47:15 PM", modified = "1/26/2022 6:48:56 PM",
-    trigger = (byte(0x1BF53F0) == 10 && byte(0x1BF53F4) == 4) &&
-              (prev(word(0x1BF6248)) == 0 && word(0x1BF6248) == 1)
+    id=194814,
+    title="Visited by \"Hero Tororo\" in the Past", 
+    description="Complete Nostalgic Castle for the first time",
+    type="progression",
+    points=5,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_CASTLE4F, dungeon=DUNGEON_CASTLE, floor=4)
 )
 
 achievement(
-    title = "Cavern Fought Over by Monsters", points = 5, type="progression",
-    description = "Complete Enemy Cave for the first time",
-    id = 194815, badge = "216559", published = "1/26/2022 5:47:16 PM", modified = "1/26/2022 6:48:56 PM",
-    trigger = (byte(0x1BF53F0) == 11 && byte(0x1BF53F4) == 4) &&
-              (prev(word(0x1BF62F8)) == 0 && word(0x1BF62F8) == 1)
+    id=194815,
+    title="Cavern Fought Over by Monsters", 
+    description="Complete Enemy Cave for the first time",
+    type="progression",
+    points=5, 
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_CAVE4F, dungeon=DUNGEON_CAVE, floor=4)
 )
 
 achievement(
-    title = "Do You Believe in Yourself?", points = 5, type="progression",
-    description = "Complete Courage Wanted for the first time",
-    id = 194816, badge = "216560", published = "1/26/2022 5:47:16 PM", modified = "1/26/2022 6:48:57 PM",
-    trigger = (byte(0x1BF53F0) == 12 && byte(0x1BF53F4) == 4) &&
-              (prev(word(0x1BF63A8)) == 0 && word(0x1BF63A8) == 1)
+    id=194816,
+    title="Do You Believe in Yourself?", 
+    description="Complete Courage Wanted for the first time",
+    points=5,
+    type="progression",
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_COURAGE4F, dungeon=DUNGEON_COURAGE, floor=4)
 )
 
 achievement(
-    title = "Place of Mysterious Power", points = 5, type="progression",
-    description = "Complete Energy Square for the first time",
-    id = 194817, badge = "216561", published = "1/26/2022 5:47:16 PM", modified = "1/26/2022 6:48:57 PM",
-    trigger = (byte(0x1BF53F0) == 13 && byte(0x1BF53F4) == 4) &&
-              (prev(word(0x1BF6458)) == 0 && word(0x1BF6458) == 1)
+    id=194817, 
+    title="Place of Mysterious Power", 
+    description="Complete Energy Square for the first time",
+    type="progression",
+    points=5, 
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_SQUARE4F, dungeon=DUNGEON_SQUARE, floor=4)
 )
 
 achievement(
@@ -402,11 +531,14 @@ achievement(
 )
 
 achievement(
-    title = "The Beginning and the End", points = 10, type="progression",
-    description = "Complete Place of Beginnings for the first time",
-    id = 194819, badge = "216563", published = "1/26/2022 5:47:17 PM", modified = "1/26/2022 6:48:58 PM",
-    trigger = (byte(0x1BF53F0) == 14 && byte(0x1BF53F4) == 3) &&
-              (prev(word(0x1BF64DC)) == 0 && word(0x1BF64DC) == 1)
+    id=194819,
+    title="The Beginning and the End", 
+    description="Complete Place of Beginnings for the first time",
+    type="progression",
+    points=10, 
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_POB3F, dungeon=DUNGEON_POB, floor=3)
 )
 
 achievement(
@@ -432,15 +564,13 @@ achievement(
 )
 
 achievement(
-    title = "The True Identity Revealed!", points = 10,
-    description = "Complete New Enemy for the first time",
-    id = 194822, badge = "216566", published = "1/26/2022 5:47:18 PM", modified = "1/26/2022 6:48:59 PM",
-    trigger = once(byte(0x1BF53F0) == 19 && byte(0x1BF53F8) == 1) &&
-              (((once(byte(0x1BF53F0) == 19 && byte(0x1BF53F4) == 1 && prev(word(0x1BF6534)) == 0) && word(0x1BF6534) == 1)) ||
-               ((once(byte(0x1BF53F0) == 19 && byte(0x1BF53F4) == 1 && prev(word(0x1BF6560)) == 0) && word(0x1BF6560) == 1)) ||
-               ((once(byte(0x1BF53F0) == 19 && byte(0x1BF53F4) == 1 && prev(word(0x1BF658C)) == 0) && word(0x1BF658C) == 1)) ||
-               ((once(byte(0x1BF53F0) == 19 && byte(0x1BF53F4) == 1 && prev(word(0x1BF65E4)) == 0) && word(0x1BF65E4) == 1)) ||
-               ((once(byte(0x1BF53F0) == 19 && byte(0x1BF53F4) == 1 && prev(word(0x1BF65B8)) == 0) && word(0x1BF65B8) == 1)))
+    id=194822,
+    title="The True Identity Revealed!", 
+    description="Complete New Enemy for the first time",
+    points=10,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_NEWENEMY1F, dungeon=DUNGEON_NEWENEMY, floor=1)
 )
 
 achievement(
@@ -455,12 +585,13 @@ achievement(
 )
 
 achievement(
-    title = "Forgotten Land", points = 25,
-    description = "Complete Land of Oblivion for the first time",
-    id = 194823, badge = "216567", published = "1/26/2022 5:47:18 PM", modified = "1/26/2022 6:48:59 PM",
-    trigger = once(byte(0x1BF53F0) == 21 && byte(0x1BF53F8) == 1) &&
-              (((once(byte(0x1BF53F0) == 21 && byte(0x1BF53F4) == 4 && prev(word(0x1BF65B8)) == 0) && word(0x1BF65B8) == 1)) ||
-               ((once(byte(0x1BF53F0) == 21 && byte(0x1BF53F4) == 4 && prev(word(0x1BF65E4)) == 0) && word(0x1BF65E4) == 1)))
+    id=194823,
+    title="Forgotten Land", 
+    description="Complete Land of Oblivion for the first time",
+    points = 25,
+    trigger=
+        SaveProtection() &&
+        CheckDungeonCleared(RECORD_OBLIVION4F, dungeon=DUNGEON_OBLIVION, floor=4)
 )
 
 achievement(
