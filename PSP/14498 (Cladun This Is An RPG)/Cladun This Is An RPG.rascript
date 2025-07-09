@@ -77,6 +77,16 @@ function DialogWindow(addr)
     return obj
 }
 
+function RangeonState(addr)
+{
+    obj = {
+        "m_floor": word(addr + 0x1C02A),
+        "m_in_rangeon": byte(addr + 0x1C128),
+    }
+    
+    return obj
+}
+
 function SaveProtection()
 {
     return pg_game_state != NULL && prev(g_game_state["m_map_id"]) != MAP_TITLE
@@ -290,6 +300,8 @@ RECORD_REMEMBRANCE9994F = 72
 pg_game_state = dword(0x9950b8) // Can't mask here because (X & 0x7FFFFFF) == 0 seems to be considered always false
 g_game_state = GameState(pg_game_state & 0x7FFFFFF)
 g_dungeon_state = DungeonState(dword(0x9950bc) & 0x7FFFFFF)
+pg_rangeon_state = dword(0x999498)
+g_rangeon_state = RangeonState(pg_rangeon_state & 0x7FFFFFF)
 g_text = dword(0x9996D0) & 0x7FFFFFF
 g_dialog_window = DialogWindow(g_text)
 g_conversation_index = dword((dword((dword(0x996190) & 0x7FFFFFF) + 0x0) & 0x7FFFFFF) + 0x880)
@@ -540,9 +552,11 @@ achievement(
 )
 
 achievement(
-    title = "The Magician", points = 5, type="progression",
-    description = "Despina has joined your party",
-    id = 194820, badge = "216564", published = "1/26/2022 5:47:17 PM", modified = "1/26/2022 6:48:58 PM",
+    id=194820,
+    title="The Magician", 
+    description="Despina has joined your party",
+    points=5, 
+    type="progression",
     trigger=
         SaveProtection() &&
         prev(g_game_state["m_characters"][CHARACTER_DESPINA]["m_unlocked"]) == 0 &&
@@ -571,9 +585,10 @@ achievement(
 )
 
 achievement(
-    title = "The \"Main\" Character", points = 10,
-    description = "Asagi has joined your party",
-    id = 194824, badge = "216568", published = "1/26/2022 5:47:19 PM", modified = "1/26/2022 6:48:59 PM",
+    id=194824,
+    title="The \"Main\" Character", 
+    description="Asagi has joined your party",
+    points=10,
     trigger=
         SaveProtection() &&
         prev(g_game_state["m_characters"][CHARACTER_ASAGI]["m_unlocked"]) == 0 &&
@@ -584,7 +599,7 @@ achievement(
     id=194823,
     title="Forgotten Land", 
     description="Complete Land of Oblivion for the first time",
-    points = 25,
+    points=25,
     trigger=
         SaveProtection() &&
         CheckDungeonCleared(RECORD_OBLIVION4F, dungeon=DUNGEON_OBLIVION, floor=4)
@@ -716,10 +731,15 @@ achievement(
 )
 
 achievement(
-    title = "Dungeon Master", points = 10,
-    description = "Complete the 50th floor and to the next of Ran-geon",
-    id = 194842, badge = "216583", published = "1/26/2022 5:47:25 PM", modified = "1/30/2022 7:32:38 PM",
-    trigger = (once(byte(0x1BF53F8) == 1 && prev(byte(0x1CCCAAA)) == 50) && byte(0x1CCCAAA) == 51)
+    id=194842,
+    title="Dungeon Master",
+    description="Complete the 50th floor and to the next of Ran-geon",
+    points = 10,
+    trigger=
+        pg_rangeon_state != NULL &&
+        g_rangeon_state["m_in_rangeon"] == 1 &&
+        prev(g_rangeon_state["m_floor"]) == 50 &&
+        g_rangeon_state["m_floor"] == 51
 )
 
 achievement(
