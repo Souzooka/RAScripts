@@ -29,7 +29,7 @@ function GameState(addr)
         array_push(obj["m_dungeon_record"], DungeonRecordInfo(addr + 0x884 + (SIZEOF_DungeonRecordInfo * i)))
     }
     
-    for i in range(0, CHARACTER_CUSTOM2)
+    for i in range(0, CHARACTER_CUSTOM10)
     {
         array_push(obj["m_characters"], CharacterState(addr + 0x2AE4 + (SIZEOF_CharacterState * i)))
     }
@@ -157,6 +157,14 @@ CHARACTER_SUNDAY = 8
 CHARACTER_ASAGI = 9
 CHARACTER_CUSTOM1 = 11
 CHARACTER_CUSTOM2 = 12
+CHARACTER_CUSTOM3 = 12
+CHARACTER_CUSTOM4 = 13
+CHARACTER_CUSTOM5 = 15
+CHARACTER_CUSTOM6 = 16
+CHARACTER_CUSTOM7 = 17
+CHARACTER_CUSTOM8 = 18
+CHARACTER_CUSTOM9 = 19
+CHARACTER_CUSTOM10 = 20
 
 MAP_TITLE = 0
 MAP_HIYO1F = 10001
@@ -451,10 +459,17 @@ achievement(
 )
 
 achievement(
-    title = "Cladun: This is Also Art", points = 1,
-    description = "Create and use your first Custom Character",
-    id = 194835, badge = "216579", published = "1/26/2022 5:47:22 PM", modified = "1/26/2022 6:49:03 PM",
-    trigger = byte(0x1BF53F0) >= 0 && (prev(byte(0x1BF5CA8)) != 11 && byte(0x1BF5CA8) == 11)
+    id=194835, 
+    title="Cladun: This Is Also Art", 
+    description="Create and use your first Custom Character",
+    points=1,
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_character_id"]) != CHARACTER_CUSTOM1 &&
+        g_game_state["m_character_id"] == CHARACTER_CUSTOM1
+        // pending revision if needed?
+        //__ornext(prev(g_game_state["m_character_id"]) < CHARACTER_CUSTOM1 || prev(g_game_state["m_character_id"]) > CHARACTER_CUSTOM10) &&
+        //g_game_state["m_character_id"] >= CHARACTER_CUSTOM1 && g_game_state["m_character_id"] <= CHARACTER_CUSTOM10
 )
 
 achievement(
