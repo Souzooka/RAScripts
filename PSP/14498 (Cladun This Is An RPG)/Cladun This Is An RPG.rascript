@@ -649,17 +649,9 @@ achievement(
         // In Arcanus Cella
         g_game_state["m_map_id"] == MAP_HUB &&
         // We're in the right conversation and chose option 0 (indicated by window fading out with option 0 selected)
-        once(
-            g_conversation_index == 0xAB &&
-            g_dialog_window["m_option"] == 0 &&
-            prev(g_dialog_window["m_visibility"]) == 1 &&
-            g_dialog_window["m_visibility"] == 0 &&
-            // reset if we somehow leave conversation
-            never(g_conversation_index == -1)
-        ) &&
-        // second window appears
-        prev(g_dialog_window["m_visibility"]) == 4 &&
-        g_dialog_window["m_visibility"] == 5
+        g_dialog_window["m_option"] == 0 &&
+        prev(g_conversation_index == 0xAB) &&
+        g_conversation_index == -1
 )
 
 YAM_HERO_CONVERSATIONS = range(0xCC, 0xD1)
