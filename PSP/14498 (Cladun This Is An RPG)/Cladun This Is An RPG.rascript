@@ -166,7 +166,7 @@ CHARACTER_PUDDING = 0
 CHARACTER_COCO = 1
 CHARACTER_DESPINA = 2
 CHARACTER_SOUMA = 3
-CHARACTER_SHERBERT = 4
+CHARACTER_SHERBET = 4
 CHARACTER_BATTLEBLO = 5
 CHARACTER_DOTACHE = 6
 CHARACTER_BOB = 7
@@ -391,11 +391,10 @@ achievement(
     title = "A Stalker?", points = 5, type="progression",
     description = "Sherbet has joined your party",
     id = 194806, badge = "216550", published = "1/26/2022 5:47:13 PM", modified = "1/26/2022 6:48:53 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 544567129 && dword((g_text) + 0x04) == 544698222 && dword((g_text) + 0x08) == 1702257000 &&
-                  dword((g_text) + 0x0C) == 1667457312 && dword((g_text) + 0x10) == 544437093 && dword((g_text) + 0x14) == 1394634612 &&
-                  dword((g_text) + 0x18) == 1651664232 && dword((g_text) + 0x1C) == 3044453
-              )
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_characters"][CHARACTER_SHERBET]["m_unlocked"]) == 0 &&
+        g_game_state["m_characters"][CHARACTER_SHERBET]["m_unlocked"] == 1
 )
 
 achievement(
@@ -413,11 +412,10 @@ achievement(
     title = "The Barkeeper and Princess", points = 5, type="progression",
     description = "Dotache has joined your party",
     id = 194808, badge = "216552", published = "1/26/2022 5:47:13 PM", modified = "1/26/2022 6:48:54 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 544567129 && dword((g_text) + 0x04) == 544698222 && dword((g_text) + 0x08) == 1702257000 &&
-                  dword((g_text) + 0x0C) == 1667457312 && dword((g_text) + 0x10) == 544437093 && dword((g_text) + 0x14) == 1142976372 &&
-                  dword((g_text) + 0x18) == 1667331183 && dword((g_text) + 0x1C) == 3040616
-              )
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_characters"][CHARACTER_DOTACHE]["m_unlocked"]) == 0 &&
+        g_game_state["m_characters"][CHARACTER_DOTACHE]["m_unlocked"] == 1
 )
 
 achievement(
@@ -545,11 +543,10 @@ achievement(
     title = "The Magician", points = 5, type="progression",
     description = "Despina has joined your party",
     id = 194820, badge = "216564", published = "1/26/2022 5:47:17 PM", modified = "1/26/2022 6:48:58 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 544567129 && dword((g_text) + 0x04) == 544698222 && dword((g_text) + 0x08) == 1702257000 &&
-                  dword((g_text) + 0x0C) == 1667457312 && dword((g_text) + 0x10) == 544437093 && dword((g_text) + 0x14) == 1142976372 &&
-                  dword((g_text) + 0x18) == 1768977253 && dword((g_text) + 0x1C) == 3039598
-              )
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_characters"][CHARACTER_DESPINA]["m_unlocked"]) == 0 &&
+        g_game_state["m_characters"][CHARACTER_DESPINA]["m_unlocked"] == 1
 )
 
 achievement(
@@ -577,11 +574,10 @@ achievement(
     title = "The \"Main\" Character", points = 10,
     description = "Asagi has joined your party",
     id = 194824, badge = "216568", published = "1/26/2022 5:47:19 PM", modified = "1/26/2022 6:48:59 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 544567129 && dword((g_text) + 0x04) == 544698222 && dword((g_text) + 0x08) == 1702257000 &&
-                  dword((g_text) + 0x10) == 544437093 && dword((g_text) + 0x14) == 1092644724 && dword((g_text) + 0x18) == 1768382835 &&
-                  dword((g_text) + 0x1C) == 46
-              )
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_characters"][CHARACTER_ASAGI]["m_unlocked"]) == 0 &&
+        g_game_state["m_characters"][CHARACTER_ASAGI]["m_unlocked"] == 1
 )
 
 achievement(
