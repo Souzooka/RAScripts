@@ -169,6 +169,39 @@ function CheckDungeonCleared(record_idx, dungeon=-1, floor=-1, first=true)
         return base_cond && tally_of(conds, 1, v=>v)
 }
 
+function CheckEnding(character)
+{
+    return
+        repeated(
+            15485, // Timed to appear as "[Production and Planning]" leaves screen and "Nippon Ichi Software" is left
+            // You can't do anything but wait once you hit the credits; no way to skip, so this should be fine.
+            once(
+                pg_game_state != NULL &&
+                // Correct character
+                g_game_state["m_character_id"] == character &&
+                // Credits!
+                g_game_state["m_map_id"] == MAP_CREDITS &&
+                // Credits map is actually used for some scenes (like Battleblo's) before actual credits, but the "in stage"
+                // flag gets set when credits start, so we can utilize that.
+                g_dungeon_state["m_in_dungeon"] == 1 &&
+                (
+                    // These can get set out of order depending on ending,
+                    // for example this first line gets set last in Battleblo's ending
+                    prev(g_dungeon_state["m_in_dungeon"]) == 0 ||
+                    // while this gets 
+                    prev(g_game_state["m_map_id"]) != MAP_CREDITS
+                )
+            ) && always_true()
+        ) ||
+        // the achievement should be awarded before returning to title but just in case
+        (
+            pg_game_state != NULL &&
+            prev(g_game_state["m_character_id"]) == character &&
+            prev(g_game_state["m_map_id"]) == MAP_CREDITS && 
+            g_game_state["m_map_id"] == MAP_TITLE
+        )
+}
+
 CHARACTER_PUDDING = 0
 CHARACTER_COCO = 1
 CHARACTER_DESPINA = 2
@@ -191,6 +224,7 @@ CHARACTER_CUSTOM9 = 19
 CHARACTER_CUSTOM10 = 20
 
 MAP_TITLE = 0
+MAP_CREDITS = 10
 MAP_HIYO1F = 10001
 MAP_COB1F = 10101
 MAP_HUB = 50001
@@ -799,117 +833,89 @@ achievement(
         )
 )
 
-achievement(
-    title = "No way, 100 Years Passed Since I Left?!", points = 2,
-    description = "Get the Pudding Ending",
-    id = 194825, badge = "216569", published = "1/26/2022 5:47:19 PM", modified = "1/26/2022 6:49:00 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 661939532 && dword((g_text) + 0x04) == 1702043763 && dword((g_text) + 0x08) == 1411395173 &&
-                  dword((g_text) + 0x0C) == 544434536 && dword((g_text) + 0x10) == 1931506537 && dword((g_text) + 0x14) == 1869639797 &&
-                  dword((g_text) + 0x18) == 543450483 && dword((g_text) + 0x1C) == 1646292852 && dword((g_text) + 0x20) == 1752440933 &&
-                  dword((g_text) + 0x24) == 1635197029 && dword((g_text) + 0x28) == 1869095033 && dword((g_text) + 0x2C) == 3040621
-              )
-)
+ending_params = [
+    {
+        "id": 194825,
+        "title": "No Way, 100 Years Passed Since I Left?!",
+        "description": "Get the Pudding Ending",
+        "points": 2,
+        "character": CHARACTER_PUDDING,
+    },
+    {
+        "id": 194826,
+        "title": "I’m So Unlucky to Be Sealed by Mistake",
+        "description": "Get the Coco Ending",
+        "points": 3,
+        "character": CHARACTER_COCO,
+    },
+    {
+        "id": 194827,
+        "title": "Why Did I Even Create This World?",
+        "description": "Get the Despina Ending",
+        "points": 10,
+        "character": CHARACTER_DESPINA,
+    },
+    {
+        "id": 194828,
+        "title": "Bye, Puddie, Take Care of Yourself, Okay...?",
+        "description": "Get the Souma Ending",
+        "points": 2,
+        "character": CHARACTER_SOUMA,
+    },
+    {
+        "id": 194829,
+        "title": "Somebody Please Give Me an Order",
+        "description": "Get the Sherbet Ending",
+        "points": 5,
+        "character": CHARACTER_SHERBET,
+    },
+    {
+        "id": 194830,
+        "title": "Completely Useless against People Who Don't Attack",
+        "description": "Get the Battleblo Ending",
+        "points": 5,
+        "character": CHARACTER_BATTLEBLO,
+    },
+    {
+        "id": 194831,
+        "title": "It Pains Me to be Called \"Barkeep\" Now",
+        "description": "Get the Dotache Ending",
+        "points": 5,
+        "character": CHARACTER_DOTACHE,
+    },
+    {
+        "id": 194832,
+        "title": "The Hair I Wanted All This Time Can't Be Found Here",
+        "description": "Get the Bob Ending",
+        "points": 5,
+        "character": CHARACTER_BOB,
+    },
+    {
+        "id": 194833,
+        "title": "It's So Dark... I'm So Scared...",
+        "description": "Get the Sunday Ending",
+        "points": 5,
+        "character": CHARACTER_SUNDAY,
+    },
+    {
+        "id": 194834,
+        "title": "I Really Don't Belong Here",
+        "description": "Get the Asagi Ending",
+        "points": 10,
+        "character": CHARACTER_ASAGI,
+    },
+]
 
-achievement(
-    title = "I’m So Unlucky to Be Sealed by Mistake", points = 3,
-    description = "Get the Coco Ending",
-    id = 194826, badge = "216570", published = "1/26/2022 5:47:19 PM", modified = "1/26/2022 6:49:00 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 539781199 && dword((g_text) + 0x04) == 1936287860 && dword((g_text) + 0x08) == 1853057312 &&
-                  dword((g_text) + 0x0C) == 1948283943 && dword((g_text) + 0x10) == 1948280168 && dword((g_text) + 0x14) == 1701603695 &&
-                  dword((g_text) + 0x18) == 16244
-              )
-)
-
-achievement(
-    title = "Why Did I Even Create This World?", points = 10,
-    description = "Get the Despina Ending",
-    id = 194827, badge = "216571", published = "1/26/2022 5:47:20 PM", modified = "1/26/2022 6:49:00 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 544827479 && dword((g_text) + 0x04) == 543451492 && dword((g_text) + 0x08) == 1986338889 &&
-                  dword((g_text) + 0x0C) == 1663069797 && dword((g_text) + 0x10) == 1952540018 && dword((g_text) + 0x14) == 1752440933 &&
-                  dword((g_text) + 0x18) == 1998615401 && dword((g_text) + 0x1C) == 1684828783
-              )
-)
-
-achievement(
-    title = "Bye, Puddie, Take Care of Yourself, Okay...?", points = 2,
-    description = "Get the Souma Ending",
-    id = 194828, badge = "216572", published = "1/26/2022 5:47:20 PM", modified = "1/26/2022 6:49:01 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 1952540759 && dword((g_text) + 0x04) == 1701994784 && dword((g_text) + 0x08) == 1970239776 &&
-                  dword((g_text) + 0x0C) == 1768907808 && dword((g_text) + 0x10) == 539780974 && dword((g_text) + 0x14) == 1836412755 &&
-                  dword((g_text) + 0x18) == 16225
-              )
-)
-
-achievement(
-    title = "Somebody Please Give Me an Order", points = 5,
-    description = "Get the Sherbet Ending",
-    id = 194829, badge = "216573", published = "1/26/2022 5:47:20 PM", modified = "1/26/2022 6:49:01 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 779314521 && dword((g_text) + 0x04) == 1831291168 && dword((g_text) + 0x08) == 1919252000 &&
-                  dword((g_text) + 0x0C) == 1869815929 && dword((g_text) + 0x10) == 779711090
-              )
-)
-
-achievement(
-    title = "Completely Useless against People Who Don't Attack", points = 5,
-    description = "Get the Battleblo Ending",
-    id = 194830, badge = "216574", published = "1/26/2022 5:47:21 PM", modified = "1/26/2022 6:49:01 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 1952540756 && dword((g_text) + 0x04) == 1768452896 && dword((g_text) + 0x08) == 560229477 &&
-                  dword((g_text) + 0x80) == 543519297 && dword((g_text) + 0x84) == 544567161 && dword((g_text) + 0x88) == 1869835361 &&
-                  dword((g_text) + 0x8C) == 1701736224 && dword((g_text) + 0x90) == 1869117216
-              )
-)
-
-achievement(
-    title = "It Pains Me to be Called \"Barkeep\" Now", points = 5,
-    description = "Get the Dotache Ending",
-    id = 194831, badge = "216575", published = "1/26/2022 5:47:21 PM", modified = "1/26/2022 6:49:02 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 746153288 && dword((g_text) + 0x04) == 1701345056 && dword((g_text) + 0x08) == 1763730802 &&
-                  dword((g_text) + 0x0C) == 1866735731 && dword((g_text) + 0x10) == 1751343476 && dword((g_text) + 0x14) == 1869029477 &&
-                  dword((g_text) + 0x18) == 1063743081
-              )
-)
-
-achievement(
-    title = "The Hair I Wanted All This Time Can't Be Found Here", points = 5,
-    description = "Get the Bob Ending",
-    id = 194832, badge = "216576", published = "1/26/2022 5:47:21 PM", modified = "1/26/2022 6:49:02 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 543516756 && dword((g_text) + 0x04) == 1919508840 && dword((g_text) + 0x08) == 1998604576 &&
-                  dword((g_text) + 0x0C) == 1702129249 && dword((g_text) + 0x10) == 1818304612 && dword((g_text) + 0x14) == 1752440940 &&
-                  dword((g_text) + 0x18) == 1948283753 && dword((g_text) + 0x1C) == 6647145
-              )
-)
-
-achievement(
-    title = "It's So Dark... I'm So Scared...", points = 5,
-    description = "Get the Sunday Ending",
-    id = 194833, badge = "216577", published = "1/26/2022 5:47:22 PM", modified = "1/26/2022 6:49:02 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              once(dword((g_text) + 0x00) == 1746956103 && dword((g_text) + 0x04) == 543519333 && dword((g_text) + 0x08) == 1914728308 &&
-                  dword((g_text) + 0x0C) == 1920300133
-              ) &&
-              (dword((g_text) + 0x00) == 1931965513 && dword((g_text) + 0x04) == 544174880 && dword((g_text) + 0x08) == 1802658148 &&
-                  dword((g_text) + 0x0C) == 46
-              )
-)
-
-achievement(
-    title = "I Really Don't Belong Here", points = 10,
-    description = "Get the Asagi Ending",
-    id = 194834, badge = "216578", published = "1/26/2022 5:47:22 PM", modified = "1/26/2022 6:49:03 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 1701978185 && dword((g_text) + 0x04) == 2037148769 && dword((g_text) + 0x08) == 1852793888 &&
-                  dword((g_text) + 0x0C) == 29735 && dword((g_text) + 0x80) == 1869374818 && dword((g_text) + 0x84) == 1746954094 &&
-                  dword((g_text) + 0x88) == 778400357
-              )
-)
+for params in ending_params
+{
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=params["description"],
+        points=params["points"],
+        trigger=CheckEnding(params["character"])
+    )
+}
 
 // Rich Presence
 
