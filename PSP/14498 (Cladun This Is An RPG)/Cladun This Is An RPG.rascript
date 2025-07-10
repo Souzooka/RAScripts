@@ -41,7 +41,7 @@ function GameState(addr)
     }
     
     // Special property for Rich Presence
-    obj["m_current_character"] = CharacterState(addr + 0x2AE4 + (SIZEOF_CharacterState * obj["m_character_id"]))
+    obj["m_main_character"] = CharacterState(addr + 0x2AE4 + (SIZEOF_CharacterState * obj["m_character_id"]))
     
     return obj
 }
@@ -181,8 +181,8 @@ CHARACTER_SUNDAY = 8
 CHARACTER_ASAGI = 9
 CHARACTER_CUSTOM1 = 11
 CHARACTER_CUSTOM2 = 12
-CHARACTER_CUSTOM3 = 12
-CHARACTER_CUSTOM4 = 13
+CHARACTER_CUSTOM3 = 13
+CHARACTER_CUSTOM4 = 14
 CHARACTER_CUSTOM5 = 15
 CHARACTER_CUSTOM6 = 16
 CHARACTER_CUSTOM7 = 17
@@ -920,14 +920,178 @@ function InPrologue()
 
 function InRangeon()
 {
-    return m_rangeon_state["m_in_rangeon"] == 1
+    return g_rangeon_state["m_in_rangeon"] == 1
+}
+
+function InDungeon()
+{
+    // Also includes Rangeon
+    return g_dungeon_state["m_in_dungeon"] == 1
 }
 
 function MeasuredNoneSubChars()
 {
     return 
-        once(
-            all_of(g_game_state["m_current_character"]["m_magic_circle_characters"], v == 0xFF) &&
-            never(any_of(g_game_state["m_current_character"]["m_magic_circle_characters"], v != 0xFF))
+        measured(
+            once(
+                all_of(g_game_state["m_main_character"]["m_magic_circle_characters"], v => v == 0xFF) &&
+                never(any_of(g_game_state["m_main_character"]["m_magic_circle_characters"], v => v != 0xFF))
+            )
         )
 }
+
+dungeon_lookup = {
+    DUNGEON_ARCANUS: "Arcanus Cella",
+    DUNGEON_HIYO: "Hiyo's Cave",
+    DUNGEON_COB: "Cave of Beginnings",
+    DUNGEON_DRAGON: "Dragon Forest",
+    DUNGEON_BURN: "Burning Cave",
+    DUNGEON_ZERO: "Absolute Zero",
+    DUNGEON_SHRINE: "Golden Shrine",
+    DUNGEON_LAB: "Mystery Lab",
+    DUNGEON_HOUSE: "Monster House",
+    DUNGEON_DESERT: "Scorching Desert",
+    DUNGEON_CASTLE: "Nostalgic Castle",
+    DUNGEON_CAVE: "Enemy Cave",
+    DUNGEON_COURAGE: "Courage Wanted",
+    DUNGEON_SQUARE: "Energy Square",
+    DUNGEON_POB: "Place of Beginnings",
+    15: "UNKNOWN AREA 0xF",
+    16: "UNKNOWN AREA 0x10",
+    17: "UNKNOWN AREA 0x11",
+    18: "UNKNOWN AREA 0x12",
+    DUNGEON_NEWENEMY: "New Enemy",
+    DUNGEON_LASTBOSS: "Last Boss",
+    DUNGEON_OBLIVION: "Land of Oblivion",
+    22: "UNKNOWN AREA 0x16",
+    DUNGEON_KHAMUN: "Khamun's Revenge",
+    24: "UNKNOWN AREA 0x18",
+    25: "UNKNOWN AREA 0x19",
+    26: "UNKNOWN AREA 0x1A",
+    27: "UNKNOWN AREA 0x1B",
+    28: "UNKNOWN AREA 0x1C",
+    29: "UNKNOWN AREA 0x1D",
+    30: "UNKNOWN AREA 0x1E",
+}
+
+char_lookup = {
+    CHARACTER_PUDDING: "Pudding",
+    CHARACTER_COCO: "Coco",
+    CHARACTER_DESPINA: "Despina",
+    CHARACTER_SOUMA: "Souma",
+    CHARACTER_SHERBET: "Sherbet",
+    CHARACTER_BATTLEBLO: "Battleblo",
+    CHARACTER_DOTACHE: "Dotache",
+    CHARACTER_BOB: "Bob",
+    CHARACTER_SUNDAY: "Sunday",
+    CHARACTER_ASAGI: "Asagi",
+    10: "UNKNOWN CHARACTER 0xA",
+    CHARACTER_CUSTOM1: "Custom",
+    CHARACTER_CUSTOM2: "Custom",
+    CHARACTER_CUSTOM3: "Custom",
+    CHARACTER_CUSTOM4: "Custom",
+    CHARACTER_CUSTOM5: "Custom",
+    CHARACTER_CUSTOM6: "Custom",
+    CHARACTER_CUSTOM7: "Custom",
+    CHARACTER_CUSTOM8: "Custom",
+    CHARACTER_CUSTOM9: "Custom",
+    CHARACTER_CUSTOM10: "Custom",
+}
+
+// The following is just some trickery to *try* and get some semblance of a sub character list
+// with the limited string processing
+rp_sub_chars = array_map(
+    range(0, 8-1), 
+    i => 
+        rich_presence_lookup("SUB_CHAR", g_game_state["m_main_character"]["m_magic_circle_characters"][i], char_lookup)
+)
+none_sub_char_lookup = {0: ""}
+rp_sub_none = rich_presence_lookup("NONE_SUB", MeasuredNoneSubChars(), none_sub_char_lookup, "None")
+commas_lookup = {0: ""}
+rp_commas = []
+for i in range(0, 7-1)
+{
+    list = g_game_state["m_main_character"]["m_magic_circle_characters"]
+    sublist = []
+    for j in range(i + 1, length(list) - 1)
+    {
+        array_push(sublist, list[j])
+    }
+    cond =
+        measured(
+            once(
+                any_of(sublist, v => v != 0xFF) &&
+                list[i] != 0xFF &&
+                never(all_of(sublist, v => v == 0xFF)) &&
+                never(list[i] == 0xFF)
+            )
+        )
+    array_push(rp_commas, rich_presence_lookup("COMMA_JOIN", cond, commas_lookup, ", "))
+}
+
+rp_char = rich_presence_lookup("CHAR", g_game_state["m_character_id"], char_lookup)
+rp_rangeon_floor = rich_presence_value("RANGEON_FLOOR", g_rangeon_state["m_floor"])
+rp_floor = rich_presence_value("FLOOR", g_dungeon_state["m_floor"])
+rp_dungeon = rich_presence_lookup("DUNGEON", g_dungeon_state["m_dungeon_id"], dungeon_lookup, "UNKNOWN AREA")
+
+rich_presence_conditional_display(
+    InTitle(),
+    "In the title menu"
+)
+rich_presence_conditional_display(
+    InPrologue(),
+    "Souma and Pudding are on their way to Arcanus Cella"
+)
+rich_presence_conditional_display(
+    InRangeon(),
+    "{0} is on {1}F of Ran-Geon | Subs: {2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}{13}{14}{15}{16}{17}",
+    rp_char,
+    rp_floor,
+    rp_sub_chars[0],
+    rp_commas[0],
+    rp_sub_chars[1],
+    rp_commas[1],
+    rp_sub_chars[2],
+    rp_commas[2],
+    rp_sub_chars[3],
+    rp_commas[3],
+    rp_sub_chars[4],
+    rp_commas[4],
+    rp_sub_chars[5],
+    rp_commas[5],
+    rp_sub_chars[6],
+    rp_commas[6],
+    rp_sub_chars[7],
+    rp_sub_none
+)
+rich_presence_conditional_display(
+    g_dungeon_state["m_dungeon_id"] == DUNGEON_ARCANUS,
+    "{0} is in Arcanus Cella",
+    rp_char
+)
+rich_presence_conditional_display(
+    pg_game_state != NULL, // Default case (if we're in game)
+    "{0} is on {1}F of {2} | Subs: {3}{4}{5}{6}{7}{8}{9}{10}{11}{12}{13}{14}{15}{16}{17}{18}",
+    rp_char,
+    rp_floor,
+    rp_dungeon,
+    rp_sub_chars[0],
+    rp_commas[0],
+    rp_sub_chars[1],
+    rp_commas[1],
+    rp_sub_chars[2],
+    rp_commas[2],
+    rp_sub_chars[3],
+    rp_commas[3],
+    rp_sub_chars[4],
+    rp_commas[4],
+    rp_sub_chars[5],
+    rp_commas[5],
+    rp_sub_chars[6],
+    rp_commas[6],
+    rp_sub_chars[7],
+    rp_sub_none
+)
+rich_presence_display(
+    "Booting up an RPG"
+)
