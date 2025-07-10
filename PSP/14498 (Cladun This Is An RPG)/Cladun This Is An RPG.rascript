@@ -26,6 +26,7 @@ function GameState(addr)
         "m_character_id": dword(addr + 0x868),
         "m_dungeon_record_count": dword(addr + 0x880),
         "m_dungeon_record": [],
+        "m_current_character": NULL,
         "m_characters": [],
     }
     
@@ -38,6 +39,10 @@ function GameState(addr)
     {
         array_push(obj["m_characters"], CharacterState(addr + 0x2AE4 + (SIZEOF_CharacterState * i)))
     }
+    
+    // Special property for Rich Presence
+    obj["m_current_character"] = CharacterState(addr + 0x2AE4 + (SIZEOF_CharacterState * obj["m_character_id"]))
+    
     return obj
 }
 
@@ -127,54 +132,41 @@ function CheckCutsceneFlag(flag)
 
 function CheckDungeonCleared(record_idx, dungeon=-1, floor=-1, first=true)
 {
-    // Dungeons are inserted into game state in an arbitrary order
-    // However, since dungeons can only be completed in a specific order,
-    // (up until the end of the game), for those within that order, we should be able
-    // to avoid checking multiple entries. We want to avoid checking every entry, for every dungeon,
-    // even though it's what the game does, because RA has no early exit from loops and it's considered bad form
-    // NOTE: The game has MP maps (and while I'm not sure if there's even a way to set that up now) and if a player completing one
-    // of these generates a clear record, I guess we'll have to check every possible slot for every dungeon. Oh well. Runtime conditionals wen
-    MAX_SAFE_DUNGEON = RECORD_LASTBOSS1F//-1 // max ID to not check multiple for
-    MAX_DUNGEON_COUNT = RECORD_REMEMBRANCE9994F//200 // max range to check multiple for
+    // Dungeon clear stats are inserted into game state in order based on when you first enter a floor
+    // In some circumstances, it seems that side dungeons can enter this list even before hitting the credits
+    // (are these MP maps, maybe?) so to be thorough we should check the whole list.
+    MAX_SAFE_DUNGEON = -1//RECORD_LASTBOSS1F//-1 // max ID to not check multiple for
+    MAX_DUNGEON_COUNT = 200//RECORD_REMEMBRANCE9994F//200 // max range to check multiple for
 
-    check_multiple = record_idx > MAX_SAFE_DUNGEON
-    if check_multiple
-    {
-        // Check every single possible slot (out of slots we assume they should be in) for non-linear dungeon progression (postgame content)
-        infos = array_map(range(MAX_SAFE_DUNGEON + 1, MAX_DUNGEON_COUNT), i => {"index": i, "data": g_game_state["m_dungeon_record"][i]})
-    }
-    else
-    {
-        // Otherwise we assume that a particular dungeon floor should be in a particular slot
-        infos = [{"index": record_idx, "data": g_game_state["m_dungeon_record"][record_idx]}]
-    }
+    // Check every single possible slot
+    infos = array_map(range(0, length(g_game_state["m_dungeon_record"])-1), i => {"index": i, "data": g_game_state["m_dungeon_record"][i]})
     
-    conds = []
+    base_cond = g_dungeon_state["m_dungeon_id"] == dungeon && g_dungeon_state["m_floor"] == floor
+    conds = [] 
     for info in infos
     {
         idx = info["index"]
         data = info["data"]
-        // Check list length to make sure the data we're accessing is even valid
-        cond = g_game_state["m_dungeon_record_count"] > idx
-        if dungeon != -1
-            // Sanity check (this record is where we expect it to be in memory)
-            // If this fails we may need to check ~100 records for every dungeon to be thorough
-            cond = cond && data["m_dungeon_id"] == dungeon
-        if floor != -1
-            // Sanity check (this record is where we expect it to be in memory)
-            // If this fails we may need to check ~100 records for every dungeon to be thorough
-            cond = cond && data["m_floor"] == floor
+        
+        // Turns out arbitrary records can make their way into the list, screwing up progression order.
+        // Since the expected behavior of the clear count value is that it can only increment by 1 on a new frame,
+        // we can squish checking a change in clear count into a giant OrNext chain.
+        
         if first
-            // Check for first clear
-            cond = cond && prev(data["m_clear_count"]) == 0 && data["m_clear_count"] == 1
+            // Since we're checking 0 -> 1 (and 1 -> 0 should be impossible while in-game), we can check mem + delta = 1
+            cond = prev(data["m_clear_count"]) + data["m_clear_count"] == 1
         else
-            // Otherwise any increase in clears is fine
-            cond = cond && prev(data["m_clear_count"]) < data["m_clear_count"]
+            // For non-first, simply have to check that mem > delta
+            cond = prev(data["m_clear_count"]) < data["m_clear_count"]
             
         array_push(conds, cond)
     }
     
-    return any_of(conds, v=>v)
+    if first
+        return base_cond && __ornext(any_of(conds, v=>v))
+    else
+        // Use tally here (to prevent alt groups for damageless achievements)
+        return base_cond && tally_of(conds, 1, v=>v)
 }
 
 CHARACTER_PUDDING = 0
@@ -202,6 +194,7 @@ MAP_TITLE = 0
 MAP_HIYO1F = 10001
 MAP_COB1F = 10101
 MAP_HUB = 50001
+MAP_PROLOGUE_CUTSCENE = 60000
 MAP_PROLOGUE_DUNGEON = 60001
 
 DUNGEON_ARCANUS = 0
@@ -763,13 +756,13 @@ achievement(
             // Is Souma
             g_game_state["m_character_id"] == CHARACTER_SOUMA &&
             // No subs
-            all_of(g_game_state["m_characters"][CHARACTER_SOUMA]["m_magic_circle_characters"], v => v == 0xFF) &&
-            // Reset if we leave
-            never(g_game_state["m_map_id"] != MAP_HIYO1F) &&
-            // Reset if we take damage
-            never(
-                g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"] < prev(g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"])
-            )
+            all_of(g_game_state["m_characters"][CHARACTER_SOUMA]["m_magic_circle_characters"], v => v == 0xFF)
+        ) &&
+        // Reset if we leave
+        never(g_game_state["m_map_id"] != MAP_HIYO1F) &&
+        // Reset if we take damage
+        never(
+            g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"] < prev(g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"])
         ) &&
         // Complete stage
         trigger_when(
@@ -792,13 +785,13 @@ achievement(
             // Is Souma
             g_game_state["m_character_id"] == CHARACTER_SOUMA &&
             // No subs
-            all_of(g_game_state["m_characters"][CHARACTER_SOUMA]["m_magic_circle_characters"], v => v == 0xFF) &&
-            // Reset if we leave
-            never(g_game_state["m_map_id"] != MAP_COB1F) &&
-            // Reset if we take damage
-            never(
-                g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"] < prev(g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"])
-            )
+            all_of(g_game_state["m_characters"][CHARACTER_SOUMA]["m_magic_circle_characters"], v => v == 0xFF)
+        ) &&
+        // Reset if we leave
+        never(g_game_state["m_map_id"] != MAP_COB1F) &&
+        // Reset if we take damage
+        never(
+            g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"] < prev(g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"])
         ) &&
         // Complete stage
         trigger_when(
@@ -917,3 +910,24 @@ achievement(
                   dword((g_text) + 0x88) == 778400357
               )
 )
+
+// Rich Presence
+
+function InPrologue()
+{
+    return any_of([MAP_PROLOGUE_CUTSCENE, MAP_PROLOGUE_DUNGEON], m => m == g_game_state["m_map_id"])
+}
+
+function InRangeon()
+{
+    return m_rangeon_state["m_in_rangeon"] == 1
+}
+
+function MeasuredNoneSubChars()
+{
+    return 
+        once(
+            all_of(g_game_state["m_current_character"]["m_magic_circle_characters"], v == 0xFF) &&
+            never(any_of(g_game_state["m_current_character"]["m_magic_circle_characters"], v != 0xFF))
+        )
+}
