@@ -130,7 +130,7 @@ function CheckCutsceneFlag(flag)
         PlayerLocked(delta=true) && !PlayerLocked()
 }
 
-function CheckDungeonCleared(record_idx, dungeon=-1, floor=-1, first=true)
+function CheckDungeonCleared(dungeon=-1, floor=-1, first=true)
 {
     // Dungeon clear stats are inserted into game state in order based on when you first enter a floor
     // In some circumstances, it seems that side dungeons can enter this list even before hitting the credits
@@ -188,7 +188,7 @@ function CheckEnding(character)
                     // These can get set out of order depending on ending,
                     // for example this first line gets set last in Battleblo's ending
                     prev(g_dungeon_state["m_in_dungeon"]) == 0 ||
-                    // while this gets 
+                    // while this gets set last in Souma's ending
                     prev(g_game_state["m_map_id"]) != MAP_CREDITS
                 )
             ) && always_true()
@@ -251,84 +251,6 @@ DUNGEON_LASTBOSS = 20
 DUNGEON_OBLIVION = 21
 DUNGEON_KHAMUN = 23
 
-
-// These aren't set in stone, but educated guesses for indices these records appear at
-// (See note in CheckDungeonCleared)
-RECORD_HIYO1F = 0
-RECORD_HIYO2F = 1
-RECORD_HIYO3F = 2
-RECORD_COB1F = 3
-RECORD_COB2F = 4
-RECORD_COB3F = 5
-RECORD_COB4F = 6
-RECORD_DRAGON1F = 7
-RECORD_DRAGON2F = 8
-RECORD_DRAGON3F = 9
-RECORD_BURN1F = 10
-RECORD_BURN2F = 11
-RECORD_BURN3F = 12
-RECORD_ZERO1F = 13
-RECORD_ZERO2F = 14
-RECORD_ZERO3F = 15
-RECORD_SHRINE1F = 16
-RECORD_SHRINE2F = 17
-RECORD_SHRINE3F = 18
-RECORD_SHRINE4F = 19
-RECORD_LAB1F = 20
-RECORD_LAB2F = 21
-RECORD_LAB3F = 22
-RECORD_HOUSE1F = 23
-RECORD_HOUSE2F = 24
-RECORD_HOUSE3F = 25
-RECORD_HOUSE4F = 26
-RECORD_DESERT1F = 27
-RECORD_DESERT2F = 28
-RECORD_CASTLE1F = 29
-RECORD_CASTLE2F = 30
-RECORD_CASTLE3F = 31
-RECORD_CASTLE4F = 32
-RECORD_CAVE1F = 33
-RECORD_CAVE2F = 34
-RECORD_CAVE3F = 35
-RECORD_CAVE4F = 36
-RECORD_COURAGE1F = 37
-RECORD_COURAGE2F = 38
-RECORD_COURAGE3F = 39
-RECORD_COURAGE4F = 40
-RECORD_SQUARE1F = 41
-RECORD_SQUARE2F = 42
-RECORD_SQUARE3F = 43
-RECORD_SQUARE4F = 44
-RECORD_POB1F = 45
-RECORD_POB2F = 46
-RECORD_POB3F = 47
-RECORD_LASTBOSS1F = 48
-RECORD_NEWENEMY1F = 49
-RECORD_OBLIVION1F = 50
-RECORD_OBLIVION2F = 51
-RECORD_OBLIVION3F = 52
-RECORD_OBLIVION4F = 53
-RECORD_KHAMUN1F = 54
-RECORD_REMEMBRANCE1F = 55
-RECORD_REMEMBRANCE2F = 56
-RECORD_REMEMBRANCE3F = 57
-RECORD_REMEMBRANCE4F = 58
-RECORD_EVIL1F = 59
-RECORD_EVIL2F = 60
-RECORD_EVIL3F = 61
-RECORD_OVERFIEND1F = 62
-RECORD_OVERFIEND2F = 63
-RECORD_OVERFIEND3F = 64
-RECORD_OVERFIEND4F = 65
-RECORD_EVIL9991F = 66
-RECORD_EVIL9992F = 67
-RECORD_EVIL9993F = 68
-RECORD_REMEMBRANCE9991F = 69
-RECORD_REMEMBRANCE9992F = 70
-RECORD_REMEMBRANCE9993F = 71
-RECORD_REMEMBRANCE9994F = 72
-
-
 pg_game_state = dword(0x9950b8) // Can't mask here because (X & 0x7FFFFFF) == 0 seems to be considered always false
 g_game_state = GameState(pg_game_state & 0x7FFFFFF)
 g_dungeon_state = DungeonState(dword(0x9950bc) & 0x7FFFFFF)
@@ -371,7 +293,7 @@ achievement(
     points=2,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_HIYO3F, dungeon=DUNGEON_HIYO, floor=3)
+        CheckDungeonCleared(dungeon=DUNGEON_HIYO, floor=3)
 )
 
 achievement(
@@ -405,7 +327,7 @@ achievement(
     points=5,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_COB4F, dungeon=DUNGEON_COB, floor=4)
+        CheckDungeonCleared(dungeon=DUNGEON_COB, floor=4)
 )
 
 achievement(
@@ -428,7 +350,7 @@ achievement(
     description="Complete Dragon Forest for the first time",
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_DRAGON3F, dungeon=DUNGEON_DRAGON, floor=3)
+        CheckDungeonCleared(dungeon=DUNGEON_DRAGON, floor=3)
 )
 
 achievement(
@@ -451,7 +373,7 @@ achievement(
     points=5,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_BURN3F, dungeon=DUNGEON_BURN, floor=3)
+        CheckDungeonCleared(dungeon=DUNGEON_BURN, floor=3)
 )
 
 achievement(
@@ -474,7 +396,7 @@ achievement(
     points=5,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_ZERO3F, dungeon=DUNGEON_ZERO, floor=3)
+        CheckDungeonCleared(dungeon=DUNGEON_ZERO, floor=3)
 )
 
 achievement(
@@ -485,7 +407,7 @@ achievement(
     points=5,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_SHRINE4F, dungeon=DUNGEON_SHRINE, floor=4)
+        CheckDungeonCleared(dungeon=DUNGEON_SHRINE, floor=4)
 )
 
 achievement(
@@ -496,7 +418,7 @@ achievement(
     points=5,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_LAB3F, dungeon=DUNGEON_LAB, floor=3)
+        CheckDungeonCleared(dungeon=DUNGEON_LAB, floor=3)
 )
 
 achievement(
@@ -507,7 +429,7 @@ achievement(
     points=5, 
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_HOUSE4F, dungeon=DUNGEON_HOUSE, floor=4)
+        CheckDungeonCleared(dungeon=DUNGEON_HOUSE, floor=4)
 )
 
 achievement(
@@ -518,7 +440,7 @@ achievement(
     points=5,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_DESERT2F, dungeon=DUNGEON_DESERT, floor=2)
+        CheckDungeonCleared(dungeon=DUNGEON_DESERT, floor=2)
 )
 
 achievement(
@@ -529,7 +451,7 @@ achievement(
     points=5,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_CASTLE4F, dungeon=DUNGEON_CASTLE, floor=4)
+        CheckDungeonCleared(dungeon=DUNGEON_CASTLE, floor=4)
 )
 
 achievement(
@@ -540,7 +462,7 @@ achievement(
     points=5, 
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_CAVE4F, dungeon=DUNGEON_CAVE, floor=4)
+        CheckDungeonCleared(dungeon=DUNGEON_CAVE, floor=4)
 )
 
 achievement(
@@ -551,7 +473,7 @@ achievement(
     type="progression",
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_COURAGE4F, dungeon=DUNGEON_COURAGE, floor=4)
+        CheckDungeonCleared(dungeon=DUNGEON_COURAGE, floor=4)
 )
 
 achievement(
@@ -562,7 +484,7 @@ achievement(
     points=5, 
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_SQUARE4F, dungeon=DUNGEON_SQUARE, floor=4)
+        CheckDungeonCleared(dungeon=DUNGEON_SQUARE, floor=4)
 )
 
 achievement(
@@ -584,7 +506,7 @@ achievement(
     points=10, 
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_POB3F, dungeon=DUNGEON_POB, floor=3)
+        CheckDungeonCleared(dungeon=DUNGEON_POB, floor=3)
 )
 
 achievement(
@@ -617,7 +539,7 @@ achievement(
     points=10,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_NEWENEMY1F, dungeon=DUNGEON_NEWENEMY, floor=1)
+        CheckDungeonCleared(dungeon=DUNGEON_NEWENEMY, floor=1)
 )
 
 achievement(
@@ -638,7 +560,7 @@ achievement(
     points=25,
     trigger=
         SaveProtection() &&
-        CheckDungeonCleared(RECORD_OBLIVION4F, dungeon=DUNGEON_OBLIVION, floor=4)
+        CheckDungeonCleared(dungeon=DUNGEON_OBLIVION, floor=4)
 )
 
 achievement(
@@ -800,7 +722,7 @@ achievement(
         ) &&
         // Complete stage
         trigger_when(
-            CheckDungeonCleared(RECORD_HIYO1F, dungeon=DUNGEON_HIYO, floor=1, first=false)
+            CheckDungeonCleared(dungeon=DUNGEON_HIYO, floor=1, first=false)
         )
 )
 
@@ -829,7 +751,7 @@ achievement(
         ) &&
         // Complete stage
         trigger_when(
-            CheckDungeonCleared(RECORD_COB1F, dungeon=DUNGEON_COB, floor=1, first=false)
+            CheckDungeonCleared(dungeon=DUNGEON_COB, floor=1, first=false)
         )
 )
 
