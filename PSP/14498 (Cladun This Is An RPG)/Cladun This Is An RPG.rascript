@@ -25,19 +25,9 @@ function GameState(addr)
         "m_map_id": dword(addr + 0x85C),
         "m_character_id": dword(addr + 0x868),
         "m_dungeon_record_count": dword(addr + 0x880),
-        "m_dungeon_record": [],
+        "m_dungeon_record": array_map(range(0, 200-1), i => DungeonRecordInfo(addr + 0x884 + (SIZEOF_DungeonRecordInfo * i))),
         "m_current_character": NULL,
-        "m_characters": [],
-    }
-    
-    for i in range(0, 200-1)
-    {
-        array_push(obj["m_dungeon_record"], DungeonRecordInfo(addr + 0x884 + (SIZEOF_DungeonRecordInfo * i)))
-    }
-    
-    for i in range(0, CHARACTER_CUSTOM10)
-    {
-        array_push(obj["m_characters"], CharacterState(addr + 0x2AE4 + (SIZEOF_CharacterState * i)))
+        "m_characters":  array_map(range(0, CHARACTER_CUSTOM10), i => CharacterState(addr + 0x2AE4 + (SIZEOF_CharacterState * i))),
     }
     
     // Special property for Rich Presence
@@ -51,14 +41,9 @@ function CharacterState(addr)
 {
     obj = {
         "m_hp": dword(addr + 0x2C),
-        "m_magic_circle_characters": [],
-        "m_unlocked": byte(addr + 0x4F0),
-    }
-    
-    for i in range(0, 8-1)
-    {
         // Eight slots (I think should be the max) of 8-bit character IDs
-        array_push(obj["m_magic_circle_characters"], byte(addr + 0xE8 + i))
+        "m_magic_circle_characters": array_map(range(0, 8-1), i => byte(addr + 0xE8 + i)),
+        "m_unlocked": byte(addr + 0x4F0),
     }
     
     return obj
