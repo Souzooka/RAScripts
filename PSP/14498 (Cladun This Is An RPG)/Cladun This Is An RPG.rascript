@@ -147,11 +147,7 @@ function CheckDungeonCleared(dungeon=-1, floor=-1, first=true)
         array_push(conds, cond)
     }
     
-    if first
-        return base_cond && __ornext(any_of(conds, v=>v))
-    else
-        // Use tally here (to prevent alt groups for damageless achievements)
-        return base_cond && tally_of(conds, 1, v=>v)
+    return base_cond && __ornext(any_of(conds, v=>v))
 }
 
 function CheckEnding(character)
@@ -235,6 +231,8 @@ DUNGEON_NEWENEMY = 19
 DUNGEON_LASTBOSS = 20
 DUNGEON_OBLIVION = 21
 DUNGEON_KHAMUN = 23
+// MP maps
+DUNGEON_CONNECTING_FOREST = 30
 
 pg_game_state = dword(0x9950b8) // Can't mask here because (X & 0x7FFFFFF) == 0 seems to be considered always false
 g_game_state = GameState(pg_game_state & 0x7FFFFFF)
@@ -671,15 +669,40 @@ achievement(
         g_rangeon_state["m_floor"] == 51
 )
 
+function DamagelessFloor(dungeon, floor, character=CHARACTER_SOUMA)
+{
+    return
+        // Enter stage (as character and with no subs)
+        once(
+            pg_game_state != NULL &&
+            // Entered the map
+            prev(g_dungeon_state["m_dungeon_id"]) != dungeon &&
+            g_dungeon_state["m_dungeon_id"] == dungeon &&
+            g_dungeon_state["m_floor"] == floor &&
+            // Is character
+            g_game_state["m_character_id"] == character &&
+            // No subs
+            all_of(g_game_state["m_characters"][character]["m_magic_circle_characters"], v => v == 0xFF)
+        ) &&
+        // Reset if we leave
+        never(g_dungeon_state["m_dungeon_id"] != dungeon) &&
+        // Reset if we take damage
+        never(
+            g_game_state["m_characters"][character]["m_hp"] < prev(g_game_state["m_characters"][character]["m_hp"])
+        ) &&
+        // Complete stage
+        trigger_when(
+            CheckDungeonCleared(dungeon=dungeon, floor=floor, first=false)
+        )
+}
+
 achievement(
-    title = "Th-The Mask", points = 10,
-    description = "Complete the Last Boss with Souma and without taking damage, without having a cutscene [No Sub/Support Character]",
-    id = 194845, badge = "216586", published = "1/26/2022 5:47:26 PM", modified = "3/5/2023 11:59:24 PM",
-    trigger = (byte(0x1BF53F0) == 20 && byte(0x1BF53F4) == 1) && unless(byte(0x1BF5CA8) == 3) &&
-              trigger_when(word(0x1BF6508) > prev(word(0x1BF6508))) &&
-              disable_when(byte(0x1BF53F0) == 20 && word(0x1BF9C24) < prev(word(0x1BF9C24))) &&
-              disable_when(dword(0x1BF9CE0) != 4294967295) && disable_when(dword(0x1BF9CE4) != 4294967295) &&
-              (always_false() || (never(byte(0x1BF53F0) != 20)))
+    id=194845,
+    title="Th-The Mask", 
+    description="As Souma and without any Sub Characters, complete the Last Boss without taking damage",
+    points=10,
+    trigger=
+        DamagelessFloor(DUNGEON_LASTBOSS, floor=1)
 )
 
 achievement(
@@ -688,27 +711,7 @@ achievement(
     description="As Souma and without any Sub Characters, complete Hiyo's Cave 1F without taking damage",
     points=10,
     trigger=
-        // Enter stage (as Souma and with no subs)
-        once(
-            pg_game_state != NULL &&
-            // Entered the map
-            prev(g_game_state["m_map_id"]) != MAP_HIYO1F &&
-            g_game_state["m_map_id"] == MAP_HIYO1F &&
-            // Is Souma
-            g_game_state["m_character_id"] == CHARACTER_SOUMA &&
-            // No subs
-            all_of(g_game_state["m_characters"][CHARACTER_SOUMA]["m_magic_circle_characters"], v => v == 0xFF)
-        ) &&
-        // Reset if we leave
-        never(g_game_state["m_map_id"] != MAP_HIYO1F) &&
-        // Reset if we take damage
-        never(
-            g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"] < prev(g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"])
-        ) &&
-        // Complete stage
-        trigger_when(
-            CheckDungeonCleared(dungeon=DUNGEON_HIYO, floor=1, first=false)
-        )
+        DamagelessFloor(DUNGEON_HIYO, floor=1)
 )
 
 achievement(
@@ -717,27 +720,7 @@ achievement(
     description="As Souma and without any Sub Characters, complete Cave of Beginnings 1F without taking damage",
     points=10,
     trigger=
-        // Enter stage (as Souma and with no subs)
-        once(
-            pg_game_state != NULL &&
-            // Entered the map
-            prev(g_game_state["m_map_id"]) != MAP_COB1F &&
-            g_game_state["m_map_id"] == MAP_COB1F &&
-            // Is Souma
-            g_game_state["m_character_id"] == CHARACTER_SOUMA &&
-            // No subs
-            all_of(g_game_state["m_characters"][CHARACTER_SOUMA]["m_magic_circle_characters"], v => v == 0xFF)
-        ) &&
-        // Reset if we leave
-        never(g_game_state["m_map_id"] != MAP_COB1F) &&
-        // Reset if we take damage
-        never(
-            g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"] < prev(g_game_state["m_characters"][CHARACTER_SOUMA]["m_hp"])
-        ) &&
-        // Complete stage
-        trigger_when(
-            CheckDungeonCleared(dungeon=DUNGEON_COB, floor=1, first=false)
-        )
+        DamagelessFloor(DUNGEON_COB, floor=1)
 )
 
 ending_params = [
@@ -884,7 +867,7 @@ dungeon_lookup = {
     27: "UNKNOWN AREA 0x1B",
     28: "UNKNOWN AREA 0x1C",
     29: "UNKNOWN AREA 0x1D",
-    30: "UNKNOWN AREA 0x1E",
+    DUNGEON_CONNECTING_FOREST: "Connecting Forest",
 }
 
 char_lookup = {
