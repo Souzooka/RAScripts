@@ -25,7 +25,7 @@ function GameState(addr)
         "m_map_id": dword(addr + 0x85C),
         "m_character_id": dword(addr + 0x868),
         "m_dungeon_record_count": dword(addr + 0x880),
-        "m_dungeon_record": array_map(range(0, 200-1), i => DungeonRecordInfo(addr + 0x884 + (SIZEOF_DungeonRecordInfo * i))),
+        "m_dungeon_record": array_map(range(0, 128-1), i => DungeonRecordInfo(addr + 0x884 + (SIZEOF_DungeonRecordInfo * i))),
         "m_main_character": NULL,
         "m_characters":  array_map(range(0, CHARACTER_CUSTOM10-1), i => CharacterState(addr + 0x2AE4 + (SIZEOF_CharacterState * i))),
     }
@@ -44,6 +44,7 @@ function CharacterState(addr)
         // Eight slots (I think should be the max) of 8-bit character IDs
         "m_magic_circle_characters": array_map(range(0, 8-1), i => byte(addr + 0xE8 + i)),
         "m_unlocked": byte(addr + 0x4F0),
+        "m_color": byte(addr + 0x4F1),
     }
     
     return obj
@@ -150,9 +151,13 @@ function CheckDungeonCleared(dungeon=-1, floor=-1, first=true)
     return base_cond && __ornext(any_of(conds, v=>v))
 }
 
-function CheckEnding(character)
+function CheckBadEnding(character)
 {
+    // For last boss defeat (don't want to trigger these after defeating last boss)
+    pause = disable_when(g_game_state["m_map_id"] == MAP_LASTBOSS1F_BATTLE_AFTER, until=!PlayerLocked())
+
     return
+        pause &&
         repeated(
             15485, // Timed to appear as "[Production and Planning]" leaves screen and "Nippon Ichi Software" is left
             // You can't do anything but wait once you hit the credits; no way to skip, so this should be fine.
@@ -208,6 +213,8 @@ MAP_TITLE = 0
 MAP_CREDITS = 10
 MAP_HIYO1F = 10001
 MAP_COB1F = 10101
+MAP_LASTBOSS1F_BATTLE = 11401
+MAP_LASTBOSS1F_BATTLE_AFTER = 11408
 MAP_HUB = 50001
 MAP_PROLOGUE_CUTSCENE = 60000
 MAP_PROLOGUE_DUNGEON = 60001
@@ -452,8 +459,8 @@ achievement(
     id=194816,
     title="Do You Believe in Yourself?", 
     description="Complete Courage Wanted for the first time",
-    points=5,
     type="progression",
+    points=5,
     trigger=
         SaveProtection() &&
         CheckDungeonCleared(dungeon=DUNGEON_COURAGE, floor=4)
@@ -471,14 +478,17 @@ achievement(
 )
 
 achievement(
-    title = "Chances of Contamination Is One in a Million, See He Has No Luck", points = 2, type="progression",
-    description = "You now have Zombie Coco in your team!",
-    id = 194818, badge = "216562", published = "1/26/2022 5:47:17 PM", modified = "1/26/2022 6:57:20 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 1634230600 && dword((g_text) + 0x04) == 539058536 && dword((g_text) + 0x08) == 1952540756 &&
-                  dword((g_text) + 0x0C) == 1629516583 && dword((g_text) + 0x10) == 1701996320 && dword((g_text) + 0x14) == 1931506785 &&
-                  dword((g_text) + 0x18) == 560426607
-              )
+    id=194818,
+    title="Chances of Contamination Is One in a Million, See He Has No Luck",
+    description="You now have Zombie Coco in your team!",
+    type="progression",
+    points=2,
+    trigger=
+        SaveProtection() &&
+        // There may be some game flag here but since the game effectively just changes Coco's color palette,
+        // this is an intuitive check to do here
+        prev(g_game_state["m_characters"][CHARACTER_COCO]["m_color"]) == 6 &&
+        g_game_state["m_characters"][CHARACTER_COCO]["m_color"] == 2
 )
 
 achievement(
@@ -496,8 +506,8 @@ achievement(
     id=194820,
     title="The Magician", 
     description="Despina has joined your party",
-    points=5, 
     type="progression",
+    points=5,
     trigger=
         SaveProtection() &&
         prev(g_game_state["m_characters"][CHARACTER_DESPINA]["m_unlocked"]) == 0 &&
@@ -505,14 +515,15 @@ achievement(
 )
 
 achievement(
-    title = "Out of Control Power", points = 10, type="win_condition",
-    description = "Beat the Last Boss for the first time",
-    id = 194821, badge = "216565", published = "1/26/2022 5:47:18 PM", modified = "1/26/2022 6:48:58 PM",
-    trigger = (byte(0x1BF53F0) == 0 && byte(0x1BF53F4) == 0) &&
-              (dword((g_text) + 0x00) == 544567129 && dword((g_text) + 0x04) == 544104818 && dword((g_text) + 0x08) == 543452769 &&
-                  dword((g_text) + 0x0C) == 1702257000 && dword((g_text) + 0x10) == 1919903264 && dword((g_text) + 0x14) == 1701536115 &&
-                  dword((g_text) + 0x18) == 1701650542
-              )
+    id=194821,
+    title="Out of Control Power",
+    description="Beat the Last Boss for the first time",
+    type="win_condition",
+    points=10,
+    trigger=
+        SaveProtection() &&
+        prev(g_game_state["m_map_id"]) == MAP_LASTBOSS1F_BATTLE &&
+        g_game_state["m_map_id"] == MAP_LASTBOSS1F_BATTLE_AFTER
 )
 
 achievement(
@@ -671,6 +682,17 @@ achievement(
 
 function DamagelessFloor(dungeon, floor, character=CHARACTER_SOUMA)
 {
+    // Reset if we leave
+    leave_reset = never(g_dungeon_state["m_dungeon_id"] != dungeon)
+    if dungeon == DUNGEON_LASTBOSS
+    {
+        // Special case for last boss to handle ending cutscene
+        leave_reset = never(
+            g_dungeon_state["m_dungeon_id"] != dungeon &&
+            g_game_state["m_map_id"] != MAP_LASTBOSS1F_BATTLE_AFTER
+        )
+    }
+
     return
         // Enter stage (as character and with no subs)
         once(
@@ -685,7 +707,7 @@ function DamagelessFloor(dungeon, floor, character=CHARACTER_SOUMA)
             all_of(g_game_state["m_characters"][character]["m_magic_circle_characters"], v => v == 0xFF)
         ) &&
         // Reset if we leave
-        never(g_dungeon_state["m_dungeon_id"] != dungeon) &&
+        leave_reset &&
         // Reset if we take damage
         never(
             g_game_state["m_characters"][character]["m_hp"] < prev(g_game_state["m_characters"][character]["m_hp"])
@@ -803,7 +825,7 @@ for params in ending_params
         title=params["title"],
         description=params["description"],
         points=params["points"],
-        trigger=CheckEnding(params["character"])
+        trigger=CheckBadEnding(params["character"])
     )
 }
 
