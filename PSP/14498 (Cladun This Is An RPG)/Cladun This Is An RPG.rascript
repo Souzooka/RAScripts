@@ -254,7 +254,7 @@ g_conversation_index = dword((dword((dword(0x996190) & 0x7FFFFFF) + 0x0) & 0x7FF
 achievement(
     id=194798,
     title="Starting a New Adventure",
-    description="Complete the Prologue Stage and reach Arcanus Cella (Some Achievements need some time to trigger)",
+    description="Complete the Prologue Stage and reach Arcanus Cella",
     type="progression",
     points=1,
     trigger=
