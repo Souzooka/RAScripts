@@ -3,6 +3,13 @@
 
 NULL = 0
 
+function if_else(cond, a, b)
+{
+    if cond
+        return a
+    return b
+}
+
 function DungeonState(addr)
 {
     obj = {
@@ -714,7 +721,15 @@ function DamagelessFloor(dungeon, floor, character=CHARACTER_SOUMA)
         ) &&
         // Complete stage
         trigger_when(
-            CheckDungeonCleared(dungeon=dungeon, floor=floor, first=false)
+            if_else(
+                dungeon == DUNGEON_LASTBOSS,
+                CheckDungeonCleared(dungeon=dungeon, floor=floor, first=false) ||
+                (
+                    prev(g_game_state["m_map_id"]) == MAP_LASTBOSS1F_BATTLE &&
+                    g_game_state["m_map_id"] == MAP_LASTBOSS1F_BATTLE_AFTER
+                ),
+                CheckDungeonCleared(dungeon=dungeon, floor=floor, first=false)
+            )
         )
 }
 
