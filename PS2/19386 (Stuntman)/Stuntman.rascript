@@ -20,8 +20,56 @@ function to_stunt_id(map_id, stunt_id)
     return map_id * 0x100 + stunt_id
 }
 
+function is_stunt(map_id, stunt_id)
+{
+    addr = 0x269b70 + (g_map_id * 0x54)
+    return g_map_id == map_id && dword(addr) == stunt_id
+}
+
+function is_level_complete()
+{
+    val = dword(dword(0x292FB4) + 0xBC)
+    return prev(val) == 0 && val == 1
+}
+
+function is_perfect(segments)
+{
+    // segments should match the 32-bit value at 0x39c348 when playing a stunt
+    arr = dword(0x0029c34c)
+    
+    cond = always_true()
+    for i in range(0, segments - 1)
+    {
+        cond = cond && bit3(arr + 0xC) == 0
+        arr = arr + 0x10
+    }
+    
+    return cond
+}
+
 g_map_id = dword(0x315118)
 g_player_car = dword(0x267464)
+
+achievement(
+    title="Hiccup With the Piccup",
+    description="Demonstration achievement for completing a stunt",
+    points=0,
+    trigger=
+        in_game() &&
+        is_stunt(0, 0) &&
+        is_level_complete()
+)
+
+achievement(
+    title="Hiccup With the Piccup - Perfect",
+    description="Demonstration achievement for completing a stunt with a perfect score (you need to match number of segments in level manually)",
+    points=0,
+    trigger=
+        in_game() &&
+        is_stunt(0, 0) &&
+        is_level_complete() &&
+        is_perfect(segments=8)
+)
 
 SID = to_stunt_id
 
