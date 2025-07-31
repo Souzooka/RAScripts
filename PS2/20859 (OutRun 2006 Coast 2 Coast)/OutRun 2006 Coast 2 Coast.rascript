@@ -4,7 +4,7 @@
 NULL = 0
 True = 1
 False = 0
-NO_ADDR = 0xFFFF0 // always 0x0 when read
+NO_ADDR = 0xDEADBEEF // always 0x0 when read
 
 RegionByte = byte(0x133a03)
 US = 0
@@ -142,7 +142,7 @@ EVENT_OUTRUN = 1
 EVENT_HEART_ATTACK = 2
 EVENT_GIRLFRIEND = 5
 EVENT_FLAGMAN = 6
-EVENT_TIME_ATTACK_STAGE = 7
+EVENT_TIME_ATTACK_1PLAYER = 7
 eventType = {
     US: dword(0x443F08),
     EU: dword(0x443508),
@@ -169,6 +169,13 @@ gameState = {
     US: dword(0x443F10),
     EU: dword(0x443510),
     JP: dword(0x434110),
+}
+
+// For Time Attack this is 1 for stage-only runs, 15 for goal runs
+numStagesLoaded = {
+    US: dword(0x35A870),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
 }
 
 CONGRATS_NONE = -1
@@ -205,7 +212,7 @@ eventDistance = {
     JP: ptr(dword(0x52D618), [0x260], word),
 }
 
-// 60 frames / second (NOTE: PAL might be 50 depending on display mode...)
+// 60.2 (lol) frames a second
 eventTime = {
     US: dword(0x5C6948),
     EU: dword(0x5C5F48),
@@ -390,7 +397,7 @@ car_lookup = {
 
 event_lookup = {
     EVENT_TIME_ATTACK: "⏱️ Time Attack Mode",
-    EVENT_TIME_ATTACK_STAGE: "⏱️ Time Attack Mode",
+    EVENT_TIME_ATTACK_1PLAYER: "⏱️ Time Attack Mode",
     EVENT_OUTRUN: "🚗 OutRun Mode",
     EVENT_HEART_ATTACK: "❤️ Heart Attack Mode",
     EVENT_GIRLFRIEND: "💋 Girlfriend Event",
@@ -1545,7 +1552,8 @@ for params in time_attack_params
     
     trigger = any_of(Regions, region => 
         IsRegion(region) &&
-        eventType[region] == EVENT_TIME_ATTACK &&
+        __ornext(any_of([EVENT_TIME_ATTACK, EVENT_TIME_ATTACK_1PLAYER], e => eventType[region] == e)) &&
+        numStagesLoaded[region] != 1 &&
         eventSubType[region] == params["mode"] &&
         zone_check &&
         (eventTime[region] - 1) <= params["goaltime"] * IGT_DIVISOR / 1000 &&
@@ -1567,7 +1575,8 @@ for params in time_attack_params
 
         start=any_of(Regions, region => 
             IsRegion(region) &&
-            eventType[region] == EVENT_TIME_ATTACK &&
+            __ornext(any_of([EVENT_TIME_ATTACK, EVENT_TIME_ATTACK_1PLAYER], e => eventType[region] == e)) &&
+            numStagesLoaded[region] != 1 &&
             eventSubType[region] == params["mode"] &&
             zone_check &&
             HitGoal(region)
