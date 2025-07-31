@@ -120,8 +120,8 @@ currSky = {
 // The filename idx for the sky for the first stage in an event, used for reverse tracks
 firstSky = {
     US: ptr(dword(0x35A868), [0x14, 0x44], dword),
-    EU: ptr(dword(NO_ADDR), [0x14, 0x44], dword),
-    JP: ptr(dword(NO_ADDR), [0x14, 0x44], dword),
+    EU: ptr(dword(0x359EE8), [0x14, 0x44], dword),
+    JP: ptr(dword(0x34DB48), [0x14, 0x44], dword),
 }
 
 // Rank (for Heart Attack)
@@ -198,8 +198,8 @@ gameState = {
 // For Time Attack this is 1 for stage-only runs, 15 for goal runs
 numStagesLoaded = {
     US: dword(0x35A870),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x359EF0),
+    JP: dword(0x34DB50),
 }
 
 timeDifficulty = {
