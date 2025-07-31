@@ -26,6 +26,16 @@ function if_else(cond, v1, v2)
     return v2
 }
 
+
+function dict_get(dict, key, default=false)
+{
+    if !dictionary_contains_key(dict, key)
+    {
+        return default
+    }
+    return dict[key]
+}
+
 addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
 function ptr(base, offsets, accessor=dword)
 {
@@ -52,6 +62,13 @@ function MillisToTimestamp(x) => format("{0}'{1}\"{2}",
 	substring(format("0{0}", (x / 1000) % 60), -2, 2),
 	substring(format("00{0}", x), -3, 3)
 )
+
+function TimeToMillis(minutes=0, seconds=0, ms=0)
+{
+   return minutes * 60 * 1000 +
+        seconds * 1000 +
+        ms
+}
 
 // 60.2 frames in a second...
 IGT_DIVISOR = 60.2
@@ -100,6 +117,12 @@ currSky = {
     EU: dword(0x549174),
     JP: dword(0x51F674),
 }
+// The filename idx for the sky for the first stage in an event, used for reverse tracks
+firstSky = {
+    US: ptr(dword(0x35A868), [0x14, 0x44], dword),
+    EU: ptr(dword(NO_ADDR), [0x14, 0x44], dword),
+    JP: ptr(dword(NO_ADDR), [0x14, 0x44], dword),
+}
 
 // Rank (for Heart Attack)
 RANK_E = 1
@@ -137,6 +160,7 @@ transmission = {
 }
 
 // The type of active event
+EVENT_NONE = 0xFFFFFFFF
 EVENT_TIME_ATTACK = 0
 EVENT_OUTRUN = 1
 EVENT_HEART_ATTACK = 2
@@ -177,6 +201,13 @@ numStagesLoaded = {
     EU: dword(NO_ADDR),
     JP: dword(NO_ADDR),
 }
+
+timeDifficulty = {
+    US: dword(0x589148),
+    EU: dword(0x588748),
+    JP: dword(0x55ec58),
+}
+DIFFICULTY_VERY_HARD = 4
 
 CONGRATS_NONE = -1
 CONGRATS_FLAG1 = 0 // Flagman 2 unlocked (impressed)
@@ -1259,21 +1290,21 @@ outrun_params = [
         "id": 527790,
         "title": "OutRun2SP OutRun Continuous",
         "event": "OutRun2SP OutRun Continuous",
-        "points": 10,
+        "points": 25,
         "mode": EVENT_SUB_CONTINUOUS_SP,
     },
     {
         "id": 527860,
         "title": "OutRun2 OutRun Continuous",
         "event": "OutRun2 OutRun Continuous",
-        "points": 10,
+        "points": 25,
         "mode": EVENT_SUB_CONTINUOUS,
     },
     {
         "id": 527791,
         "title": "OutRun2SP Goal A",
         "event": "OutRun2SP Goal A",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "A",
         "zone": SKY_EAST,
@@ -1282,7 +1313,7 @@ outrun_params = [
         "id": 527792,
         "title": "OutRun2SP Goal B",
         "event": "OutRun2SP Goal B",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "B",
         "zone": SKY_MAYA,
@@ -1291,7 +1322,7 @@ outrun_params = [
         "id": 527793,
         "title": "OutRun2SP Goal C",
         "event": "OutRun2SP Goal C",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "C",
         "zone": SKY_PRIN,
@@ -1300,7 +1331,7 @@ outrun_params = [
         "id": 527794,
         "title": "OutRun2SP Goal D",
         "event": "OutRun2SP Goal D",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "D",
         "zone": SKY_FLOR,
@@ -1309,7 +1340,7 @@ outrun_params = [
         "id": 527795,
         "title": "OutRun2SP Goal E",
         "event": "OutRun2SP Goal E",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "E",
         "zone": SKY_NEWY,
@@ -1318,7 +1349,7 @@ outrun_params = [
         "id": 527861,
         "title": "OutRun2 Goal A",
         "event": "OutRun2 Goal A",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "A",
         "zone": SKY_TULI,
@@ -1327,7 +1358,7 @@ outrun_params = [
         "id": 527862,
         "title": "OutRun2 Goal B",
         "event": "OutRun2 Goal B",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "B",
         "zone": SKY_METR,
@@ -1336,7 +1367,7 @@ outrun_params = [
         "id": 527863,
         "title": "OutRun2 Goal C",
         "event": "OutRun2 Goal C",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "C",
         "zone": SKY_RUIN,
@@ -1345,7 +1376,7 @@ outrun_params = [
         "id": 527864,
         "title": "OutRun2 Goal D",
         "event": "OutRun2 Goal D",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "D",
         "zone": SKY_IMPE,
@@ -1354,7 +1385,7 @@ outrun_params = [
         "id": 527865,
         "title": "OutRun2 Goal E",
         "event": "OutRun2 Goal E",
-        "points": 5,
+        "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "E",
         "zone": SKY_CAPE,
@@ -1372,12 +1403,12 @@ for params in outrun_params
     if (any_of([EVENT_SUB_CONTINUOUS, EVENT_SUB_CONTINUOUS_SP], mode => mode == params["mode"]))
     {
         zone_check = always_true()
-        description = format("Reach the goal in 15 continuous course OutRun Mode for {0}", name)
+        description = format("With the \"OUTRUN2SP DIFF.\" setting set to Very Hard, reach the goal in 15 continuous course OutRun Mode for {0}", name)
     }
     else
     {
         zone_check = any_of(Regions, region => IsRegion(region) && currSky[region] == params["zone"])
-        description = format("Reach Goal {0} in OutRun Mode for {1}", params["goal"], name)
+        description = format("With the \"OUTRUN2SP DIFF.\" setting set to Very Hard, reach Goal {0} in OutRun Mode for {1}", params["goal"], name)
     }
     
     trigger = any_of(Regions, region => 
@@ -1385,6 +1416,7 @@ for params in outrun_params
         eventType[region] == EVENT_OUTRUN &&
         eventSubType[region] == params["mode"] &&
         zone_check &&
+        timeDifficulty[region] == DIFFICULTY_VERY_HARD &&
         HitGoal(region)
     )
 
@@ -1403,28 +1435,30 @@ time_attack_params = [
     {
         "id": 527797,
         "lbid": 134309,
-        "title": "Time Attack - OutRun2SP OutRun Continuous",
-        "event": "OutRun2SP OutRun Continuous",
-        "goaltime": 881280,
-        "points": 25,
+        "title": "Time Attack - OutRun2SP Continuous",
+        "event": "OutRun2SP Continuous",
+        "goaltime": TimeToMillis(minutes=14, seconds=31, ms=785),
+        "points": 50,
         "mode": EVENT_SUB_CONTINUOUS_SP,
+        "zone": SKY_NEWY,
     },
     {
         "id": 527798,
         "lbid": 134310,
-        "title": "Time Attack - OutRun2 OutRun Continuous",
-        "event": "OutRun2 OutRun Continuous",
-        "goaltime": 864557,
-        "points": 25,
+        "title": "Time Attack - OutRun2 Continuous",
+        "event": "OutRun2 Continuous",
+        "goaltime": TimeToMillis(minutes=14, seconds=19, ms=042),
+        "points": 50,
         "mode": EVENT_SUB_CONTINUOUS,
+        "zone": SKY_CAPE,
     },
     {
         "id": 527799,
         "lbid": 134311,
         "title": "Time Attack - OutRun2SP Goal A",
         "event": "OutRun2SP Goal A",
-        "goaltime": 282182,
-        "points": 10,
+        "goaltime": TimeToMillis(minutes=4, seconds=55, ms=277),
+        "points": 5,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "A",
         "zone": SKY_EAST,
@@ -1434,8 +1468,8 @@ time_attack_params = [
         "lbid": 134312,
         "title": "Time Attack - OutRun2SP Goal B",
         "event": "OutRun2SP Goal B",
-        "goaltime": 279663,
-        "points": 10,
+        "goaltime": TimeToMillis(minutes=4, seconds=56, ms=399),
+        "points": 5,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "B",
         "zone": SKY_MAYA,
@@ -1445,7 +1479,7 @@ time_attack_params = [
         "lbid": 134313,
         "title": "Time Attack - OutRun2SP Goal C",
         "event": "OutRun2SP Goal C",
-        "goaltime": 281460,
+        "goaltime": TimeToMillis(minutes=4, seconds=36, ms=650),
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "C",
@@ -1456,7 +1490,7 @@ time_attack_params = [
         "lbid": 134314,
         "title": "Time Attack - OutRun2SP Goal D",
         "event": "OutRun2SP Goal D",
-        "goaltime": 285176,
+        "goaltime": TimeToMillis(minutes=4, seconds=33, ms=126),
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "D",
@@ -1467,7 +1501,7 @@ time_attack_params = [
         "lbid": 134315,
         "title": "Time Attack - OutRun2SP Goal E",
         "event": "OutRun2SP Goal E",
-        "goaltime": 287366,
+        "goaltime": TimeToMillis(minutes=4, seconds=41, ms=300),
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
         "goal": "E",
@@ -1478,8 +1512,8 @@ time_attack_params = [
         "lbid": 134316,
         "title": "Time Attack - OutRun2 Goal A",
         "event": "OutRun2 Goal A",
-        "goaltime": 274483,
-        "points": 10,
+        "goaltime": TimeToMillis(minutes=4, seconds=51, ms=257),
+        "points": 5,
         "mode": EVENT_SUB_NORMAL,
         "goal": "A",
         "zone": SKY_TULI,
@@ -1489,8 +1523,8 @@ time_attack_params = [
         "lbid": 134317,
         "title": "Time Attack - OutRun2 Goal B",
         "event": "OutRun2 Goal B",
-        "goaltime": 278439,
-        "points": 10,
+        "goaltime": TimeToMillis(minutes=4, seconds=58, ms=648),
+        "points": 5,
         "mode": EVENT_SUB_NORMAL,
         "goal": "B",
         "zone": SKY_METR,
@@ -1500,7 +1534,7 @@ time_attack_params = [
         "lbid": 134318,
         "title": "Time Attack - OutRun2 Goal C",
         "event": "OutRun2 Goal C",
-        "goaltime": 280012,
+        "goaltime": TimeToMillis(minutes=4, seconds=36, ms=998),
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "C",
@@ -1511,7 +1545,7 @@ time_attack_params = [
         "lbid": 134319,
         "title": "Time Attack - OutRun2 Goal D",
         "event": "OutRun2 Goal D",
-        "goaltime": 278890,
+        "goaltime": TimeToMillis(minutes=4, seconds=37, ms=044),
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "D",
@@ -1522,11 +1556,161 @@ time_attack_params = [
         "lbid": 134320,
         "title": "Time Attack - OutRun2 Goal E",
         "event": "OutRun2 Goal E",
-        "goaltime": 281138,
+        "goaltime": TimeToMillis(minutes=4, seconds=34, ms=700),
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
         "goal": "E",
         "zone": SKY_CAPE,
+    },
+    {
+        "id": 535729,
+        "lbid": 136258,
+        "title": "Time Attack - OutRun2SP Continuous (Reverse)",
+        "event": "OutRun2SP Continuous (Reverse)",
+        "goaltime": TimeToMillis(minutes=14, seconds=28, ms=045),
+        "points": 50,
+        "mode": EVENT_SUB_CONTINUOUS_SP,
+        "zone": SKY_BEAC,
+    },
+    {
+        "id": 535730,
+        "lbid": 136259,
+        "title": "Time Attack - OutRun2 Continuous (Reverse)",
+        "event": "OutRun2 Continuous (Reverse)",
+        "goaltime": TimeToMillis(minutes=14, seconds=19, ms=042),
+        "points": 50,
+        "mode": EVENT_SUB_CONTINUOUS_SP,
+        "zone": SKY_PALM,
+    },
+    {
+        "id": 535731,
+        "lbid": 136260,
+        "title": "Time Attack - OutRun2SP Goal A (Reverse)",
+        "event": "OutRun2SP Goal A (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=43, ms=015),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "A (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_EAST,
+        "zone": SKY_BEAC,
+    },
+    {
+        "id": 535732,
+        "lbid": 136261,
+        "title": "Time Attack - OutRun2SP Goal B (Reverse)",
+        "event": "OutRun2SP Goal B (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=41, ms=105),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "B (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_MAYA,
+        "zone": SKY_BEAC,
+    },
+    {
+        "id": 535733,
+        "lbid": 136262,
+        "title": "Time Attack - OutRun2SP Goal C (Reverse)",
+        "event": "OutRun2SP Goal C (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=40, ms=020),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "C (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_PRIN,
+        "zone": SKY_BEAC,
+    },
+    {
+        "id": 535734,
+        "lbid": 136263,
+        "title": "Time Attack - OutRun2SP Goal D (Reverse)",
+        "event": "OutRun2SP Goal D (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=35, ms=237),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "D (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_FLOR,
+        "zone": SKY_BEAC,
+    },
+    {
+        "id": 535735,
+        "lbid": 136264,
+        "title": "Time Attack - OutRun2SP Goal E (Reverse)",
+        "event": "OutRun2SP Goal E (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=41, ms=689),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL_SP,
+        "goal": "E (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_NEWY,
+        "zone": SKY_BEAC,
+    },
+    {
+        "id": 535736,
+        "lbid": 136265,
+        "title": "Time Attack - OutRun2 Goal A (Reverse)",
+        "event": "OutRun2 Goal A (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=40, ms=334),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "A (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_TULI,
+        "zone": SKY_PALM,
+    },
+    {
+        "id": 535737,
+        "lbid": 136266,
+        "title": "Time Attack - OutRun2 Goal B (Reverse)",
+        "event": "OutRun2 Goal B (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=34, ms=123),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "B (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_METR,
+        "zone": SKY_PALM,
+    },
+    {
+        "id": 535738,
+        "lbid": 136267,
+        "title": "Time Attack - OutRun2 Goal C (Reverse)",
+        "event": "OutRun2 Goal C (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=41, ms=304),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "C (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_RUIN,
+        "zone": SKY_PALM,
+    },
+    {
+        "id": 535739,
+        "lbid": 136268,
+        "title": "Time Attack - OutRun2 Goal D (Reverse)",
+        "event": "OutRun2 Goal D (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=38, ms=557),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "D (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_IMPE,
+        "zone": SKY_PALM,
+    },
+    {
+        "id": 535740,
+        "lbid": 136269,
+        "title": "Time Attack - OutRun2 Goal E (Reverse)",
+        "event": "OutRun2 Goal E (Reverse)",
+        "goaltime": TimeToMillis(minutes=4, seconds=37, ms=863),
+        "points": 10,
+        "mode": EVENT_SUB_NORMAL,
+        "goal": "E (Reverse)",
+        "reverse": true,
+        "start_zone": SKY_CAPE,
+        "zone": SKY_PALM,
     },
 ]
 
@@ -1541,21 +1725,34 @@ for params in time_attack_params
     time_format = MillisToTimestamp(params["goaltime"])
     if (any_of([EVENT_SUB_CONTINUOUS, EVENT_SUB_CONTINUOUS_SP], mode => mode == params["mode"]))
     {
-        zone_check = always_true()
-        target = format("Reach the goal in 15 continuous course Time Attack Mode for {0}", name)
+        target = format(
+            "In the mode named \"Single Player,\" reach the goal in 15 Stage Continuous{1} in Time Attack Mode for {0}",
+            name,
+            if_else(dict_get(params, "reverse"), " (Reverse)", "")
+        )
     }
     else
     {
-        zone_check = any_of(Regions, region => IsRegion(region) && currSky[region] == params["zone"])
-        target = format("Reach Goal {0} in Time Attack Mode for {1}", params["goal"], name)
+        target = format("In the mode named \"Single Player,\" reach Goal {0} in Time Attack Mode for {1}", params["goal"], name)
+    }
+    
+    reverse_check = always_true()
+    if dict_get(params, "reverse") && dict_get(params, "start_zone", "None") != "None"
+    {
+        reverse_check = any_of(Regions, region =>
+            IsRegion(region) &&
+            firstSky[region] == params["start_zone"]
+        )
     }
     
     trigger = any_of(Regions, region => 
         IsRegion(region) &&
-        __ornext(any_of([EVENT_TIME_ATTACK, EVENT_TIME_ATTACK_1PLAYER], e => eventType[region] == e)) &&
+        //__ornext(any_of([EVENT_TIME_ATTACK, EVENT_TIME_ATTACK_1PLAYER], e => eventType[region] == e)) &&
+        eventType[region] == EVENT_TIME_ATTACK_1PLAYER &&
         numStagesLoaded[region] != 1 &&
         eventSubType[region] == params["mode"] &&
-        zone_check &&
+        reverse_check &&
+        currSky[region] == params["zone"] &&
         (eventTime[region] - 1) <= params["goaltime"] * IGT_DIVISOR / 1000 &&
         HitGoal(region)
     )
@@ -1578,7 +1775,8 @@ for params in time_attack_params
             __ornext(any_of([EVENT_TIME_ATTACK, EVENT_TIME_ATTACK_1PLAYER], e => eventType[region] == e)) &&
             numStagesLoaded[region] != 1 &&
             eventSubType[region] == params["mode"] &&
-            zone_check &&
+            reverse_check &&
+            currSky[region] == params["zone"] &&
             HitGoal(region)
         ),
         cancel=always_false(),
