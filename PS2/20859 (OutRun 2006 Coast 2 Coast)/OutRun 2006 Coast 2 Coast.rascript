@@ -144,6 +144,11 @@ CAR_TESTA = 6
 CAR_SPIDER = 7
 CAR_F40 = 8
 CAR_250GTO = 9
+CAR_F355SPIDER = 10
+CAR_328GTS = 11
+CAR_F430 = 12
+CAR_550BARCHETTA = 13
+CAR_SUPERAMERICA = 14
 car = {
     US: byte(0x369BE8),
     EU: byte(0x369268),
@@ -424,6 +429,11 @@ car_lookup = {
     CAR_SPIDER: "360 Spider",
     CAR_F40: "F40",
     CAR_250GTO: "250 GTO",
+    CAR_F355SPIDER: "F355 Spider",
+    CAR_328GTS: "328 GTS",
+    CAR_F430: "F430",
+    CAR_550BARCHETTA: "550 Barchetta",
+    CAR_SUPERAMERICA: "Superamerica",
 }
 
 event_lookup = {
@@ -528,6 +538,7 @@ flagman_levels = [
 flagman_events = [
     {
         "id": 527746,
+        "title": "This Is Just the Appetizer",
         "event": 1,
         "count": 3,
         "points": 3,
@@ -535,6 +546,7 @@ flagman_events = [
     },
     {
         "id": 527747,
+        "title": "Getting the Tires Warmed Up",
         "event": 2,
         "count": 2,
         "points": 2,
@@ -542,6 +554,7 @@ flagman_events = [
     },
     {
         "id": 527748,
+        "title": "Gotta Master the Drift to Do Well Here",
         "event": 3,
         "count": 1,
         "points": 2,
@@ -549,6 +562,7 @@ flagman_events = [
     },
     {
         "id": 527749,
+        "title": "We're Revving It up Now",
         "event": 4,
         "count": 2,
         "points": 2,
@@ -556,6 +570,7 @@ flagman_events = [
     },
     {
         "id": 527750,
+        "title": "Outran the Competition",
         "event": 5,
         "count": 1,
         "points": 2,
@@ -563,6 +578,7 @@ flagman_events = [
     },
     {
         "id": 527751,
+        "title": "Girls like It When You Lead",
         "event": 6,
         "count": 1,
         "points": 1,
@@ -570,6 +586,7 @@ flagman_events = [
     },
     {
         "id": 527752,
+        "title": "The Competition's Heating Up",
         "event": 7,
         "count": 3,
         "points": 3,
@@ -577,6 +594,7 @@ flagman_events = [
     },
     {
         "id": 527753,
+        "title": "Speed Is King",
         "event": 8,
         "count": 2,
         "points": 2,
@@ -584,6 +602,7 @@ flagman_events = [
     },
     {
         "id": 527754,
+        "title": "Ferrari's Own Daytona USA",
         "event": 9,
         "count": 1,
         "points": 2,
@@ -591,6 +610,7 @@ flagman_events = [
     },
     {
         "id": 527755,
+        "title": "You Are Speed",
         "event": 10,
         "count": 2,
         "points": 4,
@@ -598,6 +618,7 @@ flagman_events = [
     },
     {
         "id": 527756,
+        "title": "Living Life on the Fast Lane",
         "event": 11,
         "count": 3,
         "points": 3,
@@ -605,6 +626,7 @@ flagman_events = [
     },
     {
         "id": 527757,
+        "title": "Losers Pay for the Rentals",
         "event": 12,
         "count": 1,
         "points": 2,
@@ -612,6 +634,7 @@ flagman_events = [
     },
     {
         "id": 527758,
+        "title": "If You Ain't First, You're Last",
         "event": 13,
         "count": 2,
         "points": 4,
@@ -619,6 +642,7 @@ flagman_events = [
     },
     {
         "id": 527759,
+        "title": "Time to Kick It up a Notch",
         "event": 14,
         "count": 2,
         "points": 4,
@@ -626,6 +650,7 @@ flagman_events = [
     },
     {
         "id": 527760,
+        "title": "Turn Right to Go Left, What a Novel Concept",
         "event": 15,
         "count": 2,
         "points": 3,
@@ -633,6 +658,7 @@ flagman_events = [
     },
     {
         "id": 527761,
+        "title": "Hope You Got That ECU Tweaked",
         "event": 16,
         "count": 4,
         "points": 5,
@@ -640,6 +666,7 @@ flagman_events = [
     },
     {
         "id": 527762,
+        "title": "Everyone Left the Oven On I Guess",
         "event": 17,
         "count": 2,
         "points": 3,
@@ -647,6 +674,7 @@ flagman_events = [
     },
     {
         "id": 527763,
+        "title": "The Metal Snow 500",
         "event": 18,
         "count": 2,
         "points": 2,
@@ -654,6 +682,7 @@ flagman_events = [
     },
     {
         "id": 527764,
+        "title": "30 Cars Enter, Only 1 Car Can Win",
         "event": 19,
         "count": 10,
         "points": 3,
@@ -661,6 +690,7 @@ flagman_events = [
     },
     {
         "id": 527765,
+        "title": "The Field's Packed Full of Ferraris",
         "event": 20,
         "count": 2,
         "points": 3,
@@ -668,6 +698,7 @@ flagman_events = [
     },
     {
         "id": 527766,
+        "title": "First One There's Getting the Girl",
         "event": 21,
         "count": 1,
         "points": 3,
@@ -675,6 +706,7 @@ flagman_events = [
     },
     {
         "id": 527767,
+        "title": "Winning the Ferrari Cup",
         "event": 22,
         "count": 4,
         "points": 5,
@@ -682,6 +714,7 @@ flagman_events = [
     },
     {
         "id": 527768,
+        "title": "Everybody's Going to the Beach",
         "event": 23,
         "count": 3,
         "points": 5,
@@ -689,6 +722,7 @@ flagman_events = [
     },
     {
         "id": 527769,
+        "title": "Putting Your Rival in the Rear",
         "event": 24,
         "count": 1,
         "points": 3,
@@ -696,6 +730,7 @@ flagman_events = [
     },
     {
         "id": 527770,
+        "title": "One Step Closer to the Ferrari Championship",
         "event": 25,
         "count": 5,
         "points": 10,
@@ -703,6 +738,7 @@ flagman_events = [
     },
     {
         "id": 527771,
+        "title": "This Is Where the Big Leagues Start",
         "event": 26,
         "count": 5,
         "points": 10,
@@ -710,6 +746,7 @@ flagman_events = [
     },
     {
         "id": 527772,
+        "title": "Vegaaas, Let's Go Away!",
         "event": 27,
         "count": 2,
         "points": 4,
@@ -717,6 +754,7 @@ flagman_events = [
     },
     {
         "id": 527773,
+        "title": "All the Sights and Sounds at High Speeds",
         "event": 28,
         "count": 2,
         "points": 4,
@@ -724,6 +762,7 @@ flagman_events = [
     },
     {
         "id": 527774,
+        "title": "Starting to Be an Endurance",
         "event": 29,
         "count": 5,
         "points": 10,
@@ -731,6 +770,7 @@ flagman_events = [
     },
     {
         "id": 527775,
+        "title": "You Got Some Tofu for Me?",
         "event": 30,
         "count": 2,
         "points": 4,
@@ -738,6 +778,7 @@ flagman_events = [
     },
     {
         "id": 527776,
+        "title": "Outlast, Outrun, Outwin",
         "event": 31,
         "count": 3,
         "points": 5,
@@ -745,6 +786,7 @@ flagman_events = [
     },
     {
         "id": 527777,
+        "title": "Just a Few Rapid Fire Quickies, No Biggie",
         "event": 32,
         "count": 5,
         "points": 10,
@@ -752,6 +794,7 @@ flagman_events = [
     },
     {
         "id": 527778,
+        "title": "The Last Ferrari Standing",
         "event": 33,
         "count": 1,
         "points": 4,
@@ -759,6 +802,7 @@ flagman_events = [
     },
     {
         "id": 527779,
+        "title": "One Big Cross-Country Circuit",
         "event": 34,
         "count": 2,
         "points": 5,
@@ -766,6 +810,7 @@ flagman_events = [
     },
     {
         "id": 527780,
+        "title": "Putting Some Miles on Your Ferraris",
         "event": 35,
         "count": 3,
         "points": 3,
@@ -773,6 +818,7 @@ flagman_events = [
     },
     {
         "id": 527781,
+        "title": "Impress the Girl, Beat the Rival, Must Be Tuesday",
         "event": 36,
         "count": 1,
         "points": 3,
@@ -780,6 +826,7 @@ flagman_events = [
     },
     {
         "id": 527782,
+        "title": "Winning's All There Is",
         "event": 37,
         "count": 2,
         "points": 5,
@@ -787,6 +834,7 @@ flagman_events = [
     },
     {
         "id": 527783,
+        "title": "A Ferrari Battle Royale",
         "event": 38,
         "count": 2,
         "points": 5,
@@ -794,6 +842,7 @@ flagman_events = [
     },
     {
         "id": 527784,
+        "title": "If There's Any Water Spilt on the Seats, I Swear...",
         "event": 39,
         "count": 2,
         "points": 4,
@@ -801,6 +850,7 @@ flagman_events = [
     },
     {
         "id": 527785,
+        "title": "Outrun 2006: The Run",
         "event": 40,
         "count": 2,
         "points": 25,
@@ -821,7 +871,8 @@ for event in flagman_events
 
     achievement(
         id=event["id"],
-        title=format("Flagman's Challenge: {0} {1}", event["event"], fgroupname),
+        // title=format("Flagman's Challenge: {0} {1}", event["event"], fgroupname),
+        title=event["title"],
         description=format("{0} In Flagman {1}, complete all events in {2} {3} with a ranking of AAA",
             event["type"], fgroup, event["event"], fgroupname),
         points=event["points"],
@@ -864,6 +915,7 @@ girlfriend_levels = [
         "end": 0x3c,
         
         "id": 527856,
+        "title": "",
         "screens": [CONGRATS_GIRL1,],
         "title": "Clarissa is Thrilled",
     },
@@ -873,6 +925,7 @@ girlfriend_levels = [
         "end": 0x1e,
         
         "id": 527857,
+        "title": "",
         "screens": [CONGRATS_GIRL2,],
         "title": "Jennifer Loves Your Technique",
     },
@@ -882,6 +935,7 @@ girlfriend_levels = [
         "end": 0xff,
         
         "id": 527858,
+        "title": "",
         "screens": [CONGRATS_GIRL3, CONGRATS_CLEAR, CONGRATS_PERFECT,],
         "title": "Holly Likes Your Thinking",
     },
@@ -891,6 +945,7 @@ girlfriend_events = [
     // CLARISSA (Outrun2SP Courses)
     {
         "id": 527811,
+        "title": "I Guess She's a Car Gal",
         "offset": 0x1e,
         "count": 1,
         "points": 1,
@@ -898,6 +953,7 @@ girlfriend_events = [
     },
     {
         "id": 527812,
+        "title": "Dribbling in San Fran",
         "offset": 0x2a,
         "count": 1,
         "points": 1,
@@ -905,6 +961,7 @@ girlfriend_events = [
     },
     {
         "id": 527813,
+        "title": "The Ceremonial Yellowstone Convoy",
         "offset": 0x30,
         "count": 1,
         "points": 1,
@@ -912,6 +969,7 @@ girlfriend_events = [
     },
     {
         "id": 527814,
+        "title": "Waterfalls to Be Cut, Lines to Be Made",
         "offset": 0x22,
         "count": 2,
         "points": 2,
@@ -919,6 +977,7 @@ girlfriend_events = [
     },
     {
         "id": 527815,
+        "title": "As Opposed to a Little Forest",
         "offset": 0x20,
         "count": 2,
         "points": 2,
@@ -926,6 +985,7 @@ girlfriend_events = [
     },
     {
         "id": 527816,
+        "title": "Now You've Seen the Grand Canyon",
         "offset": 0x28,
         "count": 2,
         "points": 2,
@@ -933,6 +993,7 @@ girlfriend_events = [
     },
     {
         "id": 527817,
+        "title": "This a Very Spooky City",
         "offset": 0x2e,
         "count": 3,
         "points": 3,
@@ -940,6 +1001,7 @@ girlfriend_events = [
     },
     {
         "id": 527818,
+        "title": "Well, What Happens in Vegas...",
         "offset": 0x24,
         "count": 3,
         "points": 3,
@@ -947,6 +1009,7 @@ girlfriend_events = [
     },
     {
         "id": 527819,
+        "title": "Not the Best Place to Have the Top Down",
         "offset": 0x26,
         "count": 3,
         "points": 3,
@@ -954,6 +1017,7 @@ girlfriend_events = [
     },
     {
         "id": 527820,
+        "title": "Did I Mention Don't Crash?",
         "offset": 0x2c,
         "count": 3,
         "points": 3,
@@ -961,6 +1025,7 @@ girlfriend_events = [
     },
     {
         "id": 527821,
+        "title": "She's a Gal with Culture",
         "offset": 0x3a,
         "count": 4,
         "points": 4,
@@ -968,6 +1033,7 @@ girlfriend_events = [
     },
     {
         "id": 527822,
+        "title": "I Knew This Place Had Weird Vibes",
         "offset": 0x32,
         "count": 4,
         "points": 4,
@@ -975,6 +1041,7 @@ girlfriend_events = [
     },
     {
         "id": 527823,
+        "title": "A Bouquet of Requests",
         "offset": 0x36,
         "count": 4,
         "points": 4,
@@ -982,6 +1049,7 @@ girlfriend_events = [
     },
     {
         "id": 527824,
+        "title": "She's a Spacefarer Kind of Girl",
         "offset": 0x38,
         "count": 4,
         "points": 4,
@@ -989,6 +1057,7 @@ girlfriend_events = [
     },
     {
         "id": 527825,
+        "title": "A List of Stuff to Do in New York",
         "offset": 0x34,
         "count": 4,
         "points": 4,
@@ -997,6 +1066,7 @@ girlfriend_events = [
     // JENNIFER (Outrun2SP Courses)
     {
         "id": 527826,
+        "title": "She Likes It Fast, Real Fast",
         "offset": 0x00,
         "count": 1,
         "points": 1,
@@ -1004,6 +1074,7 @@ girlfriend_events = [
     },
     {
         "id": 527827,
+        "title": "Fast and Grippy, That's How She Likes Her Cars",
         "offset": 0x02,
         "count": 1,
         "points": 1,
@@ -1011,6 +1082,7 @@ girlfriend_events = [
     },
     {
         "id": 527828,
+        "title": "Green, Green, and More Green",
         "offset": 0x06,
         "count": 1,
         "points": 1,
@@ -1018,6 +1090,7 @@ girlfriend_events = [
     },
     {
         "id": 527829,
+        "title": "Pull It Around the Moat Next Time",
         "offset": 0x0c,
         "count": 2,
         "points": 2,
@@ -1025,6 +1098,7 @@ girlfriend_events = [
     },
     {
         "id": 527830,
+        "title": "A Touge Bop-It",
         "offset": 0x10,
         "count": 2,
         "points": 2,
@@ -1032,6 +1106,7 @@ girlfriend_events = [
     },
     {
         "id": 527831,
+        "title": "The Desert Speed King",
         "offset": 0x12,
         "count": 2,
         "points": 2,
@@ -1039,6 +1114,7 @@ girlfriend_events = [
     },
     {
         "id": 527832,
+        "title": "You'll Be Seeing Blue with How High Up We Are",
         "offset": 0x0a,
         "count": 3,
         "points": 3,
@@ -1046,6 +1122,7 @@ girlfriend_events = [
     },
     {
         "id": 527833,
+        "title": "She's a Bonafide Rosie the Riveter",
         "offset": 0x04,
         "count": 3,
         "points": 3,
@@ -1053,6 +1130,7 @@ girlfriend_events = [
     },
     {
         "id": 527834,
+        "title": "Turn the Heater On, Will Ya?",
         "offset": 0x08,
         "count": 3,
         "points": 3,
@@ -1060,6 +1138,7 @@ girlfriend_events = [
     },
     {
         "id": 527835,
+        "title": "Dangerous to Do a Gymkhana in a Haunted Forest",
         "offset": 0x0e,
         "count": 3,
         "points": 3,
@@ -1067,6 +1146,7 @@ girlfriend_events = [
     },
     {
         "id": 527836,
+        "title": "It's Speed She's After, Not Flowers",
         "offset": 0x14,
         "count": 4,
         "points": 4,
@@ -1074,6 +1154,7 @@ girlfriend_events = [
     },
     {
         "id": 527837,
+        "title": "She'll Never Want to Leave Paris",
         "offset": 0x16,
         "count": 4,
         "points": 4,
@@ -1081,6 +1162,7 @@ girlfriend_events = [
     },
     {
         "id": 527838,
+        "title": "Maybe There's a Necklace for Her Here",
         "offset": 0x18,
         "count": 4,
         "points": 4,
@@ -1088,6 +1170,7 @@ girlfriend_events = [
     },
     {
         "id": 527839,
+        "title": "It Isn't the Romans She's Enticed By",
         "offset": 0x1c,
         "count": 4,
         "points": 4,
@@ -1095,6 +1178,7 @@ girlfriend_events = [
     },
     {
         "id": 527840,
+        "title": "Maybe Get Her a Gyro Afterwards",
         "offset": 0x1a,
         "count": 4,
         "points": 4,
@@ -1103,6 +1187,7 @@ girlfriend_events = [
     // HOLLY (Mix 1 Courses)
     {
         "id": 527841,
+        "title": "I Guess I Spy Is a Taxing Game for Her",
         "offset": 0x76,
         "count": 1,
         "points": 1,
@@ -1110,6 +1195,7 @@ girlfriend_events = [
     },
     {
         "id": 527842,
+        "title": "She's a Responsible Gambler",
         "offset": 0x60,
         "count": 1,
         "points": 1,
@@ -1117,6 +1203,7 @@ girlfriend_events = [
     },
     {
         "id": 527843,
+        "title": "All That Math Makes You Hungry",
         "offset": 0x52,
         "count": 1,
         "points": 1,
@@ -1124,6 +1211,7 @@ girlfriend_events = [
     },
     {
         "id": 527844,
+        "title": "The Heat's Getting to Her",
         "offset": 0x4e,
         "count": 2,
         "points": 2,
@@ -1131,6 +1219,7 @@ girlfriend_events = [
     },
     {
         "id": 527845,
+        "title": "Outrun 2006 Snap",
         "offset": 0x70,
         "count": 2,
         "points": 2,
@@ -1138,6 +1227,7 @@ girlfriend_events = [
     },
     {
         "id": 527846,
+        "title": "Remember to Drive Defensively",
         "offset": 0x62,
         "count": 2,
         "points": 2,
@@ -1145,6 +1235,7 @@ girlfriend_events = [
     },
     {
         "id": 527847,
+        "title": "Just Start Listening and She'll Start Chatting",
         "offset": 0x42,
         "count": 3,
         "points": 3,
@@ -1152,6 +1243,7 @@ girlfriend_events = [
     },
     {
         "id": 527848,
+        "title": "What Is This, a Field Trip?",
         "offset": 0x6c,
         "count": 3,
         "points": 3,
@@ -1159,6 +1251,7 @@ girlfriend_events = [
     },
     {
         "id": 527849,
+        "title": "Something Seems Odd About This Canyon...",
         "offset": 0x64,
         "count": 3,
         "points": 3,
@@ -1166,6 +1259,7 @@ girlfriend_events = [
     },
     {
         "id": 527850,
+        "title": "Counting Your Guesses",
         "offset": 0x40,
         "count": 3,
         "points": 3,
@@ -1173,6 +1267,7 @@ girlfriend_events = [
     },
     {
         "id": 527851,
+        "title": "Take In Those Serene Beaches",
         "offset": 0x5a,
         "count": 4,
         "points": 4,
@@ -1180,6 +1275,7 @@ girlfriend_events = [
     },
     {
         "id": 527852,
+        "title": "Let's Annoy the King and Queen with a Ferrari",
         "offset": 0x48,
         "count": 4,
         "points": 4,
@@ -1187,6 +1283,7 @@ girlfriend_events = [
     },
     {
         "id": 527853,
+        "title": "Car Counting? In Greece?",
         "offset": 0x56,
         "count": 4,
         "points": 4,
@@ -1194,6 +1291,7 @@ girlfriend_events = [
     },
     {
         "id": 527854,
+        "title": "Do You Remember Where We Are?",
         "offset": 0x68,
         "count": 4,
         "points": 4,
@@ -1201,6 +1299,7 @@ girlfriend_events = [
     },
     {
         "id": 527855,
+        "title": "Now How About Some Nice Cold Ones?",
         "offset": 0x3c,
         "count": 4,
         "points": 4,
@@ -1219,7 +1318,8 @@ for event in girlfriend_events
 
     achievement(
         id=event["id"],
-        title=format("{0}'s Challenge: {1}", girlname, track_lookup[event["course"]]),
+        // title=format("{0}'s Challenge: {1}", girlname, track_lookup[event["course"]]),
+        title=event["title"],
         description=format("In {0}'s challenges, complete all events in {1} with a ranking of AAA",
             girlname, track_lookup[event["course"]]),
         points=event["points"],
@@ -1288,21 +1388,21 @@ achievement(
 outrun_params = [
     {
         "id": 527790,
-        "title": "OutRun2SP OutRun Continuous",
+        "title": "A Beautiful Round-the-Country Trip",
         "event": "OutRun2SP OutRun Continuous",
         "points": 25,
         "mode": EVENT_SUB_CONTINUOUS_SP,
     },
     {
         "id": 527860,
-        "title": "OutRun2 OutRun Continuous",
+        "title": "A Beautiful Cross-Country Trip",
         "event": "OutRun2 OutRun Continuous",
         "points": 25,
         "mode": EVENT_SUB_CONTINUOUS,
     },
     {
         "id": 527791,
-        "title": "OutRun2SP Goal A",
+        "title": "Take the Girl to Easter Island",
         "event": "OutRun2SP Goal A",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1311,7 +1411,7 @@ outrun_params = [
     },
     {
         "id": 527792,
-        "title": "OutRun2SP Goal B",
+        "title": "Have Your Girl Be Sacrificed to the Aztec Gods",
         "event": "OutRun2SP Goal B",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1320,7 +1420,7 @@ outrun_params = [
     },
     {
         "id": 527793,
-        "title": "OutRun2SP Goal C",
+        "title": "Take Your Girl to Grandma's House",
         "event": "OutRun2SP Goal C",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1329,7 +1429,7 @@ outrun_params = [
     },
     {
         "id": 527794,
-        "title": "OutRun2SP Goal D",
+        "title": "Bring Your Girl to the Wonders of Space",
         "event": "OutRun2SP Goal D",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1338,7 +1438,7 @@ outrun_params = [
     },
     {
         "id": 527795,
-        "title": "OutRun2SP Goal E",
+        "title": "Take Your Girl to New York City",
         "event": "OutRun2SP Goal E",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1347,7 +1447,7 @@ outrun_params = [
     },
     {
         "id": 527861,
-        "title": "OutRun2 Goal A",
+        "title": "Give a Girl Some Tulips for a Bouquet",
         "event": "OutRun2 Goal A",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1356,7 +1456,7 @@ outrun_params = [
     },
     {
         "id": 527862,
-        "title": "OutRun2 Goal B",
+        "title": "Take a Girl Shopping in the City",
         "event": "OutRun2 Goal B",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1365,7 +1465,7 @@ outrun_params = [
     },
     {
         "id": 527863,
-        "title": "OutRun2 Goal C",
+        "title": "Have the Girl Get Stranded Out in Nowhere",
         "event": "OutRun2 Goal C",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1374,7 +1474,7 @@ outrun_params = [
     },
     {
         "id": 527864,
-        "title": "OutRun2 Goal D",
+        "title": "Take the Girl Gladiator Fighting",
         "event": "OutRun2 Goal D",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1383,7 +1483,7 @@ outrun_params = [
     },
     {
         "id": 527865,
-        "title": "OutRun2 Goal E",
+        "title": "Bring the Girl to the Other Coast",
         "event": "OutRun2 Goal E",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1435,7 +1535,7 @@ time_attack_params = [
     {
         "id": 527797,
         "lbid": 134309,
-        "title": "Time Attack - OutRun2SP Continuous",
+        "title": "The Route 66 Cannonball",
         "event": "OutRun2SP Continuous",
         "goaltime": TimeToMillis(minutes=14, seconds=31, ms=785),
         "points": 50,
@@ -1445,7 +1545,7 @@ time_attack_params = [
     {
         "id": 527798,
         "lbid": 134310,
-        "title": "Time Attack - OutRun2 Continuous",
+        "title": "We're Living a Cross-Country Mile at a Time",
         "event": "OutRun2 Continuous",
         "goaltime": TimeToMillis(minutes=14, seconds=19, ms=042),
         "points": 50,
@@ -1455,7 +1555,7 @@ time_attack_params = [
     {
         "id": 527799,
         "lbid": 134311,
-        "title": "Time Attack - OutRun2SP Goal A",
+        "title": "I Mean, You Didn't Need to Rush",
         "event": "OutRun2SP Goal A",
         "goaltime": TimeToMillis(minutes=4, seconds=55, ms=277),
         "points": 5,
@@ -1466,7 +1566,7 @@ time_attack_params = [
     {
         "id": 527800,
         "lbid": 134312,
-        "title": "Time Attack - OutRun2SP Goal B",
+        "title": "That Took a Mayan Second",
         "event": "OutRun2SP Goal B",
         "goaltime": TimeToMillis(minutes=4, seconds=56, ms=399),
         "points": 5,
@@ -1477,7 +1577,7 @@ time_attack_params = [
     {
         "id": 527801,
         "lbid": 134313,
-        "title": "Time Attack - OutRun2SP Goal C",
+        "title": "Grandma's Baking Cookies!",
         "event": "OutRun2SP Goal C",
         "goaltime": TimeToMillis(minutes=4, seconds=36, ms=650),
         "points": 10,
@@ -1488,7 +1588,7 @@ time_attack_params = [
     {
         "id": 527802,
         "lbid": 134314,
-        "title": "Time Attack - OutRun2SP Goal D",
+        "title": "Launch Countdowns Are Usually This Quick",
         "event": "OutRun2SP Goal D",
         "goaltime": TimeToMillis(minutes=4, seconds=33, ms=126),
         "points": 10,
@@ -1499,7 +1599,7 @@ time_attack_params = [
     {
         "id": 527803,
         "lbid": 134315,
-        "title": "Time Attack - OutRun2SP Goal E",
+        "title": "Here to There in a New York Minute",
         "event": "OutRun2SP Goal E",
         "goaltime": TimeToMillis(minutes=4, seconds=41, ms=300),
         "points": 10,
@@ -1510,7 +1610,7 @@ time_attack_params = [
     {
         "id": 527804,
         "lbid": 134316,
-        "title": "Time Attack - OutRun2 Goal A",
+        "title": "They Haven't Even Bloomed Yet",
         "event": "OutRun2 Goal A",
         "goaltime": TimeToMillis(minutes=4, seconds=51, ms=257),
         "points": 5,
@@ -1521,7 +1621,7 @@ time_attack_params = [
     {
         "id": 527805,
         "lbid": 134317,
-        "title": "Time Attack - OutRun2 Goal B",
+        "title": "The Shops Close in 5 Minutes",
         "event": "OutRun2 Goal B",
         "goaltime": TimeToMillis(minutes=4, seconds=58, ms=648),
         "points": 5,
@@ -1532,7 +1632,7 @@ time_attack_params = [
     {
         "id": 527806,
         "lbid": 134318,
-        "title": "Time Attack - OutRun2 Goal C",
+        "title": "Can You Not Summon Curses for 5 Minutes?!",
         "event": "OutRun2 Goal C",
         "goaltime": TimeToMillis(minutes=4, seconds=36, ms=998),
         "points": 10,
@@ -1543,7 +1643,7 @@ time_attack_params = [
     {
         "id": 527807,
         "lbid": 134319,
-        "title": "Time Attack - OutRun2 Goal D",
+        "title": "We Used to Have Chariot Races This Fast",
         "event": "OutRun2 Goal D",
         "goaltime": TimeToMillis(minutes=4, seconds=37, ms=044),
         "points": 10,
@@ -1554,7 +1654,7 @@ time_attack_params = [
     {
         "id": 527808,
         "lbid": 134320,
-        "title": "Time Attack - OutRun2 Goal E",
+        "title": "Racing the Sunset",
         "event": "OutRun2 Goal E",
         "goaltime": TimeToMillis(minutes=4, seconds=34, ms=700),
         "points": 10,
@@ -1565,7 +1665,7 @@ time_attack_params = [
     {
         "id": 535729,
         "lbid": 136258,
-        "title": "Time Attack - OutRun2SP Continuous (Reverse)",
+        "title": "My Movie Shoot's in 15 Minutes!",
         "event": "OutRun2SP Continuous (Reverse)",
         "goaltime": TimeToMillis(minutes=14, seconds=28, ms=045),
         "points": 50,
@@ -1575,7 +1675,7 @@ time_attack_params = [
     {
         "id": 535730,
         "lbid": 136259,
-        "title": "Time Attack - OutRun2 Continuous (Reverse)",
+        "title": "From Cape to Cape",
         "event": "OutRun2 Continuous (Reverse)",
         "goaltime": TimeToMillis(minutes=14, seconds=19, ms=042),
         "points": 50,
@@ -1585,7 +1685,7 @@ time_attack_params = [
     {
         "id": 535731,
         "lbid": 136260,
-        "title": "Time Attack - OutRun2SP Goal A (Reverse)",
+        "title": "Now We Got a Moai for the Beachhouse",
         "event": "OutRun2SP Goal A (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=43, ms=015),
         "points": 10,
@@ -1598,7 +1698,7 @@ time_attack_params = [
     {
         "id": 535732,
         "lbid": 136261,
-        "title": "Time Attack - OutRun2SP Goal B (Reverse)",
+        "title": "Quick, Before the Aztecs Get Us!",
         "event": "OutRun2SP Goal B (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=41, ms=105),
         "points": 10,
@@ -1611,7 +1711,7 @@ time_attack_params = [
     {
         "id": 535733,
         "lbid": 136262,
-        "title": "Time Attack - OutRun2SP Goal C (Reverse)",
+        "title": "Must've Been the Wind",
         "event": "OutRun2SP Goal C (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=40, ms=020),
         "points": 10,
@@ -1624,7 +1724,7 @@ time_attack_params = [
     {
         "id": 535734,
         "lbid": 136263,
-        "title": "Time Attack - OutRun2SP Goal D (Reverse)",
+        "title": "Are We Outrunning the Military?",
         "event": "OutRun2SP Goal D (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=35, ms=237),
         "points": 10,
@@ -1637,7 +1737,7 @@ time_attack_params = [
     {
         "id": 535735,
         "lbid": 136264,
-        "title": "Time Attack - OutRun2SP Goal E (Reverse)",
+        "title": "Now Try Doing It in an 18-Wheeler",
         "event": "OutRun2SP Goal E (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=41, ms=689),
         "points": 10,
@@ -1650,7 +1750,7 @@ time_attack_params = [
     {
         "id": 535736,
         "lbid": 136265,
-        "title": "Time Attack - OutRun2 Goal A (Reverse)",
+        "title": "These Tulips Are Fast to Wilt",
         "event": "OutRun2 Goal A (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=40, ms=334),
         "points": 10,
@@ -1663,7 +1763,7 @@ time_attack_params = [
     {
         "id": 535737,
         "lbid": 136266,
-        "title": "Time Attack - OutRun2 Goal B (Reverse)",
+        "title": "From Paris to Normandy",
         "event": "OutRun2 Goal B (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=34, ms=123),
         "points": 10,
@@ -1676,7 +1776,7 @@ time_attack_params = [
     {
         "id": 535738,
         "lbid": 136267,
-        "title": "Time Attack - OutRun2 Goal C (Reverse)",
+        "title": "A Curse Upon Your Beach!",
         "event": "OutRun2 Goal C (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=41, ms=304),
         "points": 10,
@@ -1689,7 +1789,7 @@ time_attack_params = [
     {
         "id": 535739,
         "lbid": 136268,
-        "title": "Time Attack - OutRun2 Goal D (Reverse)",
+        "title": "Romans Invade the Beaches of Miami",
         "event": "OutRun2 Goal D (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=38, ms=557),
         "points": 10,
@@ -1702,7 +1802,7 @@ time_attack_params = [
     {
         "id": 535740,
         "lbid": 136269,
-        "title": "Time Attack - OutRun2 Goal E (Reverse)",
+        "title": "Greece Is Neat, but You Are Neater",
         "event": "OutRun2 Goal E (Reverse)",
         "goaltime": TimeToMillis(minutes=4, seconds=37, ms=863),
         "points": 10,
@@ -1794,7 +1894,7 @@ heart_attack_params = [
     {
         "id": 527868,
         "lbid": 134323,
-        "title": "Heart Attack - OutRun2SP Goal A",
+        "title": "Careful, the Moai Are Watching",
         "event": "OutRun2SP Goal A",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1804,7 +1904,7 @@ heart_attack_params = [
     {
         "id": 527869,
         "lbid": 134324,
-        "title": "Heart Attack - OutRun2SP Goal B",
+        "title": "You've Got Love Written All over You",
         "event": "OutRun2SP Goal B",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1814,7 +1914,7 @@ heart_attack_params = [
     {
         "id": 527870,
         "lbid": 134325,
-        "title": "Heart Attack - OutRun2SP Goal C",
+        "title": "Just Lie Together in a Field of Flowers",
         "event": "OutRun2SP Goal C",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1824,7 +1924,7 @@ heart_attack_params = [
     {
         "id": 527871,
         "lbid": 134326,
-        "title": "Heart Attack - OutRun2SP Goal D",
+        "title": "Gaze at the Stars in Her Eyes",
         "event": "OutRun2SP Goal D",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1834,7 +1934,7 @@ heart_attack_params = [
     {
         "id": 527872,
         "lbid": 134327,
-        "title": "Heart Attack - OutRun2SP Goal E",
+        "title": "Pretty in New York",
         "event": "OutRun2SP Goal E",
         "points": 10,
         "mode": EVENT_SUB_NORMAL_SP,
@@ -1844,7 +1944,7 @@ heart_attack_params = [
     {
         "id": 527873,
         "lbid": 134328,
-        "title": "Heart Attack - OutRun2 Goal A",
+        "title": "Maybe Add a Few Roses to the Bouquet",
         "event": "OutRun2 Goal A",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1854,7 +1954,7 @@ heart_attack_params = [
     {
         "id": 527874,
         "lbid": 134329,
-        "title": "Heart Attack - OutRun2 Goal B",
+        "title": "Make Sure You Get a Ring",
         "event": "OutRun2 Goal B",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1864,7 +1964,7 @@ heart_attack_params = [
     {
         "id": 527875,
         "lbid": 134330,
-        "title": "Heart Attack - OutRun2 Goal C",
+        "title": "You've Been Cursed with Love",
         "event": "OutRun2 Goal C",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1874,7 +1974,7 @@ heart_attack_params = [
     {
         "id": 527876,
         "lbid": 134331,
-        "title": "Heart Attack - OutRun2 Goal D",
+        "title": "Maybe Propose in the Colosseum?",
         "event": "OutRun2 Goal D",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1884,7 +1984,7 @@ heart_attack_params = [
     {
         "id": 527877,
         "lbid": 134332,
-        "title": "Heart Attack - OutRun2 Goal E",
+        "title": "The Perfect Spot for Love",
         "event": "OutRun2 Goal E",
         "points": 10,
         "mode": EVENT_SUB_NORMAL,
@@ -1959,7 +2059,7 @@ achievement(
     points=1,
     trigger=any_of(Regions, region => 
         IsRegion(region) &&
-        eventDistance[region] == 1 &&
+        eventDistance[region] <= 2 &&
         prev(gameState[region]) == STATE_DRIVING &&
         gameState[region] == STATE_TIMEUP
     )
