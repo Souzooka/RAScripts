@@ -1689,7 +1689,7 @@ time_attack_params = [
         "event": "OutRun2 Continuous (Reverse)",
         "goaltime": TimeToMillis(minutes=14, seconds=19, ms=042),
         "points": 50,
-        "mode": EVENT_SUB_CONTINUOUS_SP,
+        "mode": EVENT_SUB_CONTINUOUS,
         "zone": SKY_PALM,
     },
     {
