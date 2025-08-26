@@ -505,6 +505,7 @@ flagman_levels = [
         "id": 527786,
         "screens": [CONGRATS_FLAG1,],
         "title": "Flagman is Impressed",
+        "points": 5,
     },
     {
         "group": 2,
@@ -514,6 +515,7 @@ flagman_levels = [
         "id": 527787,
         "screens": [CONGRATS_FLAG2,],
         "title": "Flagman is Amazed",
+        "points": 5,
     },
     {
         "group": 3,
@@ -523,6 +525,7 @@ flagman_levels = [
         "id": 527788,
         "screens": [CONGRATS_FLAG3,],
         "title": "Flagman is Thrilled",
+        "points": 10,
     },
     {
         "group": 4,
@@ -532,6 +535,7 @@ flagman_levels = [
         "id": 527789,
         "screens": [CONGRATS_FLAG4, CONGRATS_CLEAR, CONGRATS_PERFECT,],
         "title": "Flagman Got Chills",
+        "points": 10,
     },
 ]
 
@@ -541,7 +545,7 @@ flagman_events = [
         "title": "This Is Just the Appetizer",
         "event": 1,
         "count": 3,
-        "points": 3,
+        "points": 1,
         "type": CTYPE_RACE,
     },
     {
@@ -557,7 +561,7 @@ flagman_events = [
         "title": "Gotta Master the Drift to Do Well Here",
         "event": 3,
         "count": 1,
-        "points": 2,
+        "points": 1,
         "type": CTYPE_DRIFT,
     },
     {
@@ -581,7 +585,7 @@ flagman_events = [
         "title": "Girls like It When You Lead",
         "event": 6,
         "count": 1,
-        "points": 1,
+        "points": 2,
         "type": CTYPE_GIRLFRIEND,
     },
     {
@@ -589,7 +593,7 @@ flagman_events = [
         "title": "The Competition's Heating Up",
         "event": 7,
         "count": 3,
-        "points": 3,
+        "points": 2,
         "type": CTYPE_RACE,
     },
     {
@@ -613,7 +617,7 @@ flagman_events = [
         "title": "You Are Speed",
         "event": 10,
         "count": 2,
-        "points": 4,
+        "points": 2,
         "type": CTYPE_RACE,
     },
     {
@@ -621,7 +625,7 @@ flagman_events = [
         "title": "Living Life on the Fast Lane",
         "event": 11,
         "count": 3,
-        "points": 3,
+        "points": 2,
         "type": CTYPE_RACE,
     },
     {
@@ -637,7 +641,7 @@ flagman_events = [
         "title": "If You Ain't First, You're Last",
         "event": 13,
         "count": 2,
-        "points": 4,
+        "points": 2,
         "type": CTYPE_RACE,
     },
     {
@@ -645,7 +649,7 @@ flagman_events = [
         "title": "Time to Kick It up a Notch",
         "event": 14,
         "count": 2,
-        "points": 4,
+        "points": 3,
         "type": CTYPE_RACE,
     },
     {
@@ -653,7 +657,7 @@ flagman_events = [
         "title": "Turn Right to Go Left, What a Novel Concept",
         "event": 15,
         "count": 2,
-        "points": 3,
+        "points": 2,
         "type": CTYPE_DRIFT,
     },
     {
@@ -661,7 +665,7 @@ flagman_events = [
         "title": "Hope You Got That ECU Tweaked",
         "event": 16,
         "count": 4,
-        "points": 5,
+        "points": 4,
         "type": CTYPE_RACE,
     },
     {
@@ -669,7 +673,7 @@ flagman_events = [
         "title": "Everyone Left the Oven On I Guess",
         "event": 17,
         "count": 2,
-        "points": 3,
+        "points": 2,
         "type": CTYPE_RACE,
     },
     {
@@ -837,7 +841,7 @@ flagman_events = [
         "title": "A Ferrari Battle Royale",
         "event": 38,
         "count": 2,
-        "points": 5,
+        "points": 10,
         "type": CTYPE_RACE,
     },
     {
@@ -873,7 +877,7 @@ for event in flagman_events
         id=event["id"],
         // title=format("Flagman's Challenge: {0} {1}", event["event"], fgroupname),
         title=event["title"],
-        description=format("{0} In Flagman {1}, complete all events in {2} {3} with a ranking of AAA",
+        description=format("[Coast 2 Coast] {0} In Flagman {1}, complete all events in {2} {3} with a AAA rank",
             event["type"], fgroup, event["event"], fgroupname),
         points=event["points"],
         trigger=any_of(Regions, region => 
@@ -892,9 +896,9 @@ for flevel in flagman_levels
     achievement(
         id=flevel["id"],
         title=flevel["title"],
-        description=format("Attain an average rating of A or higher in the {0} events for Flagman {1}",
+        description=format("[Coast 2 Coast] Attain an average rank of A or higher in the {0} events for Flagman {1}",
             flevel["name"], flevel["group"]),
-        points=10,
+        points=flevel["points"],
         type="progression",
         trigger=any_of(Regions, region => 
             IsRegion(region) &&
@@ -915,7 +919,6 @@ girlfriend_levels = [
         "end": 0x3c,
         
         "id": 527856,
-        "title": "",
         "screens": [CONGRATS_GIRL1,],
         "title": "Clarissa is Thrilled",
     },
@@ -925,7 +928,6 @@ girlfriend_levels = [
         "end": 0x1e,
         
         "id": 527857,
-        "title": "",
         "screens": [CONGRATS_GIRL2,],
         "title": "Jennifer Loves Your Technique",
     },
@@ -935,7 +937,6 @@ girlfriend_levels = [
         "end": 0xff,
         
         "id": 527858,
-        "title": "",
         "screens": [CONGRATS_GIRL3, CONGRATS_CLEAR, CONGRATS_PERFECT,],
         "title": "Holly Likes Your Thinking",
     },
@@ -1320,7 +1321,7 @@ for event in girlfriend_events
         id=event["id"],
         // title=format("{0}'s Challenge: {1}", girlname, track_lookup[event["course"]]),
         title=event["title"],
-        description=format("In {0}'s challenges, complete all events in {1} with a ranking of AAA",
+        description=format("[Coast 2 Coast] In {0}'s challenges, complete all requests in {1} with a AAA rank",
             girlname, track_lookup[event["course"]]),
         points=event["points"],
         trigger=any_of(Regions, region => 
@@ -1339,7 +1340,7 @@ for glevel in girlfriend_levels
     achievement(
         id=glevel["id"],
         title=glevel["title"],
-        description=format("Complete all requests in {0}'s challenge with an average rating of A or higher",
+        description=format("[Coast 2 Coast] Complete all requests in {0}'s challenge with an average rank of A or higher",
             glevel["name"]),
         points=10,
         type="progression",
@@ -1356,7 +1357,7 @@ for glevel in girlfriend_levels
 achievement(
     id=527796,
     title="Coast 2 Coast",
-    description="Clear all events in Coast 2 Coast mode",
+    description="[Coast 2 Coast] Clear all events and requests",
     points=25,
     type="win_condition",
     trigger=any_of(Regions, region => 
@@ -1372,7 +1373,7 @@ achievement(
 achievement(
     id=527859,
     title="Step on Beat",
-    description="Get perfect in every event in Coast 2 Coast mode",
+    description="[Coast 2 Coast] Get AAA rank in every event and request",
     points=50,
     trigger=any_of(Regions, region => 
         IsRegion(region) &&
@@ -1503,12 +1504,12 @@ for params in outrun_params
     if (any_of([EVENT_SUB_CONTINUOUS, EVENT_SUB_CONTINUOUS_SP], mode => mode == params["mode"]))
     {
         zone_check = always_true()
-        description = format("With the \"OUTRUN2SP DIFF.\" setting set to Very Hard, reach the goal in 15 continuous course OutRun Mode for {0}", name)
+        description = format("[OutRun2SP] With the \"OUTRUN2SP DIFF.\" setting set to Very Hard, reach the goal in 15 continuous course OutRun Mode on the {0} course", name)
     }
     else
     {
         zone_check = any_of(Regions, region => IsRegion(region) && currSky[region] == params["zone"])
-        description = format("With the \"OUTRUN2SP DIFF.\" setting set to Very Hard, reach Goal {0} in OutRun Mode for {1}", params["goal"], name)
+        description = format("[OutRun2SP] With the \"OUTRUN2SP DIFF.\" setting set to Very Hard, reach Goal {0} in OutRun Mode on the {1} course", params["goal"], name)
     }
     
     trigger = any_of(Regions, region => 
@@ -1825,15 +1826,14 @@ for params in time_attack_params
     time_format = MillisToTimestamp(params["goaltime"])
     if (any_of([EVENT_SUB_CONTINUOUS, EVENT_SUB_CONTINUOUS_SP], mode => mode == params["mode"]))
     {
-        target = format(
-            "In the mode named \"Single Player,\" reach the goal in 15 Stage Continuous{1} in Time Attack Mode for {0}",
-            name,
-            if_else(dict_get(params, "reverse"), " (Reverse)", "")
-        )
+        r = if_else(dict_get(params, "reverse"), " (Reverse)", "")
+        lbtarget = format("{0} 15 Stage Continuous{1}", name, r)
+        target = format("[Time Attack] Reach the goal in 15 Stage Continuous{1} on the {0} course", name, r)
     }
     else
     {
-        target = format("In the mode named \"Single Player,\" reach Goal {0} in Time Attack Mode for {1}", params["goal"], name)
+        lbtarget = format("{0} Goal {1}", name, params["goal"])
+        target = format("[Time Attack] Reach Goal {0} on the {1} course", params["goal"], name)
     }
     
     reverse_check = always_true()
@@ -1868,7 +1868,7 @@ for params in time_attack_params
     leaderboard(
         id=params["lbid"],
         title="Time Attack - " + params["event"],
-        description=target + " as quickly as possible",
+        description=format("Fastest time completed for {0} in Single Player Time Attack", lbtarget),
 
         start=any_of(Regions, region => 
             IsRegion(region) &&
@@ -2004,12 +2004,12 @@ for params in heart_attack_params
     if (any_of([EVENT_SUB_CONTINUOUS, EVENT_SUB_CONTINUOUS_SP], mode => mode == params["mode"]))
     {
         zone_check = always_true()
-        target = format("in 15 continuous course Heart Attack Mode for {0}", name)
+        target = format("in 15 continuous course on the {0} course", name)
     }
     else
     {
         zone_check = any_of(Regions, region => IsRegion(region) && currSky[region] == params["zone"])
-        target = format("at Goal {0} in Heart Attack Mode for {1}", params["goal"], name)
+        target = format("at Goal {0} on the {1} course", params["goal"], name)
     }
 
     continuous = any_of([EVENT_SUB_CONTINUOUS_SP, EVENT_SUB_CONTINUOUS], e => e == params["mode"])
@@ -2017,7 +2017,7 @@ for params in heart_attack_params
     achievement(
         id=params["id"],
         title=params["title"],
-        description="Earn a AA ranking or better " + target,
+        description="[Heart Attack] Earn a AA ranking or better " + target,
         points=params["points"],
         trigger=any_of(Regions, region => 
             IsRegion(region) &&
@@ -2032,7 +2032,7 @@ for params in heart_attack_params
     leaderboard(
         id=params["lbid"],
         title="Heart Attack - " + params["event"],
-        description="Earn as many hearts as possible " + target,
+        description="Most amount of hearts earned " + target,
 
         start=any_of(Regions, region => 
             IsRegion(region) &&
