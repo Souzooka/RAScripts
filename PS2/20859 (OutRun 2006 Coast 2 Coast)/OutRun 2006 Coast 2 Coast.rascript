@@ -81,6 +81,14 @@ inRace = {
     JP: dword(0x34CD1C),
 }
 
+// i.e. user is under "OUTRUN2SP" from main menu
+inArcadeMode = {
+    US: dword(0x59B6AC) == 0,
+    EU: dword(0x59ACAC) == 0,
+    JP: dword(0x5711BC) == 0,
+}
+
+
 SKY_PALM = 0x71
 SKY_LAKE = 0x72
 SKY_INDU = 0x73
@@ -1514,6 +1522,7 @@ for params in outrun_params
     
     trigger = any_of(Regions, region => 
         IsRegion(region) &&
+        inArcadeMode[region] &&
         eventType[region] == EVENT_OUTRUN &&
         eventSubType[region] == params["mode"] &&
         zone_check &&
