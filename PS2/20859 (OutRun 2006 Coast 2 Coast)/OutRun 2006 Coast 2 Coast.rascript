@@ -696,7 +696,7 @@ flagman_events = [
         "id": 527764,
         "title": "30 Cars Enter, Only 1 Car Can Win",
         "event": 19,
-        "count": 10,
+        "count": 3,
         "points": 3,
         "type": CTYPE_RACE,
     },
