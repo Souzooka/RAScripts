@@ -590,7 +590,7 @@ flagman_events = [
     },
     {
         "id": 527751,
-        "title": "Girls like It When You Lead",
+        "title": "Girls Like It When You Lead",
         "event": 6,
         "count": 1,
         "points": 2,
