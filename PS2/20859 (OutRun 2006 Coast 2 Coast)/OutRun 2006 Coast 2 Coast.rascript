@@ -314,11 +314,11 @@ function HeartAttackRank(region, continuous=false)
 EVENT_RATINGS = ["E", "D", "C", "B", "A", "AA", "AAA", "-"]
 
 // pass a list of addresses for 0-7 bytes
-function AverageRatingIsBetter(list, threshold)
+function AverageRatingOrBetter(list, threshold, acc=v=>v)
 {
-    trigger = sum_of(list, x => x) >= threshold * length(list)
-    for a in list
-        trigger = trigger && (a != 0x07) // all events must be completed
+    threshold = threshold - 1 // if using heart attack ranks, these values are shifted 1 down
+    // Mod 7 to change 7 (not complete) to 0 (Rank E)
+    trigger = sum_of(list, x => acc(x) % 7) >= threshold * length(list)
     return trigger
 }
 
@@ -509,9 +509,9 @@ flagman_levels = [
         "group": 1,
         "name": "NOVICE",
         "first": 1,
-        
+        "count": 5,
         "id": 527786,
-        "screens": [CONGRATS_FLAG1,],
+        //"screens": [CONGRATS_FLAG1,],
         "title": "Flagman is Impressed",
         "points": 5,
     },
@@ -519,9 +519,9 @@ flagman_levels = [
         "group": 2,
         "name": "INTERMEDIATE",
         "first": 6,
-        
+        "count": 9,
         "id": 527787,
-        "screens": [CONGRATS_FLAG2,],
+        //"screens": [CONGRATS_FLAG2,],
         "title": "Flagman is Amazed",
         "points": 5,
     },
@@ -529,9 +529,9 @@ flagman_levels = [
         "group": 3,
         "name": "PROFESSIONAL",
         "first": 15,
-        
+        "count": 11,
         "id": 527788,
-        "screens": [CONGRATS_FLAG3,],
+        //"screens": [CONGRATS_FLAG3,],
         "title": "Flagman is Thrilled",
         "points": 10,
     },
@@ -539,9 +539,9 @@ flagman_levels = [
         "group": 4,
         "name": "OUTRUN",
         "first": 26,
-
+        "count": 15,
         "id": 527789,
-        "screens": [CONGRATS_FLAG4, CONGRATS_CLEAR, CONGRATS_PERFECT,],
+        //"screens": [CONGRATS_FLAG4, CONGRATS_CLEAR, CONGRATS_PERFECT,],
         "title": "Flagman Got Chills",
         "points": 10,
     },
@@ -899,8 +899,29 @@ for event in flagman_events
     )
 }
 
-for flevel in flagman_levels
+function GetAllFlagmanEventsForTier(region, tier)
 {
+    all_events = []
+    flevel = flagman_levels[tier]
+    // Not the fastest calculation but fine since it's just for compilation
+    for event in flagman_events
+    {
+        if any_of(range(flevel["first"], flevel["first"] + flevel["count"] - 1), i => i == event["event"])
+        {
+            events = FlagmanAddresses(region, event["event"], event["count"])
+            for v in events
+            {
+                array_push(all_events, v)
+            }
+        }
+    }
+    
+    return all_events
+}
+
+for i in range(0, length(flagman_levels) - 1)
+{
+    flevel = flagman_levels[i]
     achievement(
         id=flevel["id"],
         title=flevel["title"],
@@ -911,9 +932,9 @@ for flevel in flagman_levels
         trigger=any_of(Regions, region => 
             IsRegion(region) &&
             !UsedENTIRETY(region) &&
-            prev(gameState[region]) != STATE_CONGRATULATIONS &&
-            gameState[region] == STATE_CONGRATULATIONS &&
-            any_of(flevel["screens"], (x) => congratsType[region] == x)
+            gameState[region] != STATE_MENU &&
+            AverageRatingOrBetter(GetAllFlagmanEventsForTier(region, i), RANK_A) &&
+            !AverageRatingOrBetter(GetAllFlagmanEventsForTier(region, i), RANK_A, prev)
         )
     )
 }
@@ -1535,7 +1556,7 @@ for params in outrun_params
         title=params["title"],
         description=description,
         points=params["points"],
-        trigger=trigger
+        trigger=trigger 
     )
 }
 
