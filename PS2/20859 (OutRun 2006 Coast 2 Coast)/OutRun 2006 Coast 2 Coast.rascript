@@ -941,7 +941,7 @@ function DoStupidFlagmanGameBugWorkaround(region, tier)
         }
     }
     
-    EPSILON = 0.1
+    EPSILON = 0.01
     sum = sum + EPSILON
     met_average_a = sum >= (RANK_A - 1) * flevel["count"]
     
