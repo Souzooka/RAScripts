@@ -929,20 +929,11 @@ function DoStupidFlagmanGameBugWorkaround(region, tier)
         stages = FlagmanAddresses(region, event["event"], event["count"])
         for j in range(0, length(stages) - 1)
         {
-            if (event["count"] == 1)
-            {
-                // god damn it don't truncate the accumulator to integer pls
-                sum = sum + (stages[j] * (1.00001))
-            }
-            else
-            {
-                sum = sum + (stages[j] * (1.0/event["count"]))
-            }
+            EPSILON = 0.001
+            sum = sum + (stages[j] * (1.0/event["count"] + EPSILON))
         }
     }
     
-    EPSILON = 0.01
-    sum = sum + EPSILON
     met_average_a = sum >= (RANK_A - 1) * flevel["count"]
     
     return
