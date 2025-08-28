@@ -511,7 +511,7 @@ flagman_levels = [
         "first": 1,
         "count": 5,
         "id": 527786,
-        //"screens": [CONGRATS_FLAG1,],
+        "screens": [CONGRATS_FLAG1,],
         "title": "Flagman is Impressed",
         "points": 5,
     },
@@ -521,7 +521,7 @@ flagman_levels = [
         "first": 6,
         "count": 9,
         "id": 527787,
-        //"screens": [CONGRATS_FLAG2,],
+        "screens": [CONGRATS_FLAG2,],
         "title": "Flagman is Amazed",
         "points": 5,
     },
@@ -531,7 +531,7 @@ flagman_levels = [
         "first": 15,
         "count": 11,
         "id": 527788,
-        //"screens": [CONGRATS_FLAG3,],
+        "screens": [CONGRATS_FLAG3,],
         "title": "Flagman is Thrilled",
         "points": 10,
     },
@@ -541,7 +541,7 @@ flagman_levels = [
         "first": 26,
         "count": 15,
         "id": 527789,
-        //"screens": [CONGRATS_FLAG4, CONGRATS_CLEAR, CONGRATS_PERFECT,],
+        "screens": [CONGRATS_FLAG4, CONGRATS_CLEAR, CONGRATS_PERFECT,],
         "title": "Flagman Got Chills",
         "points": 10,
     },
@@ -899,6 +899,58 @@ for event in flagman_events
     )
 }
 
+function DoStupidFlagmanGameBugWorkaround(region, tier)
+{
+    // If the user gets a congratulations screen for a girlfriend, due to a game bug,
+    // this effectively blocks out the congratulation screens for all of the Flagman
+    // tiers. This attempts to recreate the average rank logic based on my understanding
+    // (which is that it's the average rank of the events, which themselves are the average
+    // of the individual stages within the event's ranks).
+    // Due to arithmetic limitations, we can't really mod 7 the stages to exclude the "not complete"
+    // status, so we'll unfortunately have to require users to register a rank for all stages, even
+    // if that's just a Rank E. Additionally, the delta check is just "good enough", (i.e. a user can load
+    // an almost perfect save, change a stage to an AAA, and get the achievement), but due to those arithmetic
+    // limitations it's difficult to account for possible delta states thoroughly.
+    now_events = GetAllFlagmanEventsForTier(region, tier)
+    prev_events = array_map(GetAllFlagmanEventsForTier(region, tier), prev)
+    
+    flevel = flagman_levels[tier]
+    all_events_done = all_of(now_events, event => event != 7)
+    event_changed = sum_of(now_events, v => v) != sum_of(prev_events, v => v)
+    
+    sum = 0
+    for i in range(flevel["first"], flevel["first"] + flevel["count"] - 1)
+    {
+        event = {}
+        for e in flagman_events
+            if e["event"] == i
+                event = e
+        
+        stages = FlagmanAddresses(region, event["event"], event["count"])
+        for j in range(0, length(stages) - 1)
+        {
+            if (event["count"] == 1)
+            {
+                // god damn it don't truncate the accumulator to integer pls
+                sum = sum + (stages[j] * (1.00001))
+            }
+            else
+            {
+                sum = sum + (stages[j] * (1.0/event["count"]))
+            }
+        }
+    }
+    
+    EPSILON = 0.1
+    sum = sum + EPSILON
+    met_average_a = sum >= (RANK_A - 1) * flevel["count"]
+    
+    return
+        all_events_done &&
+        event_changed &&
+        met_average_a
+}
+
 function GetAllFlagmanEventsForTier(region, tier)
 {
     all_events = []
@@ -933,8 +985,14 @@ for i in range(0, length(flagman_levels) - 1)
             IsRegion(region) &&
             !UsedENTIRETY(region) &&
             gameState[region] != STATE_MENU &&
-            AverageRatingOrBetter(GetAllFlagmanEventsForTier(region, i), RANK_A) &&
-            !AverageRatingOrBetter(GetAllFlagmanEventsForTier(region, i), RANK_A, prev)
+            (
+                (
+                    prev(gameState[region]) != STATE_CONGRATULATIONS &&
+                    gameState[region] == STATE_CONGRATULATIONS &&
+                    any_of(flevel["screens"], (x) => congratsType[region] == x)
+                ) ||
+                DoStupidFlagmanGameBugWorkaround(region, i)
+            )
         )
     )
 }
