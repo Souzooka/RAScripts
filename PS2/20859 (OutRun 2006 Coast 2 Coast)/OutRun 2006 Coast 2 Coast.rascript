@@ -1432,6 +1432,7 @@ for glevel in girlfriend_levels
     )
 }
 
+/*
 achievement(
     id=527796,
     title="Coast 2 Coast",
@@ -1447,10 +1448,11 @@ achievement(
             (x) => congratsType[region] == x)
     )
 )
+*/
 
 achievement(
     id=527859,
-    title="Step on Beat",
+    title="Coast 2 Coast",
     description="[Coast 2 Coast] Get AAA rank in every event and request",
     points=50,
     trigger=any_of(Regions, region => 
