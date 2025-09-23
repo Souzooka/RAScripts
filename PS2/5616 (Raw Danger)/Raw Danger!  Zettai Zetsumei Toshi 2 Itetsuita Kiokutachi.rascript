@@ -1787,7 +1787,7 @@ function CreateMeasuredCollectionTrigger(items_list)
     // fashion (unless they're playing in a very specific way to exploit the above bug (to no benefit to them) for some reason).
     
     // We need to check for this new game state and tutorial state (since the game can conditionally add initial outfits here to the collection)
-    safety_check = CurrentMenu == MENU_NewGame || CurrentMenu == MENU_Tutorial
+    safety_check = CurrentMenu == MENU_NewGame || CurrentMenu == MENU_Tutorial || CurrentMenu == MENU_LoadGame
     load_protection = (LoadProtection() || safety_check) && !IsInTutorial() // ignore all collection differences in the tutorial map (i.e. the jeans + tennis shoes being added)
     measured_condition = sum_of(ItemsGet(items_list), s=>s) == length(items_list)
     delta_check = ItemsCheckDelta(items_list)
