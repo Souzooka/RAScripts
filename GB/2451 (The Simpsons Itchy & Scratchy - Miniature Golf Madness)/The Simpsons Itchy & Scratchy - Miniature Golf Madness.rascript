@@ -12,6 +12,7 @@ function if_else(cond, a, b)
 }
 
 g_hole = byte(0xd5cb)
+g_current_score = byte(0xDC86)
 g_scores = array_map(range(0, 8), i => byte(0xD5CD + i))
 g_continues = byte(0xD5CC)
 g_cheats = {
@@ -41,10 +42,18 @@ function AntiBios()
     return never(!(g_hole <= 8))
 }
 
+function InGame(now=false)
+{
+    if now
+        return byte(0xdce7) > prev(byte(0xdce7))
+    return byte(0xdce7) == 1
+}
+
 hole_params = [
     {
         "id": 72015,
         "par_id": 72042,
+        "leaderboard_id": 5037,
         "title": "Grim Furry Tales",
         "par_title": "Loremaster",
         "points": 5,
@@ -55,6 +64,7 @@ hole_params = [
     {
         "id": 72016,
         "par_id": 72043,
+        "leaderboard_id": 5038,
         "title": "Malice in Krustyland",
         "par_title": "Krustmaster",
         "points": 5,
@@ -65,6 +75,7 @@ hole_params = [
     {
         "id": 72017,
         "par_id": 72044,
+        "leaderboard_id": 5039,
         "title": "Rest in Pieces",
         "par_title": "Grim Keeper",
         "points": 5,
@@ -75,6 +86,7 @@ hole_params = [
     {
         "id": 72018,
         "par_id": 72045,
+        "leaderboard_id": 5040,
         "title": "Pirates of the Scratchibbean",
         "par_title": "Bart Pigeon",
         "points": 5,
@@ -85,6 +97,7 @@ hole_params = [
     {
         "id": 72019,
         "par_id": 72046,
+        "leaderboard_id": 5041,
         "title": "I Scream of Genie",
         "par_title": "Aladdin",
         "points": 5,
@@ -95,6 +108,7 @@ hole_params = [
     {
         "id": 72020,
         "par_id": 72047,
+        "leaderboard_id": 5043,
         "title": "Chop-A-Long Scratchidy",
         "par_title": "Quickdraw",
         "points": 5,
@@ -105,6 +119,7 @@ hole_params = [
     {
         "id": 72021,
         "par_id": 72048,
+        "leaderboard_id": 5042,
         "title": "Patty Meltdown",
         "par_title": "Nuketown",
         "points": 5,
@@ -115,6 +130,7 @@ hole_params = [
     {
         "id": 72022,
         "par_id": 72049,
+        "leaderboard_id": 5044,
         "title": "20,000 Mice Under the Sea",
         "par_title": "Waterbreathing",
         "points": 5,
@@ -125,6 +141,7 @@ hole_params = [
     {
         "id": 72023,
         "par_id": 72050,
+        "leaderboard_id": 5046,
         "title": "9 1/2 Shrieks",
         "par_title": "No Fear",
         "points": 10,
@@ -158,8 +175,31 @@ for params in hole_params
         trigger=
             AntiCheat(allowed_cheats=["level_select"]) &&
             AntiBios() &&
-            g_scores[params["hole"]] > prev(g_scores[params["hole"]]) &&
-            g_scores[params["hole"]] <= params["par"]
+            once(InGame(now=true)) &&
+            never(!InGame()) &&
+            g_hole == params["hole"] &&
+            trigger_when(g_scores[params["hole"]] > prev(g_scores[params["hole"]])) &&
+            g_current_score < params["par"]
+    )
+    
+    // Leaderboard
+    leaderboard(
+        id=params["leaderboard_id"],
+        title=format("Hole {0}", params["hole"] + 1),
+        description=format("Lowest score for hole {0}", params["hole"] + 1),
+        lower_is_better=true,
+        start=
+            AntiCheat(allowed_cheats=["level_select"]) &&
+            AntiBios() &&
+            InGame(now=true) &&
+            g_hole == params["hole"],
+        cancel=
+            !InGame() ||
+            g_hole != params["hole"],
+        submit=
+            g_scores[params["hole"]] > prev(g_scores[params["hole"]]),
+        value=
+            bcd(g_current_score)
     )
 }
 
@@ -177,6 +217,9 @@ achievement(
 )
 
 // Tiger Woods
+conds = array_map(range(0, length(g_scores) - 1), hole =>
+    once(g_scores[hole] > 0 && g_scores[hole] <= hole_params[hole]["record"])
+)
 achievement(
     id=72054,
     title="Tiger Woods",
@@ -185,7 +228,8 @@ achievement(
     trigger=
         AntiCheat() &&
         AntiBios() &&
-        all_of(range(0, length(g_scores) - 1), hole => g_scores[hole] > 0 && g_scores[hole] <= hole_params[hole]["record"]) &&
+        never(g_scores[0] == 0) && // just checks if the game was reset via completion
+        measured(tally(length(conds), conds)) &&
         g_scores[length(g_scores) - 1] > prev(g_scores[length(g_scores) - 1])
 )
 
@@ -308,7 +352,7 @@ achievement(
     description = "Lower your score 3 times in one level (any hole except hole 1)",
     id = 72051, badge = "77229", published = "2/16/2019 7:41:22 PM", modified = "1/2/2021 12:06:33 AM",
     trigger = AntiBios() && AntiCheat() &&
-              never(prev(byte(0x00D5CB)) < byte(0x00D5CB)) && repeated(3, prev(byte(0x00DC86)) > byte(0x00FC86)) &&
+              never(prev(byte(0x00D5CB)) < byte(0x00D5CB)) && repeated(3, prev(byte(0x00DC86)) > byte(0x00DC86)) &&
               never(byte(0x00DC87) != 0) && never(prev(byte(0x00D5CC)) != byte(0x00D5CC)) &&
               byte(0x00D5CB) > 0
 )
@@ -396,3 +440,4 @@ achievement(
               never(prev(byte(0x00D5CC)) != byte(0x00D5CC)) &&
               never(prev(byte(0x00D5CB)) > byte(0x00D5CB))
 )
+
