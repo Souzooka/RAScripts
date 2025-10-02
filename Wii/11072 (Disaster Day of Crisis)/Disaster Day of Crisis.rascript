@@ -46,7 +46,7 @@ function InTitle()
 
 function InSpecial()
 {
-    return ptr(dword_be(0x6E07F8), [0xA78], byte) == 1
+    return ptr(dword_be(0x6E07F8), [0xD8], byte) == 1 || ptr(dword_be(0x6E07F8), [0xA78], byte) == 1
 }
 
 function SaveScreenActive(now=false)
@@ -99,6 +99,14 @@ function StageComplete(id=-1, now=false)
     return cond
 }
 
+function RangeComplete(now=false)
+{
+    cond = g_range_result["m_active"] == 1
+    if now
+        cond = cond && prev(g_range_result["m_active"]) == 0
+    return cond
+}
+
 function TitleEarned(title, mech_ray_allowed=true)
 {
     cond =
@@ -112,6 +120,13 @@ function TitleEarned(title, mech_ray_allowed=true)
         cond = cond && g_costume != COSTUME_MECH_RAY
      
     return cond
+}
+
+function GameComplete()
+{
+    return
+        StageComplete(now=true) &&
+        ascii_string_equals(g_level_id, "result_total")
 }
 
 // Object constructors
@@ -140,6 +155,7 @@ function WeaponStats(id)
         "m_aiming": dword_be(addr + 0x10),
         "m_accuracy": dword_be(addr + 0x14),
         "m_mag_ammo": dword_be(addr + 0x1C),
+        "m_owned": byte(addr + 0x20),
     }
     
     return obj
@@ -176,17 +192,48 @@ function StageResult()
     return obj
 }
 
+function ShootingRangeResult()
+{
+    addr = dword_be(0x6E0864) & RA_MASK
+    
+    obj = {
+        "m_active": byte(addr + 0x5),
+        "m_name": addr + 0x34,
+        "m_clear_time_cs": dword_be(addr + 0xB4),
+        "m_clear_time_m": dword_be(addr + 0xB8),
+        "m_clear_time_s": dword_be(addr + 0xBC),
+        "m_enemies_defeated": dword_be(addr + 0xC0),
+        "m_max_enemies": dword_be(addr + 0xC4),
+        "m_subtotal_bp": dword_be(addr + 0xC8),
+        "m_accuracy": dword_be(addr + 0xCC),
+        "m_time_bonus_bp": dword_be(addr + 0xD4),
+        "m_clear_bonus_bp": dword_be(addr + 0xD8),
+        "m_accuracy_bonus_bp": dword_be(addr + 0xDC),
+        "m_total_bp": dword_be(addr + 0xE4),
+        "m_spent_bp": dword_be(addr + 0xEC),
+        "m_remaining_bp": dword_be(addr + 0xF0),
+    }
+    
+    return obj
+}
+
 p_player = ptr(dword_be(0x6E10DC), [0x10, 0x14C], dword_be)
 g_player = Player(p_player)
 g_costume = dword_be(0x616b04)
 COSTUME_MECH_RAY = 8
 
+g_difficulty = dword_be(0x629190)
+DIFFICULTY_NORMAL = 0
+DIFFICULTY_HARD = 1
+DIFFICULTY_DISASTER = 2
+
 g_stage_result = StageResult()
+g_range_result = ShootingRangeResult()
 
 COMBAT_STAGES = [1, 2, 3, 5, 7, 8, 10, 13, 14, 17, 18, 19, 21, 22]
 STAMINAS_STAGES = [1, 2, 3, 4, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
 
-p_weapon_stats = 0x616A64
+p_weapon_stats = 0x616608
 WEAPON_NONE = 0
 WEAPON_HANDGUN1 = 1
 WEAPON_HANDGUN2 = 2
@@ -217,7 +264,7 @@ WEAPON_JUNK = 26 // shouldn't be used as a weapon but is real
 WEAPON_MAX = WEAPON_JUNK
 g_weapons = {}
 for id in range(0, WEAPON_MAX)
-    if id != WEAPON_HOSE && id != WEAPON_IMPULSE_GUN
+    if id != WEAPON_NONE && id != WEAPON_HOSE && id != WEAPON_IMPULSE_GUN
         g_weapons[id] = WeaponStats(id)
 
 g_checkpoint = dword_be(0x5EB588)
@@ -235,13 +282,6 @@ SHOOTING_RANGE_ROCKET = "ext06_00"
 SHOOTING_RANGE_PULSE = "ext07_00"
 SHOOTING_RANGE_GATLING = "ext08_00"
 SHOOTING_RANGE_SPACE = "ext09_00"
-
-achievement(
-    title="Test achievement",
-    description="Test",
-    points=0,
-    trigger=prev(g_player["m_life_max"]) < g_player["m_life_max"]
-)
 
 function MaxSkillsTrigger()
 {
@@ -489,32 +529,84 @@ achievement(
     title="One Hell of a Day",
     description="Complete the game on Normal or higher difficulty.",
     type="win_condition",
-    points=3,
-    trigger=always_false()
+    points=25,
+    trigger=GameComplete()
 )
 
 achievement(
     id=0,
     title="Want to Save More",
     description="Complete the game on Hard or higher difficulty.",
-    points=3,
-    trigger=always_false()
+    points=25,
+    trigger=GameComplete() && g_difficulty >= DIFFICULTY_HARD
 )
 
 achievement(
     id=0,
     title="Ray of Hope",
     description="Complete the game on Disaster Real difficulty.",
-    points=3,
-    trigger=always_false()
+    points=25,
+    trigger=GameComplete() && g_difficulty == DIFFICULTY_DISASTER
 )
+
+function MinCompletionTrigger()
+{
+    DEFAULT_WEAPONS = [WEAPON_HANDGUN1, WEAPON_RIFLE1, WEAPON_SHOTGUN1]
+    cond = always_true()
+    
+    // All of Raymond's skills are at one
+    cond =
+        cond &&
+        all_of(array_map(range(0, 5 - 1), i => byte(0x616AFC + i)), v => v == 1)
+
+    // Check no other weapons are owned
+    for weapon_id in g_weapons
+    {
+        if !any_of(DEFAULT_WEAPONS, id => weapon_id == id)
+        {
+            cond = cond && g_weapons[weapon_id]["m_owned"] == 0
+        }
+    }
+    
+    // Handgun upgrades
+    cond =
+        cond &&
+        // Accuracy already maxed out
+        g_weapons[WEAPON_HANDGUN1]["m_power"] == 0 &&
+        g_weapons[WEAPON_HANDGUN1]["m_magazine"] == 0 &&
+        g_weapons[WEAPON_HANDGUN1]["m_reloading"] == 0 &&
+        g_weapons[WEAPON_HANDGUN1]["m_aiming"] == 0
+        
+    // Shotgun upgrades
+    cond =
+        cond &&
+        g_weapons[WEAPON_SHOTGUN1]["m_accuracy"] == 0 &&
+        g_weapons[WEAPON_SHOTGUN1]["m_power"] == 0 &&
+        g_weapons[WEAPON_SHOTGUN1]["m_magazine"] == 0 &&
+        g_weapons[WEAPON_SHOTGUN1]["m_reloading"] == 0 &&
+        g_weapons[WEAPON_SHOTGUN1]["m_aiming"] == 0
+
+    // Rifle upgrades
+    cond =
+        cond &&
+        g_weapons[WEAPON_RIFLE1]["m_accuracy"] == 0 &&
+        g_weapons[WEAPON_RIFLE1]["m_power"] == 0 &&
+        g_weapons[WEAPON_RIFLE1]["m_magazine"] == 0 &&
+        g_weapons[WEAPON_RIFLE1]["m_reloading"] == 0 &&
+        g_weapons[WEAPON_RIFLE1]["m_aiming"] == 0        
+
+    return cond
+}
 
 achievement(
     id=0,
     title="Law Abiding Rescuer",
-    description="Complete the game on Hard or higher difficulty. Do not upgrade Ray's skills. Do not upgrade your weapons or obtain additional weapons.",
-    points=3,
-    trigger=always_false()
+    description="Complete the game on Hard or higher difficulty. Do not upgrade Ray's skills. Do not upgrade your weapons or obtain additional weapons. Increasing max LIFE is OK.",
+    points=50,
+    trigger=
+        GameComplete() && 
+        g_difficulty >= DIFFICULTY_HARD &&
+        MinCompletionTrigger()
 )
 
 achievement(
@@ -581,6 +673,27 @@ for stage in COMBAT_STAGES
     )
 }
 
+STAMINAS_PARAMS = [
+    {
+        "id": 0,
+        "stage": 1,
+        "title": "Wiki Wiki Wonderful",
+        "points": 3,
+    },
+    {
+        "id": 0,
+        "stage": 2,
+        "title": "Working Hard, Huh",
+        "points": 5,
+    },
+    {
+        "id": 0,
+        "stage": 3,
+        "title": "Slam Some Staminas",
+        "points": 5,
+    }
+]
+
 for stage in STAMINAS_STAGES
 {
     stage_str = format("{0}", if_else(stage < 10, "0" + stage, stage))
@@ -614,6 +727,38 @@ achievement(
     trigger=TitleEarned(63)
 )
 
+// Leaderboards
+
+rp_range = {
+    SHOOTING_RANGE_BEGINNER: "Beginner",
+    SHOOTING_RANGE_INTERMEDIATE: "Intermediate",
+    SHOOTING_RANGE_ADVANCED: "Advanced",
+    SHOOTING_RANGE_JUNK: "Junk",
+    SHOOTING_RANGE_BOW: "Bow Gun",
+    SHOOTING_RANGE_ROCKET: "Rocket Launcher",
+    SHOOTING_RANGE_PULSE: "Pulse Gun",
+    SHOOTING_RANGE_GATLING: "Gatling Gun",
+}
+
+LB_ID = 141548
+for range in rp_range
+{
+    leaderboard(
+        id=LB_ID,
+        title=format("High Score - {0} Shooting Range", rp_range[range]),
+        description="Earn the most BP!",
+        start=
+            ascii_string_equals(g_level_id, range) &&
+            RangeComplete(now=true),
+        cancel=g_range_result["m_total_bp"] == 0,
+        submit=always_true(),
+        value=g_range_result["m_total_bp"]
+    )
+    LB_ID = LB_ID + 1
+}
+
+// Rich Presence
+
 
 // (checkpoint ID is 0 until we get in game)
 rp_time_fallback = {
@@ -623,7 +768,7 @@ rp_time_fallback = {
     "blu07_00": "9:15 AM Friday, September 21", // stage 03
     "blu10_00": "9:40 AM Friday, September 21", // stage 04
     "blu11_00": "9:57 AM Friday, September 21", // stage 05
-    "blu11_01": "10:12 AM Friday, September 21", // stage 06
+    "blu11_02": "10:12 AM Friday, September 21", // stage 06
     "blu06_01": "10:33 AM Friday, September 21", // stage 07
     "blu09_00": "10:42 AM Friday, September 21", // stage 08
     "blu12_00": "11:07 AM Friday, September 21", // stage 09
@@ -649,7 +794,7 @@ rp_activity_fallback = {
     "blu07_00": "Ray is entering the subway of Blue Ridge City", // stage 03
     "blu10_00": "Ray is arriving at West Park, Blue Ridge City", // stage 04
     "blu11_00": "Ray is pursuing SURGE in Blue Ridge City", // stage 05
-    "blu11_01": "Ray is interrogating Gordon on the Big Bridge in Blue Ridge City", // stage 06
+    "blu11_02": "Ray is interrogating Gordon on the Big Bridge in Blue Ridge City", // stage 06
     "blu06_01": "Ray is staring down a SURGE helicopter in Jackson St, Blue Ridge City", // stage 07
     "blu09_00": "Ray is fleeing a tsunami and SURGE helicopter in South Side, Blue Ridge City", // stage 08
     "blu12_00": "Ray is washed up at Highland Park in Blue Ridge City", // stage 09
@@ -770,8 +915,8 @@ rp_time = {
     0xF3: "5:40 PM Friday, September 21",
     0xF4: "5:42 PM Friday, September 21",
     0xF5: "5:48 PM Friday, September 21",
-    0xF6: "5:55 PM Friday, September 21",
-    0xF9: "5:59 PM Friday, September 21",
+    0xF6: "5:56 PM Friday, September 21",
+    0xF9: "6:04 PM Friday, September 21",
     0xFA: "6:05 PM Friday, September 21",
     // Stage 15
     0x102: "6:10 PM Friday, September 21",
@@ -946,7 +1091,7 @@ rp_activity = {
     0xF5: "Ray and Iris are making their way past a raised railroad track on Mt. Rosalia",
     0xF6: "Ray and Iris are trying to find a way through the Timber Yard on Mt. Rosalia",
     0xF9: "Ray and Iris have gotten separated on Mt. Rosalia and Ray must save her from encroaching lava",
-    0xFA: "Ray and Iris are making their way through the Timber Yard on Mt. Rosalia",
+    0xFA: "Ray and Iris have gotten separated on Mt. Rosalia and Ray must save her from encroaching lava",
     // Stage 15
     0x102: "Ray and Iris are walking along the Campbell River on Mt. Rosalia",
     0x103: "Ray is trying to rescue Iris from a lahar on the Campbell River on Mt. Rosalia",
@@ -1017,27 +1162,20 @@ rp_activity = {
     0x1A8: "Ray is below deck of the ferry, desperately trying to make it above deck before the ship sinks",
 }
 
-rp_range = {
-    SHOOTING_RANGE_BEGINNER: "Beginner",
-    SHOOTING_RANGE_INTERMEDIATE: "Intermediate",
-    SHOOTING_RANGE_ADVANCED: "Advanced",
-    SHOOTING_RANGE_JUNK: "Junk",
-    SHOOTING_RANGE_BOW: "Bow Gun",
-    SHOOTING_RANGE_ROCKET: "Rocket Launcher",
-    SHOOTING_RANGE_PULSE: "Pulse Gun",
-    SHOOTING_RANGE_GATLING: "Gatling Gun",
-}
-
 rich_presence_conditional_display(
     InTitle(),
     "In the title screen"
 )
 rich_presence_conditional_display(
     InSpecial(),
-    "In the Specials menu"
+    "In the special menu"
 )
 rich_presence_conditional_display(
-    ascii_string_equals(g_level_id, "result"),
+    dword_be(g_level_id) == 0,
+    "Preparing to have one hell of a day"
+)
+rich_presence_conditional_display(
+    ascii_string_equals(g_level_id, "result") || SaveScreenActive(),
     "Ray is in an intermission"
 )
 rich_presence_conditional_display(
@@ -1054,16 +1192,16 @@ rich_presence_conditional_display(
     rich_presence_ascii_string_lookup("SHOOTING_RANGE", g_level_id, rp_range, "Unknown")
 )
 rich_presence_conditional_display(
-    g_checkpoint == 0,
-    "{0} | {1}",
-    rich_presence_ascii_string_lookup("TIME_FALLBACK", g_level_id, rp_time_fallback, "Unknown Time"),
-    rich_presence_ascii_string_lookup("ACTIVITY_FALLBACK", g_level_id, rp_activity_fallback, "Unknown Activity")
-)
-rich_presence_conditional_display(
     StageComplete(),
     "{0} | {1}",
     rich_presence_lookup("TIME", prior(g_checkpoint), rp_time, "Unknown Time"),
     rich_presence_lookup("ACTIVITY", prior(g_checkpoint), rp_activity, "Unknown Activity")
+)
+rich_presence_conditional_display(
+    g_checkpoint == 0,
+    "{0} | {1}",
+    rich_presence_ascii_string_lookup("TIME_FALLBACK", g_level_id, rp_time_fallback, "Unknown Time"),
+    rich_presence_ascii_string_lookup("ACTIVITY_FALLBACK", g_level_id, rp_activity_fallback, "Unknown Activity")
 )
 rich_presence_conditional_display(
     g_checkpoint != 0,
