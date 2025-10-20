@@ -6,6 +6,11 @@ RA_MASK = 0x1FFFFFFF
 
 NULL = 0
 
+function force_alt_group()
+{
+    return bit0(0x0) == prev(bit0(0x0))
+}
+
 function if_else(cond, a, b)
 {
     if cond
@@ -127,6 +132,18 @@ function GameComplete()
     return
         StageComplete(now=true) &&
         ascii_string_equals(g_level_id, "result_total")
+}
+
+function GetGameFlag(flag)
+{
+    flags = dword_be(0x6E0DA0)
+    flags = flags + flag / 8
+    return bit(flag % 8, flags)
+}
+
+function GetSignCollected(sign_id)
+{
+    return GetGameFlag(sign_id + 3490)
 }
 
 // Object constructors
@@ -299,234 +316,185 @@ function MaxSkillsTrigger()
         fee == 0
 }
 
-achievement(
-    id=0,
-    title="We Can't Save Everyone",
-    description="Complete the prologue.",
-    type="progression",
-    points=2,
-    trigger=StageComplete(0, now=true)
-)
+PROGRESSION_PARAMS = [
+    {
+        "id": 0,
+        "stage": 0,
+        "title": "We Can't Save Everyone",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 1,
+        "title": "Big Earthquake",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 2,
+        "title": "Collapsing Road",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 3,
+        "title": "Darkness and Fire",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 4,
+        "title": "Firestorm",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 5,
+        "title": "Duel on the Bridge",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 6,
+        "title": "Tsunami Attack",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 7,
+        "title": "Death From Above",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 8,
+        "title": "Streets Swallowed by the Waves",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 9,
+        "title": "To the Enemy Base",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 10,
+        "title": "Mt. Rosalia Eruption",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 11,
+        "title": "Volcanic Chase",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 12,
+        "title": "Ash and a Girl",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 13,
+        "title": "The Ashen Forest",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 14,
+        "title": "Path of the Lava",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 15,
+        "title": "Lahar",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 16,
+        "title": "Skydiving",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 17,
+        "title": "Heavy Rain",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 18,
+        "title": "Mud and Mercenaries",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 19,
+        "title": "Rain Returns",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 20,
+        "title": "Hurricane Chase",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 21,
+        "title": "Windstorm Battle",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+    {
+        "id": 0,
+        "stage": 22,
+        "title": "Final Battle",
+        "description": "Complete the prologue.",
+        "points": 2,
+    },
+]
+
+for params in PROGRESSION_PARAMS
+{
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=params["description"],
+        type="progression",
+        points=params["points"],
+        trigger=StageComplete(params["stage"], now=true)
+    )
+}
 
 achievement(
     id=0,
-    title="Gordon Killer",
-    description="In Stage 01, defeat Gordon without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(7, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="SURGE Surged",
-    description="Join the raid on the SURGE HQ in Blue Ridge City.",
-    type="progression",
-    points=2,
-    trigger=StageComplete(1, now=true)
-)
-
-achievement(
-    id=0,
-    title="Armoured Vehicle Killer",
-    description="In Stage 03, defeat the armoured vehicles without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(8, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="Shadow Enemy Hunter 1",
-    description="Take down the mysterious Shadow Enemy in Blue Ridge City and earn this title.",
-    points=1,
-    trigger=TitleEarned(37)
-)
-
-achievement(
-    id=0,
-    title="Gordon Killer Returns",
-    description="In Stage 05, defeat Gordon without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(9, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="Earthquake Quaked",
-    description="Survive the earthquake in Blue Ridge City and defeat Gordon on the Big Bridge.",
-    type="progression",
-    points=2,
-    trigger=StageComplete(5, now=true)
-)
-
-achievement(
-    id=0,
-    title="Chopper Killer",
-    description="In Stage 07, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(10, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="Gregory Killer",
-    description="In Stage 08, defeat Gregory without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(11, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="Tsunami nami'd iunno",
-    description="Survive the tsunami in Blue Ridge City and defeat Gregory in South Side.",
-    type="progression",
-    points=2,
-    trigger=StageComplete(8, now=true)
-)
-
-achievement(
-    id=0,
-    title="Shadow Enemy Hunter 2",
-    description="Take down the mysterious Shadow Enemy on Mt. Rosalia and earn this title.",
-    points=1,
-    trigger=TitleEarned(38)
-)
-
-achievement(
-    id=0,
-    title="Evans Killer",
-    description="In Stage 10, defeat Evans without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(12, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="Sniper Sniped",
-    description="Infiltrate the SURGE HQ on Mt. Rosalia then escape unscathed.",
-    type="progression",
-    points=2,
-    trigger=StageComplete(10, now=true)
-)
-
-achievement(
-    id=0,
-    title="Bear Killer",
-    description="In Stage 13, defeat the bear without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(13, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="Chopper Killer Returns",
-    description="In Stage 14, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(14, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="Willful Rescuer",
-    description="Rescue Iris from the Campbell River in 25 seconds or less and earn this title.",
-    points=1,
-    trigger=TitleEarned(69)
-)
-
-achievement(
-    id=0,
-    title="Iris Irised",
-    description="Survive the volcanic eruption on Mt. Rosalia and rescue Iris from the lahar.",
-    type="progression",
-    points=2,
-    trigger=StageComplete(15, now=true)
-)
-
-achievement(
-    id=0,
-    title="Shadow Enemy Hunter 3",
-    description="Take down the mysterious Shadow Enemy in Bainsville and earn this title.",
-    points=1,
-    trigger=TitleEarned(39)
-)
-
-achievement(
-    id=0,
-    title="Banks Killer",
-    description="In Stage 18, defeat Banks without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(15, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="Vow to Steve",
-    description="Quickly rescue Lisa from the church and earn this title.",
-    points=1,
-    trigger=TitleEarned(70)
-)
-
-achievement(
-    id=0,
-    title="They Kidnapped, Her",
-    description="Survive the flood in Bainesville and rescue Lisa from the church.",
-    type="progression",
-    points=2,
-    trigger=StageComplete(19, now=true)
-)
-
-achievement(
-    id=0,
-    title="Shadow Enemy Hunter 4",
-    description="Take down the mysterious Shadow Enemy in Port Alex and earn this title.",
-    points=1,
-    trigger=TitleEarned(40)
-)
-
-achievement(
-    id=0,
-    title="SURGE Killer",
-    description="In Stage 21, defeat the SURGE force on the Seaside Highway without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
-    trigger=TitleEarned(16, mech_ray_allowed=false)
-)
-
-achievement(
-    id=0,
-    title="Best Rescuer",
-    description="Rescue each possible person within the game.",
-    points=1,
-    trigger=TitleEarned(6)
-)
-
-achievement(
-    id=0,
-    title="Hurricane Caned",
-    description="Survive the hurricane in Port Alex, defeat the SURGE forces on the seaside highway, and make your way to the ferry terminal.",
-    type="progression",
-    points=2,
-    trigger=StageComplete(21, now=true)
-)
-
-achievement(
-    id=0,
-    title="Shadow Enemy Hunter 5",
-    description="Take down the mysterious Shadow Enemy on the ferry and earn this title.",
-    points=1,
-    trigger=TitleEarned(41)
-)
-
-achievement(
-    id=0,
-    title="Mech Meched",
-    description="Defeat Evans on the ferry.",
-    type="progression",
-    points=2,
-    trigger=StageComplete(22, now=true)
-)
-
-achievement(
-    id=0,
-    title="One Hell of a Day",
+    title="Day of Crisis",
     description="Complete the game on Normal or higher difficulty.",
     type="win_condition",
     points=25,
@@ -535,7 +503,7 @@ achievement(
 
 achievement(
     id=0,
-    title="Want to Save More",
+    title="One Hell of a Day",
     description="Complete the game on Hard or higher difficulty.",
     points=25,
     trigger=GameComplete() && g_difficulty >= DIFFICULTY_HARD
@@ -611,50 +579,98 @@ achievement(
 
 achievement(
     id=0,
-    title="Combo Rookie",
-    description="Attain a combo of 100 and earn this title [No Mechanical Ray].",
+    title="Gordon Killer",
+    description="In Stage 01, defeat Gordon without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(23, mech_ray_allowed=false)
+    trigger=TitleEarned(7, mech_ray_allowed=false)
 )
 
 achievement(
     id=0,
-    title="Combo Amateur",
-    description="Attain a combo of 250 and earn this title [No Mechanical Ray].",
+    title="Armoured Vehicle Killer",
+    description="In Stage 03, defeat the armoured vehicles without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(24, mech_ray_allowed=false)
+    trigger=TitleEarned(8, mech_ray_allowed=false)
 )
 
 achievement(
     id=0,
-    title="Combo Veteran",
-    description="Attain a combo of 500 and earn this title [No Mechanical Ray].",
+    title="Gordon Killer Returns",
+    description="In Stage 05, defeat Gordon without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(25, mech_ray_allowed=false)
+    trigger=TitleEarned(9, mech_ray_allowed=false)
 )
 
 achievement(
     id=0,
-    title="Combo Master",
-    description="Attain a combo of 999 and earn this title [No Mechanical Ray].",
+    title="Chopper Killer",
+    description="In Stage 07, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(26, mech_ray_allowed=false)
+    trigger=TitleEarned(10, mech_ray_allowed=false)
 )
 
 achievement(
     id=0,
-    title="Blasting Rascal",
-    description="Execute 10 or more Clever Shots on a stage and earn this title [No Mechanical Ray].",
+    title="Gregory Killer",
+    description="In Stage 08, defeat Gregory without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(33, mech_ray_allowed=false)
+    trigger=TitleEarned(11, mech_ray_allowed=false)
 )
 
 achievement(
     id=0,
-    title="Superman",
-    description="Fully upgrade all of Raymond Bryce's skills.",
-    points=10,
-    trigger=MaxSkillsTrigger()
+    title="Evans Killer",
+    description="In Stage 10, defeat Evans without taking damage and earn this title [No Mechanical Ray].",
+    points=1,
+    trigger=TitleEarned(12, mech_ray_allowed=false)
+)
+
+achievement(
+    id=0,
+    title="Bear Killer",
+    description="In Stage 13, defeat the bear without taking damage and earn this title [No Mechanical Ray].",
+    points=1,
+    trigger=TitleEarned(13, mech_ray_allowed=false)
+)
+
+achievement(
+    id=0,
+    title="Chopper Killer Returns",
+    description="In Stage 14, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
+    points=1,
+    trigger=TitleEarned(14, mech_ray_allowed=false)
+)
+
+achievement(
+    id=0,
+    title="Willful Rescuer",
+    description="Rescue Iris from the Campbell River in 25 seconds or less and earn this title.",
+    points=1,
+    trigger=TitleEarned(69)
+)
+
+achievement(
+    id=0,
+    title="Banks Killer",
+    description="In Stage 18, defeat Banks without taking damage and earn this title [No Mechanical Ray].",
+    points=1,
+    trigger=TitleEarned(15, mech_ray_allowed=false)
+)
+
+achievement(
+    id=0,
+    title="SURGE Killer",
+    description="In Stage 21, defeat the SURGE force on the Seaside Highway without taking damage and earn this title [No Mechanical Ray].",
+    points=1,
+    trigger=TitleEarned(16, mech_ray_allowed=false)
+)
+
+achievement(
+    id=0,
+    title="Best Rescuer",
+    description="Rescue each possible person within the game.",
+    points=1,
+    trigger=TitleEarned(6)
 )
 
 for stage in COMBAT_STAGES
@@ -664,12 +680,13 @@ for stage in COMBAT_STAGES
     achievement(
         id=0,
         title=format("Stage {0} - S Rank (Combat)", stage_str),
-        description=format("Obtain an overall ranking of S in Stage {0} [No Mechanical Ray].", stage_str),
+        description=format("Obtain an overall ranking of S in Stage {0} on the Disaster Real difficulty [No Mechanical Ray].", stage_str),
         points=1,
         trigger=
             StageComplete(stage, now=true) &&
             g_stage_result["m_overall_rating"] == 0 &&
-            g_costume != COSTUME_MECH_RAY
+            g_costume != COSTUME_MECH_RAY &&
+            g_difficulty == DIFFICULTY_DISASTER
     )
 }
 
@@ -679,6 +696,8 @@ STAMINAS_PARAMS = [
         "stage": 1,
         "title": "Wiki Wiki Wonderful",
         "points": 3,
+        // Used for measured, not needed for the actual unlock
+        "signs": range(1, 10),
     },
     {
         "id": 0,
@@ -691,41 +710,148 @@ STAMINAS_PARAMS = [
         "stage": 3,
         "title": "Slam Some Staminas",
         "points": 5,
+    },
+    {
+        "id": 0,
+        "stage": 4,
+        "title": "Bring the Heat",
+        "points": 3,
+    },
+    {
+        "id": 0,
+        "stage": 6,
+        "title": "Superb Sniper",
+        "points": 3,
+    },
+    {
+        "id": 0,
+        "stage": 7,
+        "title": "Running From the Helicopter",
+        "points": 4,
+    },
+    {
+        "id": 0,
+        "stage": 8,
+        "title": "Plunge Into the Torrent",
+        "points": 4,
+    },
+    {
+        "id": 0,
+        "stage": 9,
+        "title": "A Drink in the Park",
+        "points": 3,
+    },
+    {
+        "id": 0,
+        "stage": 10,
+        "title": "The SURGE Boys Are Collecting Them Too",
+        "points": 5,
+    },
+    {
+        "id": 0,
+        "stage": 12,
+        "title": "It's Time to Get Down",
+        "points": 3,
+    },
+    {
+        "id": 0,
+        "stage": 13,
+        "title": "It Gives You Claws",
+        "points": 4,
+    },
+    {
+        "id": 0,
+        "stage": 14,
+        "title": "Chill Out",
+        "points": 4,
+    },
+    {
+        "id": 0,
+        "stage": 15,
+        "title": "A Bear Is Coming",
+        "points": 1,
+    },
+    {
+        "id": 0,
+        "stage": 16,
+        "title": "In-Flight Refreshment",
+        "points": 1,
+    },
+    {
+        "id": 0,
+        "stage": 17,
+        "title": "Hard Working Fella",
+        "points": 4,
+    },
+    {
+        "id": 0,
+        "stage": 18,
+        "title": "Don't Catch a Cold",
+        "points": 4,
+    },
+    {
+        "id": 0,
+        "stage": 19,
+        "title": "Lisa or the Signs",
+        "points": 4,
+    },
+    {
+        "id": 0,
+        "stage": 20,
+        "title": "Ends of the Earth",
+        "points": 4,
+    },
+    {
+        "id": 0,
+        "stage": 21,
+        "title": "Windstorm's a Piece of Cake",
+        "points": 4,
+    },
+    {
+        "id": 0,
+        "stage": 22,
+        "title": "Great Job Finding It! How Marvellous.",
+        "points": 3,
     }
 ]
 
-for stage in STAMINAS_STAGES
+for params in STAMINAS_PARAMS
 {
+    stage = params["stage"]
     stage_str = format("{0}", if_else(stage < 10, "0" + stage, stage))
     
+    measured_cond = always_true()
+    if dictionary_contains_key(params, "signs")
+    {
+        obtained_signs = sum_of(
+            array_map(
+                params["signs"], i => GetSignCollected(i)
+            ),
+            v => v
+        )
+        
+        measured_cond = (force_alt_group() || measured(obtained_signs == length(params["signs"])))
+    }
+    
     achievement(
-        id=0,
-        title=format("Stage {0} - Staminas Campaign", stage_str),
+        id=params["id"],
+        title=params["title"],
         description=format("Find all Staminas Campaign signs in Stage {0} and complete the stage.", stage_str),
-        points=1,
+        points=params["points"],
         trigger=
+            // Stage is done and stage results screen is active
             StageComplete(stage) &&
+            // We're on the Staminas bonus screen
             prev(g_stage_result["m_staminas_screen"]) == 0 &&
             g_stage_result["m_staminas_screen"] == 1 &&
-            g_stage_result["m_staminas_signs_collected"] == g_stage_result["m_staminas_signs_on_stage"]
+            // Got all the signs
+            g_stage_result["m_staminas_signs_collected"] == g_stage_result["m_staminas_signs_on_stage"] &&
+            // Make sure this unlock is only awarded on first-time completion
+            g_stage_result["m_staminas_complete_bonus"] != 0 &&
+            // User visual only
+            measured_cond
     )
 }
-
-achievement(
-    id=0,
-    title="Staminas Campaign Warrior",
-    description="Collect half the Staminas Campaign signs and earn this title.",
-    points=1,
-    trigger=TitleEarned(62)
-)
-
-achievement(
-    id=0,
-    title="Staminas Campaign Deity",
-    description="Collect all the Staminas Campaign signs and earn this title.",
-    points=1,
-    trigger=TitleEarned(63)
-)
 
 // Leaderboards
 
