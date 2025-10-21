@@ -18,6 +18,16 @@ function if_else(cond, a, b)
     return b
 }
 
+function array_extend(a, b)
+{
+    result = []
+    for v in a
+        array_push(result, v)
+    for v in b
+        array_push(result, v)
+    return result
+}
+
 addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
 function ptr(base, offsets, accessor=dword_be)
 {
@@ -136,7 +146,7 @@ function GameComplete()
 
 function GetGameFlag(flag)
 {
-    flags = dword_be(0x6E0DA0)
+    flags = dword_be(0x6E0DA4) & RA_MASK
     flags = flags + flag / 8
     return bit(flag % 8, flags)
 }
@@ -229,6 +239,28 @@ function ShootingRangeResult()
         "m_total_bp": dword_be(addr + 0xE4),
         "m_spent_bp": dword_be(addr + 0xEC),
         "m_remaining_bp": dword_be(addr + 0xF0),
+    }
+    
+    return obj
+}
+
+function IntermissionMenu()
+{
+    addr = dword_be(0x6E07E4) & RA_MASK
+    
+    obj = {
+        "m_load_active": byte(addr + 0x2118)
+    }
+    
+    return obj
+}
+
+function PauseMenu()
+{
+    addr = dword_be(0x6E07E0) & RA_MASK
+    
+    obj = {
+        "m_load_active": byte(addr + 0x5D0)
     }
     
     return obj
@@ -704,114 +736,133 @@ STAMINAS_PARAMS = [
         "stage": 2,
         "title": "Working Hard, Huh",
         "points": 5,
+        "signs": range(11, 30),
     },
     {
         "id": 0,
         "stage": 3,
         "title": "Slam Some Staminas",
         "points": 5,
+        "signs": range(31, 50),
     },
     {
         "id": 0,
         "stage": 4,
         "title": "Bring the Heat",
         "points": 3,
+        "signs": range(51, 60),
     },
     {
         "id": 0,
         "stage": 6,
         "title": "Superb Sniper",
         "points": 3,
+        "signs": range(61, 71),
     },
     {
         "id": 0,
         "stage": 7,
         "title": "Running From the Helicopter",
         "points": 4,
+        "signs": range(72, 81),
     },
     {
         "id": 0,
         "stage": 8,
         "title": "Plunge Into the Torrent",
         "points": 4,
+        "signs": range(82, 92),
     },
     {
         "id": 0,
         "stage": 9,
         "title": "A Drink in the Park",
         "points": 3,
+        "signs": range(97, 106),
     },
     {
         "id": 0,
         "stage": 10,
         "title": "The SURGE Boys Are Collecting Them Too",
         "points": 5,
+        "signs": range(107, 129),
     },
     {
         "id": 0,
         "stage": 12,
         "title": "It's Time to Get Down",
         "points": 3,
+        "signs": range(130, 139),
     },
     {
         "id": 0,
         "stage": 13,
-        "title": "It Gives You Claws",
+        "title": "Keep the Lady Waitin'",
         "points": 4,
+        "signs": range(140, 150),
     },
     {
         "id": 0,
         "stage": 14,
         "title": "Chill Out",
         "points": 4,
+        "signs": range(151, 161),
     },
     {
         "id": 0,
         "stage": 15,
         "title": "A Bear Is Coming",
         "points": 1,
+        "signs": range(162, 164),
     },
     {
         "id": 0,
         "stage": 16,
         "title": "In-Flight Refreshment",
         "points": 1,
+        "signs": range(165, 166),
     },
     {
         "id": 0,
         "stage": 17,
         "title": "Hard Working Fella",
         "points": 4,
+        "signs": range(167, 179),
     },
     {
         "id": 0,
         "stage": 18,
         "title": "Don't Catch a Cold",
         "points": 4,
+        "signs": range(180, 190),
     },
     {
         "id": 0,
         "stage": 19,
         "title": "Lisa or the Signs",
         "points": 4,
+        "signs": range(191, 206),
     },
     {
         "id": 0,
         "stage": 20,
         "title": "Ends of the Earth",
         "points": 4,
+        "signs": range(207, 217),
     },
     {
         "id": 0,
         "stage": 21,
         "title": "Windstorm's a Piece of Cake",
         "points": 4,
+        "signs": range(218, 228),
     },
     {
         "id": 0,
         "stage": 22,
-        "title": "Great Job Finding It! How Marvellous.",
+        "title": "Great Job Finding It. How Marvellous.",
         "points": 3,
+        "signs": range(229, 237),
     }
 ]
 
@@ -825,12 +876,28 @@ for params in STAMINAS_PARAMS
     {
         obtained_signs = sum_of(
             array_map(
-                params["signs"], i => GetSignCollected(i)
+                params["signs"], GetSignCollected
             ),
             v => v
         )
         
-        measured_cond = (force_alt_group() || measured(obtained_signs == length(params["signs"])))
+        measured_cond = (
+            force_alt_group() || 
+            (
+                measured(obtained_signs == length(params["signs"])) &&
+                // Prevent random popups when looking at save/load, as this momentarily overrides flags
+                // and causes popups. Preferably this would pause the measured data, but that doesn't
+                // seem to be working. A popup with correct data when backing out is better than a popup
+                // with incorrect data when looking at save/load, at least.
+                unless(
+                    // Just going past the "Press Any Button" screen causes these popups
+                    InTitle() ||
+                    InSpecial() ||
+                    IntermissionMenu()["m_load_active"] == 1 ||
+                    PauseMenu()["m_load_active"] == 1
+                )
+            )
+        )
     }
     
     achievement(
