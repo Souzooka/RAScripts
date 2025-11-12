@@ -17,6 +17,16 @@ function FinishedTVGame()
         g_timer == 0xFFFFFFFF
 }
 
+function FinishedVaultGame()
+{
+    // Bit funky but seems to work
+    return
+        g_secret_sauce > prev(g_secret_sauce) &&
+        g_game_music == 0x0800CBB8 &&
+        // prevents achievement from activating the first frame we switch scenes
+        g_game_music == prev(g_game_music)
+}
+
 function IsSinglePlayer()
 {
     return word(0x1770) == 0
@@ -25,6 +35,11 @@ function IsSinglePlayer()
 function IsTVGame()
 {
     return word(0x1772) == 0
+}
+
+function IsVaultGame()
+{
+    return word(0x1772) == 1 && word(0x1750) == 0x13
 }
 
 function IsHighLow()
@@ -93,12 +108,17 @@ g_last_menu = word(0x1750)
 g_timer = dword(0x1734)
 g_timer_type = word(0x1738)
 g_high_low_guesses = dword(0x4484)
+// Maybe this is the amount of sprites on screen or something? Goes from 0x1C to 0x3D
+// when winning amount is shown in Vault Game
+g_secret_sauce = dword(0x1758)
+g_vault_game_winnings = dword(0x25B0)
+g_game_music = dword(0x44B0)
 
 CASE_PARAMS = [
     {
         "id": 162690,
         "title": "Never Lucky, Rubber Ducky",
-        "description": "Win $0.01 or $1 dollar by keeping your own case",
+        "description": "Win $0.01 or $1 by keeping your own case",
         "type": "",
         "points": 5,
         "rule": g_player_case_value <= VALUE_TO_CASE[1],
@@ -214,31 +234,46 @@ for params in HIGH_LOW_PARAMS
     )
 }
 
-achievement(
-    title = "Lockpicking", points = 5,
-    description = "Win at least $100.000 in The Vault",
-    id = 162550, badge = "183013", published = "7/18/2021 9:38:09 AM", modified = "7/20/2021 10:39:21 AM",
-    trigger = byte(0x001744) == 12 && byte(0x001741) >= 1 && byte(0x001772) == 1 && byte(0x001770) == 0 &&
-              prev(byte(0x001758)) == 28 && byte(0x001758) == 61
-)
+VAULT_PARAMS = [
+    {
+        "id": 162550,
+        "title": "Lockpicking",
+        "description": "Win at least $100,000 in The Vault",
+        "points": 5,
+        "amount": 100000,
+    },
+    {
+        "id": 162551,
+        "title": "Code Breaker",
+        "description": "Win at least $250,000 in The Vault",
+        "points": 10,
+        "amount": 250000,
+    },
+    {
+        "id": 162552,
+        "title": "Cracked the Vault",
+        "description": "Win at least $400,000 in The Vault",
+        "points": 25,
+        "amount": 400000,
+    },
+]
 
-achievement(
-    title = "Code Breaker", points = 10,
-    description = "Win at least $250.000 in The Vault",
-    id = 162551, badge = "183014", published = "7/18/2021 9:38:09 AM", modified = "7/20/2021 10:39:21 AM",
-    trigger = byte(0x001744) == 12 && byte(0x001772) == 1 && byte(0x001770) == 0 && prev(byte(0x001758)) == 28 &&
-              byte(0x001758) == 61 &&
-              ((byte(0x001741) >= 3) ||
-               (byte(0x001741) == 2 && byte(0x001742) == 5))
-)
-
-achievement(
-    title = "Cracked The Vault", points = 25,
-    description = "Win at least $400.000 in The Vault",
-    id = 162552, badge = "183015", published = "7/18/2021 9:38:10 AM", modified = "7/20/2021 10:39:21 AM",
-    trigger = byte(0x001744) == 12 && byte(0x001741) >= 4 && byte(0x001772) == 1 && byte(0x001770) == 0 &&
-              prev(byte(0x001758)) == 28 && byte(0x001758) == 61
-)
+for params in VAULT_PARAMS
+{
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=params["description"],
+        points=params["points"],
+        trigger=
+            IsSinglePlayer() &&
+            IsVaultGame() &&
+            // End of the game
+            FinishedVaultGame() &&
+            // Amount
+            g_vault_game_winnings >= params["amount"]
+    )
+}
 
 leaderboard(
     id = 122535, title = "High Low Correct Guesses",
