@@ -27,6 +27,11 @@ function IsTVGame()
     return word(0x1772) == 0
 }
 
+function IsHighLow()
+{
+    return word(0x1772) == 2
+}
+
 function TookDeal()
 {
     n_offers = dword(0x25C4)
@@ -87,6 +92,7 @@ g_player_case_value = word(0x4450 + g_player_case * 2)
 g_last_menu = word(0x1750)
 g_timer = dword(0x1734)
 g_timer_type = word(0x1738)
+g_high_low_guesses = dword(0x4484)
 
 CASE_PARAMS = [
     {
@@ -178,19 +184,35 @@ for params in OFFER_PARAMS
     )
 }
 
-achievement(
-    title = "Entry Level ESP Classes", points = 5,
-    description = "Guess 8 cases correctly in High Low",
-    id = 162547, badge = "183010", published = "7/18/2021 9:38:08 AM", modified = "7/20/2021 10:39:20 AM",
-    trigger = prev(byte(0x004484)) == 7 && byte(0x004484) == 8 && byte(0x001772) == 2 && byte(0x001770) == 0
-)
+HIGH_LOW_PARAMS = [
+    {
+        "id": 162547,
+        "title": "Entry Level ESP Classes",
+        "points": 5,
+        "amount": 8,
+    },
+    {
+        "id": 162548,
+        "title": "Sixth Sense",
+        "points": 10,
+        "amount": 15,
+    },
+]
 
-achievement(
-    title = "Sixth Sense", points = 10,
-    description = "Guess 15 cases correctly in High Low",
-    id = 162548, badge = "183011", published = "7/18/2021 9:38:08 AM", modified = "7/20/2021 10:39:20 AM",
-    trigger = prev(byte(0x004484)) == 14 && byte(0x004484) == 15 && byte(0x001772) == 2 && byte(0x001770) == 0
-)
+for params in HIGH_LOW_PARAMS
+{
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=format("Guess {0} cases correctly in High Low", params["amount"]),
+        points=params["points"],
+        trigger=
+            IsSinglePlayer() &&
+            IsHighLow() &&
+            prev(g_high_low_guesses) == params["amount"] - 1 &&
+            g_high_low_guesses == params["amount"]
+    )
+}
 
 achievement(
     title = "Lockpicking", points = 5,
