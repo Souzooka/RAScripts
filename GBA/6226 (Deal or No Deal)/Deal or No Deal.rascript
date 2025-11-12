@@ -13,8 +13,8 @@ function FinishedTVGame()
     return
         // 0x1C= kept case, 0x1B= switched case
         g_last_menu == 0x1C &&//|| g_last_menu == 0x1B &&
-        prev(g_case_timer) == 0xBF &&
-        g_case_timer == 0xFFFFFFFF
+        prev(g_timer) == 0xBF &&
+        g_timer == 0xFFFFFFFF
 }
 
 function IsSinglePlayer()
@@ -36,6 +36,20 @@ function TookDeal()
     return
         n_offers == 0 ||
         last_offer != current_offer
+}
+
+function ReceivedOffer(rule)
+{
+    offer = dword(0x25B0)
+
+    return
+        // Correct timer type (i.e. waiting for banker offer)
+        g_timer_type == 1 &&
+        // Timer became appropriate value
+        prev(g_timer) > 0x9D &&
+        g_timer <= 0x9D &&
+        // Offer satisfies the provided rule
+        rule(offer)
 }
 
 VALUE_TO_CASE = {
@@ -71,7 +85,8 @@ g_player_case = word(0x1714)
 // Value index of the player's case
 g_player_case_value = word(0x4450 + g_player_case * 2)
 g_last_menu = word(0x1750)
-g_case_timer = dword(0x1734)
+g_timer = dword(0x1734)
+g_timer_type = word(0x1738)
 
 CASE_PARAMS = [
     {
@@ -125,29 +140,43 @@ for params in CASE_PARAMS
     )
 }
 
-achievement(
-    title = "Stray Off The Path", points = 5,
-    description = "Have the dealer offer you a deal worth at least $100.000",
-    id = 162691, badge = "183006", published = "7/20/2021 10:38:40 AM", modified = "7/20/2021 10:39:23 AM",
-    trigger = byte(0x001740) == 10 && byte(0x001741) >= 1 && byte(0x001770) == 0 && byte(0x001772) == 0 &&
-              byte(0x001744) == 12
-)
+OFFER_PARAMS = [
+    {
+        "id": 162691,
+        "title": "Stray Off The Path",
+        "description": "Have the dealer offer you a deal worth at least $100,000",
+        "points": 5,
+        "rule": (offer) => offer >= 100000,
+    },
+    {
+        "id": 162692,
+        "title": "Deal or No Deal?",
+        "description": "Have the dealer offer you a deal worth at least $400,000",
+        "points": 10,
+        "rule": (offer) => offer >= 400000,
+    },
+    {
+        "id": 162693,
+        "title": "I'll Make You An Offer You Can't Refuse",
+        "description": "Have the dealer offer you a deal worth at least $600,000",
+        "points": 25,
+        "rule": (offer) => offer >= 600000,
+    },
+]
 
-achievement(
-    title = "Deal Or No Deal?", points = 10,
-    description = "Have the dealer offer you a deal worth at least $400.000",
-    id = 162692, badge = "183007", published = "7/20/2021 10:38:40 AM", modified = "7/20/2021 10:39:23 AM",
-    trigger = byte(0x001740) == 10 && byte(0x001741) >= 4 && byte(0x001770) == 0 && byte(0x001772) == 0 &&
-              byte(0x001744) == 12
-)
-
-achievement(
-    title = "I'll Make You An Offer You Can't Refuse", points = 25,
-    description = "Have the dealer offer you a deal worth at least $600.000",
-    id = 162693, badge = "183008", published = "7/20/2021 10:38:40 AM", modified = "7/20/2021 10:39:24 AM",
-    trigger = byte(0x001740) == 10 && byte(0x001741) >= 6 && byte(0x001770) == 0 && byte(0x001772) == 0 &&
-              byte(0x001744) == 12
-)
+for params in OFFER_PARAMS
+{
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=params["description"],
+        points=params["points"],
+        trigger=
+            IsSinglePlayer() &&
+            IsTVGame() &&
+            ReceivedOffer(params["rule"])
+    )
+}
 
 achievement(
     title = "Entry Level ESP Classes", points = 5,
