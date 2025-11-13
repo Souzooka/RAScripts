@@ -8,13 +8,45 @@ function if_else(cond, a, b)
     return b
 }
 
-function FinishedTVGame()
+function FinishedTVGameWithCase(allow_swap=false)
 {
+    // 0x1C= kept case, 0x1B= switched case
+    menu_cond = g_last_menu == 0x1C || g_last_menu == 0x1B
+    if !allow_swap
+        menu_cond = g_last_menu == 0x1C
+
     return
-        // 0x1C= kept case, 0x1B= switched case
-        g_last_menu == 0x1C &&//|| g_last_menu == 0x1B &&
-        prev(g_timer) == 0xBF &&
-        g_timer == 0xFFFFFFFF
+        menu_cond &&
+        prev(g_timer) == 0 &&
+        g_timer == 0xBF
+}
+
+function FinishedTVGameWithDeal()
+{
+    return dword(0x4438) == 1 && prev(dword(0x4438)) == 0
+}
+
+function FinishedHighLow()
+{
+    // The state in which the game in when this game mode is finished
+    // seems to be opaque, so we'll emulate the game conditions
+    // which lead to the completion state
+    picked_case_value = word(0x4450 + g_picked_case * 2)
+    last_case_value = dword(0x25B0)
+    
+    got_any = dword(0x25C4) != 0
+    got_all = dword(0x25C4) == 26 && prev(dword(0x25C4)) == 25
+    
+    chose_lower = word(0x1750) == 0x21
+    chose_higher = word(0x1750) == 0x22
+    was_lower = picked_case_value < last_case_value
+    was_higher = picked_case_value > last_case_value
+    
+    timer_check = g_timer == 0 && prev(g_timer) > 0
+    low_check = got_any && chose_lower && was_higher && timer_check
+    high_check = got_any && chose_higher && was_lower && timer_check
+    
+    return (low_check || high_check || got_all)
 }
 
 function FinishedVaultGame()
@@ -101,6 +133,7 @@ VALUE_TO_CASE = {
     1000000: 25,
 }
 
+g_game_winnings = dword(0x1694)
 g_player_case = word(0x1714)
 // Value index of the player's case
 g_player_case_value = word(0x4450 + g_player_case * 2)
@@ -113,6 +146,7 @@ g_high_low_guesses = dword(0x4484)
 g_secret_sauce = dword(0x1758)
 g_vault_game_winnings = dword(0x25B0)
 g_game_music = dword(0x44B0)
+g_picked_case = word(0x4390)
 
 CASE_PARAMS = [
     {
@@ -160,7 +194,7 @@ for params in CASE_PARAMS
         trigger=
             IsSinglePlayer() &&
             IsTVGame() &&
-            FinishedTVGame() &&
+            FinishedTVGameWithCase() &&
             //!TookDeal() &&
             params["rule"]
     )
@@ -278,38 +312,39 @@ for params in VAULT_PARAMS
 leaderboard(
     id = 122535, title = "High Low Correct Guesses",
     description = "Most correct guesses in a row in High Low",
-    start  = byte(0x001770) == 0 && byte(0x001772) == 2 && prev(byte(0x007B68)) == 33 &&
-             (byte(0x007B68) == 11 || byte(0x007B68) == 60),
+    start  = IsSinglePlayer() && IsHighLow() && FinishedHighLow(),
     cancel = always_false(),
     submit = always_true(),
-    value  = measured(byte(0x004484)),
+    value  = g_high_low_guesses,
     format = "VALUE"
 )
 
 leaderboard(
     id = 122536, title = "Vault Winnings",
     description = "Win the most money in Vault Game",
-    start  = byte(0x001770) == 0 && byte(0x001772) == 1 && prev(byte(0x001758)) == 28 &&
-             (byte(0x001758) == 55 || byte(0x001758) == 59 || byte(0x001758) == 60 || byte(0x001758) == 61),
+    start  = IsSinglePlayer() && IsVaultGame() && FinishedVaultGame(),
     cancel = always_false(),
     submit = always_true(),
-    value  = max_of(
-                 measured(byte(0x001741) * 100000 + byte(0x001742) * 10000, when=byte(0x001744) == 12),
-                 measured(byte(0x001741) * 10000 + byte(0x001742) * 1000, when=byte(0x001743) == 12),
-                 measured(byte(0x001741) * 1000, when=byte(0x001742) == 12)
-             ),
+    value  = g_vault_game_winnings,
     format = "VALUE"
 )
 
 leaderboard(
     id = 122537, title = "TV Game Winnings",
     description = "Win the most money in TV Game",
-    start  = always_true() &&
-             ((byte(0x001770) == 0 && byte(0x001772) == 0 && prev(byte(0x004438)) == 0 && byte(0x004438) == 1) ||
-              (byte(0x004438) == 4 && byte(0x001740) == 36 && prev(byte(0x001740)) != 36) ||
-              (byte(0x004438) == 5 && dword(0x001734) == 191 && prev(dword(0x001734)) == 0)),
+    start=
+        IsSinglePlayer() &&
+        IsTVGame() &&
+        (FinishedTVGameWithCase(allow_swap=true) || FinishedTVGameWithDeal()),
     cancel = always_false(),
     submit = always_true(),
-    value  = measured(tbyte(0x001694)),
+    value  = max_of(
+        // Took the banker's deal
+        measured(g_game_winnings, when=FinishedTVGameWithDeal()),
+        // Kept/swapped to case with at least $1 value
+        measured(g_game_winnings, when=FinishedTVGameWithCase(allow_swap=true) && g_player_case_value != 0),
+        // Won $.01 :(
+        measured(0, when=always_true())
+    ),
     format = "VALUE"
 )
