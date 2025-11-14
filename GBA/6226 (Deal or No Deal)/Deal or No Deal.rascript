@@ -79,6 +79,11 @@ function IsHighLow()
     return word(0x1772) == 2
 }
 
+function IsTitleMenu()
+{
+    return g_last_menu <= 3
+}
+
 function TookDeal()
 {
     n_offers = dword(0x25C4)
@@ -145,6 +150,7 @@ g_high_low_guesses = dword(0x4484)
 // when winning amount is shown in Vault Game
 g_secret_sauce = dword(0x1758)
 g_vault_game_winnings = dword(0x25B0)
+g_banker_offer = g_vault_game_winnings
 g_game_music = dword(0x44B0)
 g_picked_case = word(0x4390)
 
@@ -272,21 +278,21 @@ VAULT_PARAMS = [
     {
         "id": 162550,
         "title": "Lockpicking",
-        "description": "Win at least $100,000 in The Vault",
+        "description": "Win at least $100,000 in Vault Game",
         "points": 5,
         "amount": 100000,
     },
     {
         "id": 162551,
         "title": "Code Breaker",
-        "description": "Win at least $250,000 in The Vault",
+        "description": "Win at least $250,000 in Vault Game",
         "points": 10,
         "amount": 250000,
     },
     {
         "id": 162552,
         "title": "Cracked the Vault",
-        "description": "Win at least $400,000 in The Vault",
+        "description": "Win at least $400,000 in Vault Game",
         "points": 25,
         "amount": 400000,
     },
@@ -348,3 +354,198 @@ leaderboard(
     ),
     format = "VALUE"
 )
+
+// Rich Presence
+
+// Title menu
+rich_presence_conditional_display(IsTitleMenu(), "In the title menu")
+
+// TV Game
+rp_player_case = rich_presence_value("PLAYER_CASE", g_player_case + 1)
+rp_banker_offer = rich_presence_value("BANKER_OFFER", g_banker_offer)
+case_money_lookup = {
+    0: ".01",
+    1: "1",
+    2: "5",
+    3: "10",
+    4: "25",
+    5: "50",
+    6: "75",
+    7: "100",
+    8: "200",
+    9: "300",
+    10: "400",
+    11: "500",
+    12: "750",
+    13: "1,000",
+    14: "5,000",
+    15: "10,000",
+    16: "25,000",
+    17: "50,000",
+    18: "75,000",
+    19: "100,000",
+    20: "200,000",
+    21: "300,000",
+    22: "400,000",
+    23: "500,000",
+    24: "750,000",
+    25: "1,000,000",
+}
+sentence_end_lookup = {
+    0: "...",
+    1: "...",
+    2: "...",
+    3: "...",
+    4: "...",
+    5: "...",
+    6: "...",
+    7: "...",
+    8: "...",
+    9: "...",
+    10: "...",
+    11: "...",
+    12: "...",
+    13: "...",
+    14: "!",
+    15: "!",
+    16: "!",
+    17: "!",
+    18: "!",
+    19: "!",
+    20: "!",
+    21: "!",
+    22: "!",
+    23: "!",
+    24: "!",
+    25: "!",
+}
+rp_case_money_lookup = rich_presence_lookup("CASE_MONEY", g_player_case_value, case_money_lookup, ".01")
+rp_sentence_end_lookup = rich_presence_lookup("SENTENCE_END", g_player_case_value, sentence_end_lookup, "...")
+
+rich_presence_conditional_display(
+    IsSinglePlayer() && IsTVGame() &&
+    // Player received banker offer
+    once(g_timer_type == 0x1 && prev(g_timer) > 0x9D && g_timer <= 0x9D) &&
+    // Player pressed A in the "Deal/No Deal" menu
+    never(g_last_menu == 0x4 && prev(bit0(0x1760) == 0) && bit0(0x1760) == 1),
+    "Contemplating an offer of ${0} from the Banker in TV Game",
+    rp_banker_offer
+)
+rich_presence_conditional_display(
+    IsSinglePlayer() && IsTVGame() &&
+    // Took the deal
+    once(FinishedTVGameWithDeal()) &&
+    // Back to main menu
+    never(g_last_menu < 2),
+    "Took the Deal of ${0} from the Banker in TV Game. They had ${1} in their case!",
+    rp_banker_offer,
+    rp_case_money_lookup
+)
+rich_presence_conditional_display(
+    IsSinglePlayer() && IsTVGame() &&
+    // Finished the game
+    once(FinishedTVGameWithCase(allow_swap=true)) &&
+    // Kept case
+    g_last_menu == 0x1C &&
+    // Back to main menu
+    never(g_last_menu < 2),
+    "Kept their case in TV Game and won ${0}{1}",
+    rp_case_money_lookup,
+    rp_sentence_end_lookup
+)
+rich_presence_conditional_display(
+    IsSinglePlayer() && IsTVGame() &&
+    // Finished the game
+    once(FinishedTVGameWithCase(allow_swap=true)) &&
+    // Switched case
+    g_last_menu == 0x1B &&
+    // Back to main menu
+    never(g_last_menu < 2),
+    "Switched their case in TV Game and won ${0}{1}",
+    rp_case_money_lookup,
+    rp_sentence_end_lookup
+)
+rich_presence_conditional_display(
+    IsSinglePlayer() && IsTVGame(),
+    "Playing TV Game with case {0}",
+    rp_player_case
+)
+
+// Vault Game
+
+prize_fund = {
+    0: "500,000",
+    1: "450,000",
+    2: "400,000",
+    3: "350,000",
+    4: "300,000",
+    5: "250,000",
+    6: "200,000",
+    7: "150,000",
+    8: "100,000",
+    9: "50,000",
+    10: "45,000",
+    11: "40,000",
+    12: "35,000",
+    13: "30,000",
+    14: "25,000",
+    15: "20,000",
+    16: "15,000",
+    17: "10,000",
+    18: "5,000",
+    19: "0",
+}
+rp_prize_fund = rich_presence_lookup("PRIZE_FUND", dword(0x25c4), prize_fund, "0")
+
+rich_presence_conditional_display(
+    IsSinglePlayer() && IsVaultGame(),
+    "Playing Vault Game. ${0} remains in the Prize Fund!",
+    rp_prize_fund
+)
+
+// High Low
+
+rp_hl_guesses = rich_presence_value("HL_GUESSES", g_high_low_guesses)
+streak_type = {
+    0: "cold",
+    1: "cold",
+    2: "cold",
+    3: "cold",
+    4: "cold",
+    5: "lukewarm",
+    6: "lukewarm",
+    7: "lukewarm",
+    8: "lukewarm",
+    9: "lukewarm",
+    10: "warm",
+    11: "warm",
+    12: "warm",
+    13: "warm",
+    14: "warm",
+    15: "hot",
+    16: "hot",
+    17: "hot",
+    18: "hot",
+    19: "hot",
+    20: "blazing",
+    21: "blazing",
+    22: "blazing",
+    23: "blazing",
+    24: "blazing",
+    25: "perfect",
+}
+rp_streak_type = rich_presence_lookup("HL_STREAK", g_high_low_guesses, streak_type, "anamolous")
+rp_hl_guess_plural = rich_presence_lookup("HL_GUESS_PLURAL", g_high_low_guesses, {1: "guess"}, "guesses")
+
+rich_presence_conditional_display(
+    IsSinglePlayer() && IsHighLow(),
+    "Playing High Low with a {0} streak of {1} correct {2}",
+    rp_streak_type,
+    rp_hl_guesses,
+    rp_hl_guess_plural
+)
+
+// Default
+
+rich_presence_display("Trying to get the best deal")
+
