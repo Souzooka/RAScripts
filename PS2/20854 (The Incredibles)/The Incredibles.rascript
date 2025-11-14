@@ -1,131 +1,234 @@
 // The Incredibles
 // #ID = 20854
 
-achievement(
-    title = "Bank Heist", points = 3, type="progression",
-    description = "Finish the mission \"Bank Heist\".",
-    id = 275544, badge = "304921", published = "12/28/2022 8:20:17 PM", modified = "5/3/2024 10:10:24 AM",
-    trigger = always_true()
-)
+US = 0
+REGIONS = [US]
 
-achievement(
-    title = "Skyline Stretch", points = 3, type="progression",
-    description = "Finish the mission \"Skyline Stretch\".",
-    id = 275545, badge = "304922", published = "12/28/2022 8:20:18 PM", modified = "5/3/2024 10:10:24 AM",
-    trigger = always_true()
-)
+function IsRegion(region)
+{
+    return true
+}
 
-achievement(
-    title = "Buddy Pine & Bomb Voyage", points = 4, type="progression",
-    description = "Finish the mission \"Buddy Pine & Bomb Voyage\".",
-    id = 275546, badge = "304923", published = "12/28/2022 8:20:18 PM", modified = "5/3/2024 10:10:25 AM",
-    trigger = always_true()
-)
+function AntiCheat(region)
+{
+    // TODO
+    return disable_when(always_false(), until=always_true())
+}
 
-achievement(
-    title = "Apartment Inferno", points = 4, type="progression",
-    description = "Finish the mission \"Apartment Inferno\"",
-    id = 275547, badge = "304924", published = "12/28/2022 8:20:19 PM", modified = "5/3/2024 10:10:25 AM",
-    trigger = always_true()
-)
+function LevelComplete(region)
+{
+    return prev(g_stats_shown[region]) == 0xFFFFFFFF && g_stats_shown[region] <= 7
+}
 
-achievement(
-    title = "Late for School", points = 5, type="progression",
-    description = "Finish the mission \"Late for School\".",
-    id = 275548, badge = "304925", published = "12/28/2022 8:20:19 PM", modified = "5/3/2024 10:10:25 AM",
-    trigger = always_true()
-)
+function CLevelStat(addr)
+{
+    obj = {
+        "m_name": addr + 0x0,
+        "m_value": float(addr + 0x80),
+    }
+    
+    return obj
+}
 
-achievement(
-    title = "Beach Landing", points = 5, type="progression",
-    description = "Finish the mission \"Beach Landing\".",
-    id = 275549, badge = "304926", published = "12/28/2022 8:20:20 PM", modified = "5/3/2024 10:10:25 AM",
-    trigger = always_true()
-)
+function GetLevelStat(region, name)
+{
+    // pairs of [value accessor, condition when that value accessor is valid] because the toolkit is the toolkit
+    result = []
+    
+    for i in range(0, length(g_level_stats[region]) - 1)
+    {
+        stat = g_level_stats[region][i]
+        acc = stat[m_value]
+        cond = g_level_stats_length > i && ascii_string_equals(stat[m_name], name, length(name) + 1)
+        array_push(result, [acc, cond])
+    }
+    
+    return result
+}
 
-achievement(
-    title = "Nomanisan Island", points = 5, type="progression",
-    description = "Finish the mission \"Nomanisan Island\".",
-    id = 275550, badge = "304927", published = "12/28/2022 8:20:20 PM", modified = "5/3/2024 10:10:26 AM",
-    trigger = always_true()
-)
+function StatToMaxOf(stat) => max_of(array_map(stat, v => measured(v[0], when=v[1])))
+function StatToNever(stat, rule) => never(any_of(stat, v => rule(v[0]) && v[1]))
 
-achievement(
-    title = "Volcanic Eruption", points = 5, type="progression",
-    description = "Finish the mission \"Volcanic Eruption\".",
-    id = 275551, badge = "304928", published = "12/28/2022 8:20:21 PM", modified = "5/3/2024 10:10:26 AM",
-    trigger = always_true()
-)
+g_level_stats = {
+    US: array_map(range(0, 0x10-1), i => CLevelStat(0x6CF090 + i * 0x84)),
+}
 
-achievement(
-    title = "Robot Arena", points = 5, type="progression",
-    description = "Finish the mission \"Robot Arena\".",
-    id = 275552, badge = "304929", published = "12/28/2022 8:20:21 PM", modified = "5/3/2024 10:10:26 AM",
-    trigger = always_true()
-)
+g_level_stats_length = {
+    US: dword(0x631C30),
+}
 
-achievement(
-    title = "Great Falls", points = 5, type="progression",
-    description = "Finish the mission \"Great Falls\".",
-    id = 275553, badge = "304930", published = "12/28/2022 8:20:21 PM", modified = "5/3/2024 10:10:26 AM",
-    trigger = always_true()
-)
+g_stats_shown = {
+    US: dword(0x630ABC),
+}
 
-achievement(
-    title = "Syndrome's Base", points = 5, type="progression",
-    description = "Finish the mission \"Syndrome's Base\"",
-    id = 275554, badge = "304931", published = "12/28/2022 8:20:22 PM", modified = "5/3/2024 10:10:26 AM",
-    trigger = always_true()
-)
+g_level_id = {
+    US: dword(0x631C54),
+}
 
-achievement(
-    title = "Finding Mr. Incredible", points = 5, type="progression",
-    description = "Finish the mission \"Finding Mr. Incredible\".",
-    id = 275555, badge = "304932", published = "12/28/2022 8:20:22 PM", modified = "5/3/2024 10:10:26 AM",
-    trigger = always_true()
-)
+MISSION_PARAMS = [
+    {
+        "id": 275544,
+        "title": "Bank Heist",
+        "name": "Bank Heist",
+        "type": "progression",
+        "points": 3,
+        "level": 1,
+    },
+    {
+        "id": 275545,
+        "title": "Skyline Stretch",
+        "name": "Skyline Stretch",
+        "type": "progression",
+        "points": 3,
+        "level": 2,
+    },
+    {
+        "id": 275546,
+        "title": "Buddy Pine & Bomb Voyage",
+        "name": "Buddy Pine & Bomb Voyage",
+        "type": "progression",
+        "points": 4,
+        "level": 3,
+    },
+    {
+        "id": 275547,
+        "title": "Apartment Inferno",
+        "name": "Apartment Inferno",
+        "type": "progression",
+        "points": 4,
+        "level": 4,
+    },
+    {
+        "id": 275548,
+        "title": "Late for School",
+        "name": "Late for School",
+        "type": "progression",
+        "points": 5,
+        "level": 5,
+    },
+    {
+        "id": 275549,
+        "title": "Beach Landing",
+        "name": "Beach Landing",
+        "type": "progression",
+        "points": 5,
+        "level": 6,
+    },
+    {
+        "id": 275550,
+        "title": "Nomanisan Island",
+        "name": "Nomanisan Island",
+        "type": "progression",
+        "points": 5,
+        "level": 7,
+    },
+    {
+        "id": 275551,
+        "title": "Volcanic Eruption",
+        "name": "Volcanic Eruption",
+        "type": "progression",
+        "points": 5,
+        "level": 8,
+    },
+    {
+        "id": 275552,
+        "title": "Robot Arena",
+        "name": "Robot Arena",
+        "type": "progression",
+        "points": 5,
+        "level": 9,
+    },
+    {
+        "id": 275553,
+        "title": "Great Falls",
+        "name": "Great Falls",
+        "type": "progression",
+        "points": 5,
+        "level": 10,
+    },
+    {
+        "id": 275554,
+        "title": "Syndrome's Base",
+        "name": "Syndrome's Base",
+        "type": "progression",
+        "points": 5,
+        "level": 11,
+    },
+    {
+        "id": 275555,
+        "title": "Finding Mr. Incredible",
+        "name": "Finding Mr. Incredible",
+        "type": "progression",
+        "points": 5,
+        "level": 12,
+    },
+    {
+        "id": 275556,
+        "title": "100 Mile Dash",
+        "name": "100 Mile Dash",
+        "type": "progression",
+        "points": 5,
+        "level": 13,
+    },
+    {
+        "id": 275557,
+        "title": "Violet's Crossing",
+        "name": "Violet's Crossing",
+        "type": "progression",
+        "points": 5,
+        "level": 14,
+    },
+    {
+        "id": 275558,
+        "title": "Incredi-Ball",
+        "name": "Incredi-Ball",
+        "type": "progression",
+        "points": 5,
+        "level": 15,
+    },
+    {
+        "id": 275559,
+        "title": "Secret Lava Labs",
+        "name": "Secret Lava Labs",
+        "type": "progression",
+        "points": 5,
+        "level": 16,
+    },
+    {
+        "id": 275560,
+        "title": "Rocket Silo",
+        "name": "Rocket Silo",
+        "type": "progression",
+        "points": 5,
+        "level": 17,
+    },
+    {
+        "id": 275561,
+        "title": "Save the World",
+        "name": "Save the World",
+        "type": "win_condition",
+        "points": 10,
+        "level": 18,
+    },
+]
 
-achievement(
-    title = "100 Mile Dash", points = 5, type="progression",
-    description = "Finish the mission \"100 Mile Dash\".",
-    id = 275556, badge = "304933", published = "12/28/2022 8:20:23 PM", modified = "5/3/2024 10:10:26 AM",
-    trigger = always_true()
-)
+for params in MISSION_PARAMS
+{
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=format("Finish the mission \"{0}\".", params["name"]),
+        type=params["type"],
+        points=params["points"],
+        trigger=any_of(REGIONS, region =>
+            IsRegion(region) &&
+            AntiCheat(region) &&
+            g_level_id[region] == params["level"] &&
+            LevelComplete(region)
+        )
+    )
+}
 
-achievement(
-    title = "Violet's Crossing", points = 5, type="progression",
-    description = "Finish the mission \"Violet's Crossing\".",
-    id = 275557, badge = "304934", published = "12/28/2022 8:20:23 PM", modified = "5/3/2024 10:10:42 AM",
-    trigger = always_true()
-)
-
-achievement(
-    title = "Incredi-Ball", points = 5, type="progression",
-    description = "Finish the mission \"Incredi-ball\".",
-    id = 275558, badge = "304935", published = "12/28/2022 8:20:24 PM", modified = "5/3/2024 10:10:42 AM",
-    trigger = always_true()
-)
-
-achievement(
-    title = "Secret Lava Labs", points = 5, type="progression",
-    description = "Finish the mission \"Secret Lava Labs\".",
-    id = 275559, badge = "304936", published = "12/28/2022 8:20:24 PM", modified = "5/3/2024 10:10:42 AM",
-    trigger = always_true()
-)
-
-achievement(
-    title = "Rocket Silo", points = 5, type="progression",
-    description = "Finish the mission \"Rocket Silo\".",
-    id = 275560, badge = "304937", published = "12/28/2022 8:20:24 PM", modified = "5/3/2024 10:10:43 AM",
-    trigger = always_true()
-)
-
-achievement(
-    title = "Save the World", points = 10, type="win_condition",
-    description = "Finish the mission \"Save the World\".",
-    id = 275561, badge = "304938", published = "12/28/2022 8:20:25 PM", modified = "5/3/2024 10:10:27 AM",
-    trigger = always_true()
-)
 
 achievement(
     title = "Faster than a Helicopter", points = 5,
