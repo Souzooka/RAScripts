@@ -203,7 +203,7 @@ for params in CASE_PARAMS
 OFFER_PARAMS = [
     {
         "id": 162691,
-        "title": "Stray Off The Path",
+        "title": "Stray Off the Path",
         "description": "Have the dealer offer you a deal worth at least $100,000",
         "points": 5,
         "rule": (offer) => offer >= 100000,
@@ -217,7 +217,7 @@ OFFER_PARAMS = [
     },
     {
         "id": 162693,
-        "title": "I'll Make You An Offer You Can't Refuse",
+        "title": "I'll Make You an Offer You Can't Refuse",
         "description": "Have the dealer offer you a deal worth at least $600,000",
         "points": 25,
         "rule": (offer) => offer >= 600000,
