@@ -312,6 +312,29 @@ g_mission_score = {
     JP: dword(NO_ADDR),
 }
 
+TARGET_FINAL_STAGE = 8
+g_target_times = {
+    US: array_map(range(0, TARGET_FINAL_STAGE), i => dword(0x383990 + i * 8)),
+    EU: array_map(range(0, TARGET_FINAL_STAGE), i => dword(NO_ADDR + i * 8)),
+    JP: array_map(range(0, TARGET_FINAL_STAGE), i => dword(NO_ADDR + i * 8)),  
+}
+g_target_scores = {
+    US: array_map(range(0, TARGET_FINAL_STAGE), i => float(0x383AB0 + i * 4)),
+    EU: array_map(range(0, TARGET_FINAL_STAGE), i => float(NO_ADDR + i * 4)),
+    JP: array_map(range(0, TARGET_FINAL_STAGE), i => float(NO_ADDR + i * 4)),
+}
+g_target_airstrip = {
+    US: dword(0x551600),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+g_target_time = {
+    US: dword(0x551604),
+    EU: dword(NO_ADDR),
+    JP: dword(NO_ADDR),
+}
+
+
 // Game functions
 
 function InLevel(region)
@@ -341,6 +364,14 @@ function MissionEnd(region)
            g_mission_clear_state[region] != 0 &&
            prev(g_mission_clear_substate[region]) != 0xFF &&
            g_mission_clear_substate[region] == 0xFF
+}
+
+function TargetEnd(region)
+{
+    return g_game_mode[region] == MODE_TARGET &&
+           g_target_airstrip[region] != 0xFFFFFFFF &&
+           prev(g_target_scores[region][0]) != 0.0 &&
+           g_target_scores[region][0] == 0.0
 }
 
 function CanvasEnd(region)
@@ -597,6 +628,35 @@ for mission in AdventurePerfectParams
 
 // TODO: Shinden(-Kai)
 
+// Target Mode
+// Not too much to do here
+achievement(
+    id=559678,
+    title="Target Mode - A+",
+    description="Complete Target Mode and achieve a final grade of A+ by attaining an average technical score of 80% or better.",
+    points=10,
+    trigger=any_of(Regions, region =>
+        IsRegion(region) &&
+        TargetEnd(region) &&
+        sum_of(g_target_scores[region], prev) >= (80.0 * 5)
+    )
+)
+
+// NOTE: Beat Target Mode <= 10min for Stealth Jet (US)
+// 11min for EU...
+// 15min for JP...
+achievement(
+    id=559679,
+    title="Target Mode - Quick",
+    description="Complete Target Mode with a total time of 10 minutes or less.",
+    points=10,
+    trigger=any_of(Regions, region =>
+        IsRegion(region) &&
+        TargetEnd(region) &&
+        sum_of(g_target_times[region], prev) <= 36000
+    )
+)
+
 // Sky Canvas
 FREE_CANVAS = 10
 SkyCanvasStages = {
@@ -770,6 +830,50 @@ for mission in leaderboard_ids
     )
 }
 
+// Target Mode
+values = []
+for region in Regions
+{
+    array_push(values, 
+        measured(
+            sum_of(g_target_times[region], prev), 
+            when=IsRegion(region) && g_target_airstrip[region] != 0xFFFFFFFF)
+    )
+    array_push(values,
+        measured(
+            sum_of(g_target_times[region], v => v) + g_target_time[region],
+            when=IsRegion(region) && g_target_airstrip[region] == 0xFFFFFFFF
+        )
+    )
+}
+//leaderboard(
+//    id=0,
+//    title="Target Mode - Time Attack",
+//    description="Complete Target Mode in the fastest time!",
+//    format="FRAMES",
+//    lower_is_better=true,
+//    start=any_of(Regions, region =>
+//        IsRegion(region) &&
+//        g_game_mode[region] == MODE_TARGET &&
+//        g_current_mission[region] == 0 &&
+//        g_target_times[region][0] == 0.0 &&
+//        !prev(InLevel(region)) &&
+//        InLevel(region)
+//    ),
+//    cancel=any_of(Regions, region =>
+//        IsRegion(region) &&
+//        g_target_times[region][0] == 0.0 &&
+//        !InLevel(region) &&
+//        g_current_mission[region] != TARGET_FINAL_STAGE &&
+//        g_target_airstrip[region] == 0xFFFFFFFF
+//    ),
+//    submit=any_of(Regions, region =>
+//        IsRegion(region) &&
+//        TargetEnd(region)
+//    ),
+//    value=max_of(values)
+//)
+
 // Rich Presence
 
 rp_region_lookup = {
@@ -823,6 +927,14 @@ for region in Regions
         rp_canvas,
         rp_plane
     )
+    // Target Mode
+    rich_presence_conditional_display(
+        IsRegion(region) && g_game_mode[region] == MODE_TARGET && InLevel(region),
+        "{0} Target Mode | {1}",
+        rp_region,
+        rp_plane
+    )
 }
 
 rich_presence_display("Playing Sky Odyssey")
+
