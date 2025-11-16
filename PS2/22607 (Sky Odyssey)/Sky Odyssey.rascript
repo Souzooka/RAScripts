@@ -334,6 +334,26 @@ g_target_time = {
     JP: dword(NO_ADDR),
 }
 
+g_pending_shinden = {
+    US: bit(24, 0x283F54),
+    EU: bit(24, NO_ADDR),
+    JP: bit(24, NO_ADDR),
+}
+g_pending_shinden_kai = {
+    US: bit(21, 0x283F54),
+    EU: bit(21, NO_ADDR),
+    JP: bit(21, NO_ADDR),
+}
+g_shinden = {
+    US: bit7(0x384163),
+    EU: bit7(NO_ADDR),
+    JP: bit7(NO_ADDR),
+}
+g_shinden_kai = {
+    US: bit7(0x384164),
+    EU: bit7(NO_ADDR),
+    JP: bit7(NO_ADDR),
+}
 
 // Game functions
 
@@ -626,7 +646,31 @@ for mission in AdventurePerfectParams
     )
 }
 
-// TODO: Shinden(-Kai)
+achievement(
+    id=559997,
+    title="Shinden",
+    description="Unlock the Shinden by landing on the secret landing strips in \"Adventure Begins,\" \"The Labyrinth,\" and \"Tower of Terror.\"",
+    points=10,
+    trigger=any_of(Regions, region =>
+        IsRegion(region) &&
+        prev(g_pending_shinden[region]) == 1 &&
+        prev(g_shinden[region]) == 0 &&
+        g_shinden[region] == 1
+    )
+)
+
+achievement(
+    id=559998,
+    title="Shinden-Kai",
+    description="Unlock the Shinden-Kai by landing on the secret landing strips in \"Adventure Begins,\" \"The Labyrinth,\" \"Tower of Terror,\" and \"The Great Divide.\"",
+    points=10,
+    trigger=any_of(Regions, region =>
+        IsRegion(region) &&
+        prev(g_pending_shinden_kai[region]) == 1 &&
+        prev(g_shinden_kai[region]) == 0 &&
+        g_shinden_kai[region] == 1
+    )
+)
 
 // Target Mode
 // Not too much to do here
