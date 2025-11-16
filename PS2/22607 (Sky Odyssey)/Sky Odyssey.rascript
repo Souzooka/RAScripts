@@ -6,7 +6,7 @@ True = 1
 False = 0
 NO_ADDR = 0x100000 // always 0x0 when read
 
-RegionByte = byte(0x100000)
+RegionByte = byte(0x101EAC)
 US = 0
 EU = 1
 JP = 2
@@ -196,32 +196,32 @@ OptionalMissions = [MISSION_MINE, MISSION_SOS, MISSION_RELIEF]
 // g_current_mission is fine for other modes; refer to code note for reasoning
 g_current_mission = {
     US: dword(0x282EA4),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28A524),
+    JP: dword(0x2855A4),
 }
 
 g_rank_circle = {
     US: dword(0x283360),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28AA20),
+    JP: dword(0x285A50),
 }
 
 g_mission_clear_state = {
     US: dword(0x283A10),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B0A8),
+    JP: dword(0x286120),
 }
 
 g_mission_clear_substate = {
     US: dword(0x283A14),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B0AC),
+    JP: dword(0x286124),
 }
 
 g_mission_time = {
     US: dword(0x283F00),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B5B0),
+    JP: dword(0x286628),
 }
 
 PLANE_BF = 0
@@ -237,8 +237,8 @@ PLANE_UFO_S = 9
 PLANE_UFO_G = 10
 g_plane_type = {
     US: dword(0x283F24),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B5D4),
+    JP: dword(0x28664C),
 }
 
 MODE_ADVENTURE = 0
@@ -248,32 +248,32 @@ MODE_TRAINING = 3
 MODE_FREE_FLIGHT = 4
 g_game_mode = {
     US: dword(0x283F7C),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B62C),
+    JP: dword(0x2866A4),
 }
 
 g_mission_goal_time = {
     US: dword(0x283FFC),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B6AC),
+    JP: dword(0x286724),
 }
 
 g_in_game = {
     US: dword(0x28403C),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B6EC),
+    JP: dword(0x286764),
 }
 
 g_checkpoint_rings_hit = {
     US: dword(0x284124),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B7DC),
+    JP: dword(0x286854),
 }
 
 g_num_checkpoint_rings = {
     US: dword(0x284130),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B7E8),
+    JP: dword(0x286860),
 }
 
 RANK_INITIAL = 0
@@ -284,75 +284,75 @@ RANK_A = 4
 RANK_AP = 5 // A+
 g_mission_rank = {
     US: dword(0x284140),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B7F8),
+    JP: dword(0x286870),
 }
 
 g_sky_canvas_results_timer = {
     US: dword(0x28421C),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x28B8CC),
+    JP: dword(0x286944),
 }
 
 g_sky_canvas_score = {
     US: float(0x284244),
-    EU: float(NO_ADDR),
-    JP: float(NO_ADDR),
+    EU: float(0x28B8F4),
+    JP: float(0x28696C),
 }
 
 g_adventure_mission = {
     US: dword(0x2D0E88),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x2D8598),
+    JP: dword(0x2D3618),
 }
 
 g_mission_score = {
     US: dword(0x2D63E0),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x2DDCA0),
+    JP: dword(0x2D8C60),
 }
 
 TARGET_FINAL_STAGE = 8
 g_target_times = {
     US: array_map(range(0, TARGET_FINAL_STAGE), i => dword(0x383990 + i * 8)),
-    EU: array_map(range(0, TARGET_FINAL_STAGE), i => dword(NO_ADDR + i * 8)),
-    JP: array_map(range(0, TARGET_FINAL_STAGE), i => dword(NO_ADDR + i * 8)),  
+    EU: array_map(range(0, TARGET_FINAL_STAGE), i => dword(0x38F510 + i * 8)),
+    JP: array_map(range(0, TARGET_FINAL_STAGE), i => dword(0x38A510 + i * 8)),  
 }
 g_target_scores = {
     US: array_map(range(0, TARGET_FINAL_STAGE), i => float(0x383AB0 + i * 4)),
-    EU: array_map(range(0, TARGET_FINAL_STAGE), i => float(NO_ADDR + i * 4)),
-    JP: array_map(range(0, TARGET_FINAL_STAGE), i => float(NO_ADDR + i * 4)),
+    EU: array_map(range(0, TARGET_FINAL_STAGE), i => float(0x38F630 + i * 4)),
+    JP: array_map(range(0, TARGET_FINAL_STAGE), i => float(0x38A630 + i * 4)),
 }
 g_target_airstrip = {
     US: dword(0x551600),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x55DBD0),
+    JP: dword(0x5580D0),
 }
 g_target_time = {
     US: dword(0x551604),
-    EU: dword(NO_ADDR),
-    JP: dword(NO_ADDR),
+    EU: dword(0x55DBD4),
+    JP: dword(0x5580D4),
 }
 
 g_pending_shinden = {
     US: bit(24, 0x283F54),
-    EU: bit(24, NO_ADDR),
-    JP: bit(24, NO_ADDR),
+    EU: bit(24, 0x28B604),
+    JP: bit(24, 0x28667C),
 }
 g_pending_shinden_kai = {
     US: bit(21, 0x283F54),
-    EU: bit(21, NO_ADDR),
-    JP: bit(21, NO_ADDR),
+    EU: bit(21, 0x28B604),
+    JP: bit(21, 0x28667C),
 }
 g_shinden = {
     US: bit7(0x384163),
-    EU: bit7(NO_ADDR),
-    JP: bit7(NO_ADDR),
+    EU: bit7(0x38FCE3),
+    JP: bit7(0x38ACE3),
 }
 g_shinden_kai = {
     US: bit7(0x384164),
-    EU: bit7(NO_ADDR),
-    JP: bit7(NO_ADDR),
+    EU: bit7(0x38FCE3),
+    JP: bit7(0x38ACE4),
 }
 
 // Game functions
@@ -409,92 +409,92 @@ function CanvasEnd(region)
 AdventureClearParams = {
     MISSION_TOWERS: {
         "id": 463369,
-        "title": "",
+        "title": "Terrible Towers",
         "points": 5,
     },
     MISSION_FALLS: {
         "id": 463370,
-        "title": "",
+        "title": "Rise as Water Falls",
         "points": 10,
     },
     MISSION_SOS: {
         "id": 463371,
-        "title": "",
+        "title": "Saving the Hot Air Balloons",
         "points": 5,
     },
     MISSION_MINE: {
         "id": 463372,
-        "title": "",
+        "title": "Mined the Gap",
         "points": 5,
     },
     MISSION_BEGIN: {
         "id": 463373,
-        "title": "",
+        "title": "A Journey of a Thousand Miles",
         "points": 5,
     },
     MISSION_LOW_ROAD: {
         "id": 463374,
-        "title": "",
+        "title": "Flying Low",
         "points": 5,
     },
     MISSION_LABYRINTH: {
         "id": 463375,
-        "title": "",
+        "title": "Navigating the Labyrinth",
         "points": 5,
     },
     MISSION_DESERT_EXPRESS: {
         "id": 463376,
-        "title": "",
+        "title": "On a Wire and a Prayer",
         "points": 5,
     },
     MISSION_RELIEF: {
         "id": 463377,
-        "title": "",
+        "title": "Airbone Care Package",
         "points": 5,
     },
     MISSION_FOREST: {
         "id": 463378,
-        "title": "",
+        "title": "The Canopy Above",
         "points": 5,
     },
     MISSION_BLOWN: {
         "id": 463379,
-        "title": "",
+        "title": "Traversing the Air Currents",
         "points": 5,
     },
     MISSION_GREAT_DIVIDE: {
         "id": 463380,
-        "title": "",
+        "title": "Reaching New Heights",
         "points": 5,
     },
     MISSION_FIRE_VALLEY: {
         "id": 463381,
-        "title": "",
+        "title": "Through the Flames",
         "points": 10,
     },
     MISSION_TIGHT_SQUEEZE: {
         "id": 463382,
-        "title": "",
+        "title": "The Tightest Squeeze",
         "points": 10,
     },
     MISSION_GREAT_FALLS: {
         "id": 463383,
-        "title": "",
+        "title": "Behind the Monstrous Waterfalls",
         "points": 10,
     },
     MISSION_RENDEZVOUS: {
         "id": 463384,
-        "title": "",
+        "title": "Mid-air Fling",
         "points": 5,
     },
     MISSION_SEAS: {
         "id": 463395,
-        "title": "",
+        "title": "Turbulent Hop",
         "points": 5,
     },
     MISSION_STORM: {
         "id": 463385,
-        "title": "",
+        "title": "Danger, High Voltage",
         "points": 5,
     },
 }
@@ -502,92 +502,92 @@ AdventureClearParams = {
 AdventurePerfectParams = {
     MISSION_TOWERS: {
         "id": 463396,
-        "title": "",
+        "title": "Tower Above the Terror",
         "points": 10,
     },
     MISSION_FALLS: {
         "id": 463386,
-        "title": "",
+        "title": "Don't Go Chasing Waterfalls",
         "points": 10,
     },
     MISSION_SOS: {
         "id": 463397,
-        "title": "",
+        "title": "The Final Rescue",
         "points": 10,
     },
     MISSION_MINE: {
         "id": 463387,
-        "title": "",
+        "title": "Manic Miner",
         "points": 10,
     },
     MISSION_BEGIN: {
         "id": 463398,
-        "title": "",
+        "title": "Begins With a Single Flight",
         "points": 10,
     },
     MISSION_LOW_ROAD: {
         "id": 463399,
-        "title": "",
+        "title": "Under the Radar",
         "points": 10,
     },
     MISSION_LABYRINTH: {
         "id": 463388,
-        "title": "",
+        "title": "Maze Master",
         "points": 10,
     },
     MISSION_DESERT_EXPRESS: {
         "id": 463389,
-        "title": "",
+        "title": "Perfect Way to Express Oneself",
         "points": 10,
     },
     MISSION_RELIEF: {
         "id": 463400,
-        "title": "",
+        "title": "Miracle Pilot",
         "points": 10,
     },
     MISSION_FOREST: {
         "id": 463390,
-        "title": "",
+        "title": "Attuned to the Forest",
         "points": 10,
     },
     MISSION_BLOWN: {
         "id": 463401,
-        "title": "",
+        "title": "Tailwinds in Your Forecast",
         "points": 10,
     },
     MISSION_GREAT_DIVIDE: {
         "id": 463391,
-        "title": "",
+        "title": "Getting Over It",
         "points": 10,
     },
     MISSION_FIRE_VALLEY: {
         "id": 463402,
-        "title": "",
+        "title": "Forged in Fire",
         "points": 25,
     },
     MISSION_TIGHT_SQUEEZE: {
         "id": 463392,
-        "title": "",
+        "title": "Squeezing Perfection From a Stone",
         "points": 25,
     },
     MISSION_GREAT_FALLS: {
         "id": 463403,
-        "title": "",
+        "title": "The Great Pilots Rise",
         "points": 25,
     },
     MISSION_RENDEZVOUS: {
         "id": 463393,
-        "title": "",
+        "title": "Fuel N' Fly",
         "points": 10,
     },
     MISSION_SEAS: {
         "id": 463404,
-        "title": "",
+        "title": "Top Gun",
         "points": 10,
     },
     MISSION_STORM: {
         "id": 463394,
-        "title": "",
+        "title": "Calm Under Pressure",
         "points": 10,
     },
 }
@@ -635,6 +635,7 @@ for mission in AdventurePerfectParams
         id=id,
         title=title,
         description=description,
+        type=if_else(list_in(OptionalMissions, mission) || list_in(FinalMissions, mission), "missable", ""),
         points=points,
         trigger=any_of(Regions, region =>
             IsRegion(region) &&
@@ -648,7 +649,7 @@ for mission in AdventurePerfectParams
 
 achievement(
     id=559997,
-    title="Shinden",
+    title="A Bird Needs a Body and Wings",
     description="Unlock the Shinden by landing on the secret landing strips in \"Adventure Begins,\" \"The Labyrinth,\" and \"Tower of Terror.\"",
     points=10,
     trigger=any_of(Regions, region =>
@@ -661,7 +662,7 @@ achievement(
 
 achievement(
     id=559998,
-    title="Shinden-Kai",
+    title="Maximal Engineering",
     description="Unlock the Shinden-Kai by landing on the secret landing strips in \"Adventure Begins,\" \"The Labyrinth,\" \"Tower of Terror,\" and \"The Great Divide.\"",
     points=10,
     trigger=any_of(Regions, region =>
@@ -676,7 +677,7 @@ achievement(
 // Not too much to do here
 achievement(
     id=559678,
-    title="Target Mode - A+",
+    title="Target Practice Prodigy",
     description="Complete Target Mode and achieve a final grade of A+ by attaining an average technical score of 80% or better.",
     points=10,
     trigger=any_of(Regions, region =>
@@ -691,7 +692,7 @@ achievement(
 // 15min for JP...
 achievement(
     id=559679,
-    title="Target Mode - Quick",
+    title="Target Practice Speedster",
     description="Complete Target Mode with a total time of 10 minutes or less.",
     points=10,
     trigger=any_of(Regions, region =>
@@ -729,61 +730,61 @@ SkyCanvasParams = [
     {
         "id": 463017,
         "mission": 0,
-        "title": "",
+        "title": "Linear Learner",
         "points": 1,
     },
     {
         "id": 463018,
         "mission": 1,
-        "title": "",
+        "title": "Acute Observation",
         "points": 2,
     },
     {
         "id": 463019,
         "mission": 2,
-        "title": "",
+        "title": "In the Sky With Diamonds",
         "points": 2,
     },
     {
         "id": 463020,
         "mission": 3,
-        "title": "",
+        "title": "Infinite Fun",
         "points": 2,
     },
     {
         "id": 463021,
         "mission": 4,
-        "title": "",
+        "title": "Be Obtuse",
         "points": 3,
     },
     {
         "id": 463022,
         "mission": 5,
-        "title": "",
+        "title": "Love in the Air",
         "points": 3,
     },
     {
         "id": 463023,
         "mission": 6,
-        "title": "",
+        "title": "Watching the Clouds",
         "points": 3,
     },
     {
         "id": 463024,
         "mission": 7,
-        "title": "",
+        "title": "Chained Together",
         "points": 3,
     },
     {
         "id": 463025,
         "mission": 8,
-        "title": "",
+        "title": "Your Face Up in Skies",
         "points": 4,
     },
     {
         "id": 463026,
         "mission": 9,
-        "title": "",
+        "title": "Word Up!",
         "points": 5,
     },
 ]
