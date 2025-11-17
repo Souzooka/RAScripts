@@ -419,7 +419,7 @@ AdventureClearParams = {
     },
     MISSION_SOS: {
         "id": 463371,
-        "title": "Saving the Hot Air Balloons",
+        "title": "Saving the Hot Air Balloon",
         "points": 5,
     },
     MISSION_MINE: {
@@ -508,7 +508,7 @@ AdventurePerfectParams = {
     MISSION_FALLS: {
         "id": 463386,
         "title": "Don't Go Chasing Waterfalls",
-        "points": 10,
+        "points": 25,
     },
     MISSION_SOS: {
         "id": 463397,
@@ -978,6 +978,12 @@ for region in Regions
         "{0} Target Mode | {1}",
         rp_region,
         rp_plane
+    )
+    
+    rich_presence_conditional_display(
+        IsRegion(region),
+        "{0} Playing Sky Odyssey",
+        rp_region
     )
 }
 
