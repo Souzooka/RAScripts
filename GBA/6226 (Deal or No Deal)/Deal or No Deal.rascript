@@ -8,15 +8,11 @@ function if_else(cond, a, b)
     return b
 }
 
-function FinishedTVGameWithCase(allow_swap=false)
+function FinishedTVGameWithCase()
 {
-    // 0x1C= kept case, 0x1B= switched case
-    menu_cond = g_last_menu == 0x1C || g_last_menu == 0x1B
-    if !allow_swap
-        menu_cond = g_last_menu == 0x1C
-
     return
-        menu_cond &&
+        // 0x1C= kept case, 0x1B= switched case
+        __ornext(g_last_menu == 0x1C || g_last_menu == 0x1B) &&
         prev(g_timer) == 0 &&
         g_timer == 0xBF
 }
@@ -158,7 +154,7 @@ CASE_PARAMS = [
     {
         "id": 162690,
         "title": "Never Lucky, Rubber Ducky",
-        "description": "Win $0.01 or $1 by keeping your own case",
+        "description": "Win $0.01 or $1 by keeping or switching a case",
         "type": "",
         "points": 5,
         "rule": g_player_case_value <= VALUE_TO_CASE[1],
@@ -166,7 +162,7 @@ CASE_PARAMS = [
     {
         "id": 162687,
         "title": "Contestant Number X",
-        "description": "Win $100,000 or more by keeping your own case",
+        "description": "Win $100,000 or more by keeping or switching a case",
         "type": "",
         "points": 5,
         "rule": g_player_case_value >= VALUE_TO_CASE[100000],
@@ -174,7 +170,7 @@ CASE_PARAMS = [
     {
         "id": 162688,
         "title": "Slumdog Millionaire",
-        "description": "Win $400,000 or more by keeping your own case",
+        "description": "Win $400,000 or more by keeping or switching a case",
         "type": "",
         "points": 10,
         "rule": g_player_case_value >= VALUE_TO_CASE[400000],
@@ -182,7 +178,7 @@ CASE_PARAMS = [
     {
         "id": 162689,
         "title": "Who Wants to Be a Millionaire?",
-        "description": "Win $1,000,000 by keeping your own case",
+        "description": "Win $1,000,000 by keeping or switching a case",
         "type": "win_condition",
         "points": 25,
         "rule": g_player_case_value == VALUE_TO_CASE[1000000],
@@ -341,14 +337,14 @@ leaderboard(
     start=
         IsSinglePlayer() &&
         IsTVGame() &&
-        (FinishedTVGameWithCase(allow_swap=true) || FinishedTVGameWithDeal()),
+        (FinishedTVGameWithCase() || FinishedTVGameWithDeal()),
     cancel = always_false(),
     submit = always_true(),
     value  = max_of(
         // Took the banker's deal
         measured(g_game_winnings, when=FinishedTVGameWithDeal()),
         // Kept/swapped to case with at least $1 value
-        measured(g_game_winnings, when=FinishedTVGameWithCase(allow_swap=true) && g_player_case_value != 0),
+        measured(g_game_winnings, when=FinishedTVGameWithCase() && g_player_case_value != 0),
         // Won $.01 :(
         measured(0, when=always_true())
     ),
@@ -444,7 +440,7 @@ rich_presence_conditional_display(
 rich_presence_conditional_display(
     IsSinglePlayer() && IsTVGame() &&
     // Finished the game
-    once(FinishedTVGameWithCase(allow_swap=true)) &&
+    once(FinishedTVGameWithCase()) &&
     // Kept case
     g_last_menu == 0x1C &&
     // Back to main menu
@@ -456,7 +452,7 @@ rich_presence_conditional_display(
 rich_presence_conditional_display(
     IsSinglePlayer() && IsTVGame() &&
     // Finished the game
-    once(FinishedTVGameWithCase(allow_swap=true)) &&
+    once(FinishedTVGameWithCase()) &&
     // Switched case
     g_last_menu == 0x1B &&
     // Back to main menu
