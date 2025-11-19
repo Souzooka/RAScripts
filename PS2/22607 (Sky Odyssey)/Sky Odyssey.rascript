@@ -390,6 +390,7 @@ function TargetEnd(region)
 {
     return g_game_mode[region] == MODE_TARGET &&
            g_target_airstrip[region] != 0xFFFFFFFF &&
+           prev(g_target_scores[region][TARGET_FINAL_STAGE]) != 0.0 &&
            prev(g_target_scores[region][0]) != 0.0 &&
            g_target_scores[region][0] == 0.0
 }
