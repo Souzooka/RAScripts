@@ -650,7 +650,7 @@ for mission in AdventurePerfectParams
 achievement(
     id=559997,
     title="A Bird Needs a Body and Wings",
-    description="Unlock the Shinden by landing on the secret landing strips in \"Adventure Begins,\" \"The Labyrinth,\" and \"Tower of Terror.\"",
+    description="Unlock the Shinden by landing on the secret landing strips in \"Adventure Begins,\" \"The Labyrinth,\" and \"Towers of Terror.\"",
     points=10,
     trigger=any_of(Regions, region =>
         IsRegion(region) &&
@@ -663,7 +663,7 @@ achievement(
 achievement(
     id=559998,
     title="Maximal Engineering",
-    description="Unlock the Shinden-Kai by landing on the secret landing strips in \"Adventure Begins,\" \"The Labyrinth,\" \"Tower of Terror,\" and \"The Great Divide.\"",
+    description="Unlock the Shinden-Kai by landing on the secret landing strips in \"Adventure Begins,\" \"The Labyrinth,\" \"Towers of Terror,\" and \"The Great Divide.\"",
     points=10,
     trigger=any_of(Regions, region =>
         IsRegion(region) &&
