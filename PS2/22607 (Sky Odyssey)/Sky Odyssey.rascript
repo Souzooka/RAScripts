@@ -351,7 +351,7 @@ g_shinden = {
 }
 g_shinden_kai = {
     US: bit7(0x384164),
-    EU: bit7(0x38FCE3),
+    EU: bit7(0x38FCE4),
     JP: bit7(0x38ACE4),
 }
 
