@@ -861,6 +861,39 @@ achievement(
         g_range_result["m_clear_bonus_bp"] > 0
 )
 
+achievement(
+    id=0,
+    title="UNLOCK DEEP IMPACT",
+    description="In Stage 08, shoot 10 grenades before defeating Gregory in order to unlock the Deep Impact weapon.",
+    points=1,
+    trigger=
+        StageComplete() &&
+        prev(g_weapons[WEAPON_DEEP_IMPACT]["m_owned"]) == 0 &&
+        g_weapons[WEAPON_DEEP_IMPACT]["m_owned"] == 1
+)
+
+achievement(
+    id=0,
+    title="UNLOCK IMMOLATOR",
+    description="In Stage 10, shoot 10 knives before defeating Major Evans in the first battle in order to unlock the Immolator weapon.",
+    points=1,
+    trigger=
+        StageComplete() &&
+        prev(g_weapons[WEAPON_IMMOLATOR]["m_owned"]) == 0 &&
+        g_weapons[WEAPON_IMMOLATOR]["m_owned"] == 1
+)
+
+achievement(
+    id=0,
+    title="UNLOCK VOLCANO",
+    description="In Stage 14, shoot 10 missiles before defeating the helicopter in order to unlock the Volcano weapon.",
+    points=1,
+    trigger=
+        StageComplete() &&
+        prev(g_weapons[WEAPON_VOLCANO]["m_owned"]) == 0 &&
+        g_weapons[WEAPON_VOLCANO]["m_owned"] == 1
+)
+
 
 TITLE_PARAMS = [
     {
