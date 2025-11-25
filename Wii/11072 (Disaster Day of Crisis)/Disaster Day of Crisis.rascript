@@ -183,6 +183,11 @@ function GetSignCollected(sign_id)
     return GetGameFlag(sign_id + 3490)
 }
 
+function GetCostumeUnlocked(costume_unlock_id)
+{
+    return GetGameFlag(costume_unlock_id + 3820)
+}
+
 function RescueCount()
 {
     flags = dword_be(0x6E0DA4) & RA_MASK
@@ -302,6 +307,8 @@ function PauseMenu()
 p_player = ptr(dword_be(0x6E10DC), [0x10, 0x14C], dword_be)
 g_player = Player(p_player)
 g_costume = dword_be(0x616b04)
+
+COSTUME_SAMURAI = 7
 COSTUME_MECH_RAY = 8
 
 g_difficulty = dword_be(0x629190)
@@ -364,6 +371,32 @@ SHOOTING_RANGE_ROCKET = "ext06_00"
 SHOOTING_RANGE_PULSE = "ext07_00"
 SHOOTING_RANGE_GATLING = "ext08_00"
 SHOOTING_RANGE_SPACE = "ext09_00"
+
+
+// Rescue Lisa from Lahar in <25 secs
+COSTUME_UNLOCK_FROG = 0
+// Collect all Staminas signs
+COSTUME_UNLOCK_BARBARIAN = 1
+// Rescue all victims
+COSTUME_UNLOCK_RESCUER = 2
+// Unlock all 100 titles
+COSTUME_UNLOCK_SAMURAI = 3
+// Complete Real Disaster diff.
+COSTUME_UNLOCK_MECH_RAY = 4
+// Jump across the lava and smack a barrel after Iris lava floe segment
+COSTUME_UNLOCK_VOLCANO_SHIRT = 5
+//
+COSTUME_UNLOCK_EARTHQUAKE_SHIRT = 6
+//
+COSTUME_UNLOCK_HURRICANE_SHIRT = 7
+// Complete the game
+COSTUME_UNLOCK_TSUNAMI_SHIRT = 8
+//
+COSTUME_UNLOCK_FIRE_SHIRT = 9
+// On ferry in last stage, if you go up the stairs back to where elevator came from it is in a barrel
+COSTUME_UNLOCK_HEAVY_RAIN_SHIRT = 10
+T_SHIRT_UNLOCKS = range(COSTUME_UNLOCK_VOLCANO_SHIRT, COSTUME_UNLOCK_HEAVY_RAIN_SHIRT)
+
 
 function MaxSkillsTrigger()
 {
@@ -738,19 +771,34 @@ achievement(
     trigger=visual_gameflags_measured(TitleEarned(6), measured(RescueCount() == 45))
 )
 
+achievement(
+    id=0,
+    title="Willful Rescuer",
+    description="In Stage 15, save Iris in the Lahar sequence in under 25 seconds.",
+    points=1,
+    trigger=TitleEarned(69)
+)
+
+achievement(
+    id=0,
+    title="Day of Fashion",
+    description="Obtain all of the T-Shirt costumes",
+    points=10,
+    trigger=measured(sum_of(T_SHIRT_UNLOCKS, GetCostumeUnlocked) == length(T_SHIRT_UNLOCKS)) && unless(FlagsInvalid())
+)
+
 for stage in COMBAT_STAGES
 {
     stage_str = format("{0}", if_else(stage < 10, "0" + stage, stage))
     
     achievement(
         id=0,
-        title=format("Stage {0} - S Rank (Combat)", stage_str),
-        description=format("Obtain an overall ranking of S in Stage {0} on the Disaster Real difficulty [No Mechanical Ray].", stage_str),
+        title=format("Stage {0} - Samurai (Combat)", stage_str),
+        description=format("Complete Stage {0} on the Disaster Real difficulty while wearing the Samurai costume.", stage_str),
         points=1,
         trigger=
             StageComplete(stage, now=true) &&
-            g_stage_result["m_overall_rating"] == 0 &&
-            g_costume != COSTUME_MECH_RAY &&
+            g_costume == COSTUME_SAMURAI &&
             g_difficulty == DIFFICULTY_DISASTER
     )
 }
