@@ -784,7 +784,10 @@ achievement(
     title="Day of Fashion",
     description="Obtain all of the T-Shirt costumes",
     points=10,
-    trigger=measured(sum_of(T_SHIRT_UNLOCKS, GetCostumeUnlocked) == length(T_SHIRT_UNLOCKS)) && unless(FlagsInvalid())
+    trigger=
+        measured(sum_of(T_SHIRT_UNLOCKS, GetCostumeUnlocked) == length(T_SHIRT_UNLOCKS)) &&
+        sum_of(T_SHIRT_UNLOCKS, v => prev(GetCostumeUnlocked(v))) == length(T_SHIRT_UNLOCKS) - 1 &&
+        unless(FlagsInvalid())
 )
 
 for stage in COMBAT_STAGES
