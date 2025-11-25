@@ -11,6 +11,22 @@ function force_alt_group()
     return bit0(0x0) == prev(bit0(0x0))
 }
 
+function force_core_pause()
+{
+    // Emits no code but forces RATools to emit Pause Ifs for conditions with no hits
+    // (We need this for alt measured()s where we have states where the data may be invalid)
+    return measured(bit0(0x0) >= 0) 
+}
+
+function visual_gameflags_measured(actual_cond, measured_cond)
+{
+    return
+        // Core Group
+        (actual_cond && force_core_pause() && unless(FlagsInvalid())) &&
+        // Alt Groups
+        (force_alt_group() || measured_cond)
+}
+
 function if_else(cond, a, b)
 {
     if cond
@@ -52,6 +68,17 @@ function ptr(base, offsets, accessor=dword_be)
     }
     
     return val
+}
+
+function FlagsInvalid()
+{
+    // Returns circumstances in which game flags may be considered invalid
+    // (and thus cause weird measured popups)
+    return
+        InTitle() ||
+        InSpecial() ||
+        IntermissionMenu()["m_load_active"] == 1 ||
+        PauseMenu()["m_load_active"] == 1
 }
 
 function InTitle()
@@ -154,6 +181,12 @@ function GetGameFlag(flag)
 function GetSignCollected(sign_id)
 {
     return GetGameFlag(sign_id + 3490)
+}
+
+function RescueCount()
+{
+    flags = dword_be(0x6E0DA4) & RA_MASK
+    return sum_of(range(0, 8-1), i => bitcount(flags + 0x15E + i))
 }
 
 // Object constructors
@@ -702,7 +735,7 @@ achievement(
     title="Best Rescuer",
     description="Rescue each possible person within the game.",
     points=1,
-    trigger=TitleEarned(6)
+    trigger=visual_gameflags_measured(TitleEarned(6), measured(RescueCount() == 45))
 )
 
 for stage in COMBAT_STAGES
@@ -871,41 +904,14 @@ for params in STAMINAS_PARAMS
     stage = params["stage"]
     stage_str = format("{0}", if_else(stage < 10, "0" + stage, stage))
     
-    measured_cond = always_true()
-    if dictionary_contains_key(params, "signs")
-    {
-        obtained_signs = sum_of(
-            array_map(
-                params["signs"], GetSignCollected
-            ),
-            v => v
-        )
-        
-        measured_cond = (
-            force_alt_group() || 
-            (
-                measured(obtained_signs == length(params["signs"])) &&
-                // Prevent random popups when looking at save/load, as this momentarily overrides flags
-                // and causes popups. Preferably this would pause the measured data, but that doesn't
-                // seem to be working. A popup with correct data when backing out is better than a popup
-                // with incorrect data when looking at save/load, at least.
-                unless(
-                    // Just going past the "Press Any Button" screen causes these popups
-                    InTitle() ||
-                    InSpecial() ||
-                    IntermissionMenu()["m_load_active"] == 1 ||
-                    PauseMenu()["m_load_active"] == 1
-                )
-            )
-        )
-    }
+    obtained_signs = sum_of(
+        array_map(
+            params["signs"], GetSignCollected
+        ),
+        v => v
+    )
     
-    achievement(
-        id=params["id"],
-        title=params["title"],
-        description=format("Find all Staminas Campaign signs in Stage {0} and complete the stage.", stage_str),
-        points=params["points"],
-        trigger=
+    base_cond = 
             // Stage is done and stage results screen is active
             StageComplete(stage) &&
             // We're on the Staminas bonus screen
@@ -914,9 +920,17 @@ for params in STAMINAS_PARAMS
             // Got all the signs
             g_stage_result["m_staminas_signs_collected"] == g_stage_result["m_staminas_signs_on_stage"] &&
             // Make sure this unlock is only awarded on first-time completion
-            g_stage_result["m_staminas_complete_bonus"] != 0 &&
-            // User visual only
-            measured_cond
+            g_stage_result["m_staminas_complete_bonus"] != 0
+    
+    
+    measured_cond = measured(obtained_signs == length(params["signs"]))
+    
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=format("Find all Staminas Campaign signs in Stage {0} and complete the stage.", stage_str),
+        points=params["points"],
+        trigger=visual_gameflags_measured(base_cond, measured_cond)
     )
 }
 
