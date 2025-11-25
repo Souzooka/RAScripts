@@ -787,13 +787,80 @@ achievement(
 achievement(
     id=0,
     title="Day of Fashion",
-    description="Obtain all of the T-Shirt costumes",
+    description="Obtain all of the T-Shirt costumes.",
     points=10,
     trigger=
         measured(sum_of(T_SHIRT_UNLOCKS, GetCostumeUnlocked) == length(T_SHIRT_UNLOCKS)) &&
         sum_of(T_SHIRT_UNLOCKS, v => prev(GetCostumeUnlocked(v))) == length(T_SHIRT_UNLOCKS) - 1 &&
         unless(FlagsInvalid())
 )
+
+achievement(
+    id=0,
+    title="UNLOCK JUNK",
+    description="Score at least 1,800 BP on the Junk Shooting Range.",
+    points=1,
+    trigger=
+        ascii_string_equals(g_level_id, SHOOTING_RANGE_JUNK) &&
+        RangeComplete(now=true) &&
+        g_range_result["m_total_bp"] >= 1800
+)
+
+achievement(
+    id=0,
+    title="UNLOCK BOWGUN",
+    description="Score at least 2,000 BP on the Bow Gun Shooting Range.",
+    points=1,
+    trigger=
+        ascii_string_equals(g_level_id, SHOOTING_RANGE_BOW) &&
+        RangeComplete(now=true) &&
+        g_range_result["m_total_bp"] >= 2000
+)
+
+achievement(
+    id=0,
+    title="UNLOCK ROCKET LAUNCHER",
+    description="Score at least 4,000 BP on the Rocket Launcher Shooting Range.",
+    points=1,
+    trigger=
+        ascii_string_equals(g_level_id, SHOOTING_RANGE_ROCKET) &&
+        RangeComplete(now=true) &&
+        g_range_result["m_total_bp"] >= 4000
+)
+
+achievement(
+    id=0,
+    title="UNLOCK PULSE GUN",
+    description="Score at least 6,000 BP on the Pulse Gun Shooting Range.",
+    points=1,
+    trigger=
+        ascii_string_equals(g_level_id, SHOOTING_RANGE_PULSE) &&
+        RangeComplete(now=true) &&
+        g_range_result["m_total_bp"] >= 6000
+)
+
+achievement(
+    id=0,
+    title="UNLOCK GATLING GUN",
+    description="Score at least 14,000 BP on the Gatling Gun Shooting Range.",
+    points=1,
+    trigger=
+        ascii_string_equals(g_level_id, SHOOTING_RANGE_GATLING) &&
+        RangeComplete(now=true) &&
+        g_range_result["m_total_bp"] >= 14000
+)
+
+achievement(
+    id=0,
+    title="DEFEAT SPACE!!!",
+    description="Destroy the comet heading toward earth in Space.",
+    points=1,
+    trigger=
+        ascii_string_equals(g_level_id, SHOOTING_RANGE_SPACE) &&
+        RangeComplete(now=true) &&
+        g_range_result["m_clear_bonus_bp"] > 0
+)
+
 
 TITLE_PARAMS = [
     {
