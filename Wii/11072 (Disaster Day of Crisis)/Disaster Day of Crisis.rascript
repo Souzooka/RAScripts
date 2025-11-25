@@ -178,6 +178,11 @@ function GetGameFlag(flag)
     return bit(flag % 8, flags)
 }
 
+function GetTitleUnlocked(title_id)
+{
+    return GetGameFlag(title_id + 3290)
+}
+
 function GetSignCollected(sign_id)
 {
     return GetGameFlag(sign_id + 3490)
@@ -789,6 +794,50 @@ achievement(
         sum_of(T_SHIRT_UNLOCKS, v => prev(GetCostumeUnlocked(v))) == length(T_SHIRT_UNLOCKS) - 1 &&
         unless(FlagsInvalid())
 )
+
+TITLE_PARAMS = [
+    {
+        "id": 0,
+        "count": 25,
+        "points": 5,
+        "title": "Small Disaster",
+    },
+    {
+        "id": 0,
+        "count": 50,
+        "points": 10,
+        "title": "Real Disaster",
+    },
+    {
+        "id": 0,
+        "count": 75,
+        "points": 10,
+        "title": "Great Disaster",
+    },
+    {
+        "id": 0,
+        "count": 100,
+        "points": 50,
+        "title": "Exceptional Disaster",
+    }
+]
+
+TITLE_SUM = sum_of(range(1, 100), GetTitleUnlocked)
+PREV_TITLE_SUM = sum_of(range(1, 100), v => prev(GetTitleUnlocked(v)))
+
+for params in TITLE_PARAMS
+{
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=format("Collect {0}{1} titles.", if_else(params["count"] == 100, "all ", ""), params["count"]),
+        points=params["points"],
+        trigger=
+            measured(TITLE_SUM >= params["count"]) &&
+            PREV_TITLE_SUM < params["count"] &&
+            unless(FlagsInvalid())
+    )
+}
 
 for stage in COMBAT_STAGES
 {
