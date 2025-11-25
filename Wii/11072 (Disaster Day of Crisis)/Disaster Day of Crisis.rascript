@@ -683,9 +683,9 @@ achievement(
 achievement(
     id=0,
     title="Gordon Killer",
-    description="In Stage 01, defeat Gordon without taking damage and earn this title [No Mechanical Ray].",
+    description="In Stage 01, defeat Gordon without taking damage and earn this title [No Mechanical Ray] [Read Comments].",
     points=1,
-    trigger=TitleEarned(7, mech_ray_allowed=false)
+    trigger=TitleEarned(7, mech_ray_allowed=false) || (StageComplete(1, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -693,7 +693,7 @@ achievement(
     title="Armoured Vehicle Killer",
     description="In Stage 03, defeat the armoured vehicles without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(8, mech_ray_allowed=false)
+    trigger=TitleEarned(8, mech_ray_allowed=false) || (StageComplete(3, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -701,7 +701,7 @@ achievement(
     title="Gordon Killer Returns",
     description="In Stage 05, defeat Gordon without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(9, mech_ray_allowed=false)
+    trigger=TitleEarned(9, mech_ray_allowed=false) || (StageComplete(5, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -709,7 +709,7 @@ achievement(
     title="Chopper Killer",
     description="In Stage 07, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(10, mech_ray_allowed=false)
+    trigger=TitleEarned(10, mech_ray_allowed=false) || (StageComplete(7, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -717,7 +717,7 @@ achievement(
     title="Gregory Killer",
     description="In Stage 08, defeat Gregory without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(11, mech_ray_allowed=false)
+    trigger=TitleEarned(11, mech_ray_allowed=false) || (StageComplete(8, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -725,7 +725,7 @@ achievement(
     title="Evans Killer",
     description="In Stage 10, defeat Evans without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(12, mech_ray_allowed=false)
+    trigger=TitleEarned(12, mech_ray_allowed=false) || (StageComplete(10, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -733,7 +733,7 @@ achievement(
     title="Bear Killer",
     description="In Stage 13, defeat the bear without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(13, mech_ray_allowed=false)
+    trigger=TitleEarned(13, mech_ray_allowed=false) || (StageComplete(13, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -741,7 +741,7 @@ achievement(
     title="Chopper Killer Returns",
     description="In Stage 14, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(14, mech_ray_allowed=false)
+    trigger=TitleEarned(14, mech_ray_allowed=false) || (StageComplete(14, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -757,7 +757,7 @@ achievement(
     title="Banks Killer",
     description="In Stage 18, defeat Banks without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(15, mech_ray_allowed=false)
+    trigger=TitleEarned(15, mech_ray_allowed=false) || (StageComplete(18, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -765,7 +765,7 @@ achievement(
     title="SURGE Killer",
     description="In Stage 21, defeat the SURGE force on the Seaside Highway without taking damage and earn this title [No Mechanical Ray].",
     points=1,
-    trigger=TitleEarned(16, mech_ray_allowed=false)
+    trigger=TitleEarned(16, mech_ray_allowed=false) || (StageComplete(21, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
 achievement(
@@ -774,14 +774,6 @@ achievement(
     description="Rescue each possible person within the game.",
     points=1,
     trigger=visual_gameflags_measured(TitleEarned(6), measured(RescueCount() == 45))
-)
-
-achievement(
-    id=0,
-    title="Willful Rescuer",
-    description="In Stage 15, save Iris in the Lahar sequence in under 25 seconds.",
-    points=1,
-    trigger=TitleEarned(69)
 )
 
 achievement(
