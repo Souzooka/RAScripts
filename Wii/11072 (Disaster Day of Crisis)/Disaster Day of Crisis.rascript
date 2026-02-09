@@ -432,98 +432,98 @@ PROGRESSION_PARAMS = [
         "stage": 1,
         "title": "Big Earthquake",
         "description": "Complete Stage 01.",
-        "points": 2,
+        "points": 4,
     },
     {
         "id": 562376,
         "stage": 2,
         "title": "Collapsing Road",
         "description": "Complete Stage 02.",
-        "points": 2,
+        "points": 4,
     },
     {
         "id": 562377,
         "stage": 3,
         "title": "Darkness and Fire",
         "description": "Complete Stage 03.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562378,
         "stage": 4,
         "title": "Firestorm",
         "description": "Complete Stage 04.",
-        "points": 2,
+        "points": 3,
     },
     {
         "id": 562379,
         "stage": 5,
         "title": "Duel on the Bridge",
         "description": "Complete Stage 05.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562380,
         "stage": 6,
         "title": "Tsunami Attack",
         "description": "Complete Stage 06.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562381,
         "stage": 7,
         "title": "Death From Above",
         "description": "Complete Stage 07.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562382,
         "stage": 8,
         "title": "Streets Swallowed by the Waves",
         "description": "Complete Stage 08.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562383,
         "stage": 9,
         "title": "To the Enemy Base",
         "description": "Complete Stage 09.",
-        "points": 2,
+        "points": 3,
     },
     {
         "id": 562384,
         "stage": 10,
         "title": "Mt. Rosalia Eruption",
         "description": "Complete Stage 10.",
-        "points": 2,
+        "points": 10,
     },
     {
         "id": 562385,
         "stage": 11,
         "title": "Volcanic Chase",
         "description": "Complete Stage 11.",
-        "points": 2,
+        "points": 3,
     },
     {
         "id": 562386,
         "stage": 12,
         "title": "Ash and a Girl",
         "description": "Complete Stage 12.",
-        "points": 2,
+        "points": 3,
     },
     {
         "id": 562387,
         "stage": 13,
         "title": "The Ashen Forest",
         "description": "Complete Stage 13.",
-        "points": 2,
+        "points": 4,
     },
     {
         "id": 562388,
         "stage": 14,
         "title": "Path of the Lava",
         "description": "Complete Stage 14.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562389,
@@ -544,42 +544,42 @@ PROGRESSION_PARAMS = [
         "stage": 17,
         "title": "Heavy Rain",
         "description": "Complete Stage 17.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562392,
         "stage": 18,
         "title": "Mud and Mercenaries",
         "description": "Complete Stage 18.",
-        "points": 2,
+        "points": 10,
     },
     {
         "id": 562393,
         "stage": 19,
         "title": "Rain Returns",
         "description": "Complete Stage 19.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562394,
         "stage": 20,
         "title": "Hurricane Chase",
         "description": "Complete Stage 20.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562395,
         "stage": 21,
         "title": "Windstorm Battle",
         "description": "Complete Stage 21.",
-        "points": 2,
+        "points": 5,
     },
     {
         "id": 562396,
         "stage": 22,
         "title": "Final Battle",
         "description": "Complete Stage 22.",
-        "points": 2,
+        "points": 10,
     },
 ]
 
@@ -615,7 +615,7 @@ achievement(
 achievement(
     id=0,
     title="Ray of Hope",
-    description="Complete the game on Disaster Real difficulty.",
+    description="Complete the game on Real Disaster difficulty.",
     points=25,
     trigger=GameComplete() && g_difficulty == DIFFICULTY_DISASTER
 )
@@ -684,7 +684,7 @@ achievement(
     id=0,
     title="Gordon Killer",
     description="In Stage 01, defeat Gordon without taking damage and earn this title [No Mechanical Ray] [Read Comments].",
-    points=1,
+    points=2,
     trigger=TitleEarned(7, mech_ray_allowed=false) || (StageComplete(1, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -692,7 +692,7 @@ achievement(
     id=0,
     title="Armoured Vehicle Killer",
     description="In Stage 03, defeat the armoured vehicles without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
+    points=5,
     trigger=TitleEarned(8, mech_ray_allowed=false) || (StageComplete(3, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -700,7 +700,7 @@ achievement(
     id=0,
     title="Gordon Killer Returns",
     description="In Stage 05, defeat Gordon without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
+    points=5,
     trigger=TitleEarned(9, mech_ray_allowed=false) || (StageComplete(5, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -708,7 +708,7 @@ achievement(
     id=0,
     title="Chopper Killer",
     description="In Stage 07, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
+    points=5,
     trigger=TitleEarned(10, mech_ray_allowed=false) || (StageComplete(7, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -716,7 +716,7 @@ achievement(
     id=0,
     title="Gregory Killer",
     description="In Stage 08, defeat Gregory without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
+    points=5,
     trigger=TitleEarned(11, mech_ray_allowed=false) || (StageComplete(8, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -724,7 +724,7 @@ achievement(
     id=0,
     title="Evans Killer",
     description="In Stage 10, defeat Evans without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
+    points=10,
     trigger=TitleEarned(12, mech_ray_allowed=false) || (StageComplete(10, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -732,7 +732,7 @@ achievement(
     id=0,
     title="Bear Killer",
     description="In Stage 13, defeat the bear without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
+    points=3,
     trigger=TitleEarned(13, mech_ray_allowed=false) || (StageComplete(13, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -740,7 +740,7 @@ achievement(
     id=0,
     title="Chopper Killer Returns",
     description="In Stage 14, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
+    points=5,
     trigger=TitleEarned(14, mech_ray_allowed=false) || (StageComplete(14, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -748,7 +748,7 @@ achievement(
     id=0,
     title="Willful Rescuer",
     description="Rescue Iris from the Campbell River in 25 seconds or less and earn this title.",
-    points=1,
+    points=5,
     trigger=TitleEarned(69)
 )
 
@@ -756,7 +756,7 @@ achievement(
     id=0,
     title="Banks Killer",
     description="In Stage 18, defeat Banks without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
+    points=10,
     trigger=TitleEarned(15, mech_ray_allowed=false) || (StageComplete(18, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -764,7 +764,7 @@ achievement(
     id=0,
     title="SURGE Killer",
     description="In Stage 21, defeat the SURGE force on the Seaside Highway without taking damage and earn this title [No Mechanical Ray].",
-    points=1,
+    points=10,
     trigger=TitleEarned(16, mech_ray_allowed=false) || (StageComplete(21, now=true) && g_costume == COSTUME_SAMURAI)
 )
 
@@ -772,7 +772,7 @@ achievement(
     id=0,
     title="Best Rescuer",
     description="Rescue each possible person within the game.",
-    points=1,
+    points=10,
     trigger=visual_gameflags_measured(TitleEarned(6), measured(RescueCount() == 45))
 )
 
@@ -789,9 +789,9 @@ achievement(
 
 achievement(
     id=0,
-    title="UNLOCK JUNK",
+    title="One Man's Junk",
     description="Score at least 1,800 BP on the Junk Shooting Range.",
-    points=1,
+    points=5,
     trigger=
         ascii_string_equals(g_level_id, SHOOTING_RANGE_JUNK) &&
         RangeComplete(now=true) &&
@@ -800,9 +800,9 @@ achievement(
 
 achievement(
     id=0,
-    title="UNLOCK BOWGUN",
+    title="Compound Problems",
     description="Score at least 2,000 BP on the Bow Gun Shooting Range.",
-    points=1,
+    points=5,
     trigger=
         ascii_string_equals(g_level_id, SHOOTING_RANGE_BOW) &&
         RangeComplete(now=true) &&
@@ -811,9 +811,9 @@ achievement(
 
 achievement(
     id=0,
-    title="UNLOCK ROCKET LAUNCHER",
+    title="Crowd Control",
     description="Score at least 4,000 BP on the Rocket Launcher Shooting Range.",
-    points=1,
+    points=5,
     trigger=
         ascii_string_equals(g_level_id, SHOOTING_RANGE_ROCKET) &&
         RangeComplete(now=true) &&
@@ -822,9 +822,9 @@ achievement(
 
 achievement(
     id=0,
-    title="UNLOCK PULSE GUN",
+    title="Thinking With High Energy Pellets",
     description="Score at least 6,000 BP on the Pulse Gun Shooting Range.",
-    points=1,
+    points=5,
     trigger=
         ascii_string_equals(g_level_id, SHOOTING_RANGE_PULSE) &&
         RangeComplete(now=true) &&
@@ -833,9 +833,9 @@ achievement(
 
 achievement(
     id=0,
-    title="UNLOCK GATLING GUN",
+    title="Who Touched Sasha?",
     description="Score at least 14,000 BP on the Gatling Gun Shooting Range.",
-    points=1,
+    points=5,
     trigger=
         ascii_string_equals(g_level_id, SHOOTING_RANGE_GATLING) &&
         RangeComplete(now=true) &&
@@ -844,9 +844,9 @@ achievement(
 
 achievement(
     id=0,
-    title="DEFEAT SPACE!!!",
+    title="Not Corrupted by Capitalism",
     description="Destroy the comet heading toward earth in Space.",
-    points=1,
+    points=5,
     trigger=
         ascii_string_equals(g_level_id, SHOOTING_RANGE_SPACE) &&
         RangeComplete(now=true) &&
@@ -855,9 +855,9 @@ achievement(
 
 achievement(
     id=0,
-    title="UNLOCK DEEP IMPACT",
+    title="Leave a Mark",
     description="In Stage 08, shoot 10 grenades before defeating Gregory in order to unlock the Deep Impact weapon.",
-    points=1,
+    points=5,
     trigger=
         StageComplete() &&
         prev(g_weapons[WEAPON_DEEP_IMPACT]["m_owned"]) == 0 &&
@@ -866,9 +866,9 @@ achievement(
 
 achievement(
     id=0,
-    title="UNLOCK IMMOLATOR",
+    title="Fiery Temper",
     description="In Stage 10, shoot 10 knives before defeating Major Evans in the first battle in order to unlock the Immolator weapon.",
-    points=1,
+    points=5,
     trigger=
         StageComplete() &&
         prev(g_weapons[WEAPON_IMMOLATOR]["m_owned"]) == 0 &&
@@ -877,9 +877,9 @@ achievement(
 
 achievement(
     id=0,
-    title="UNLOCK VOLCANO",
+    title="Clogged Filter",
     description="In Stage 14, shoot 10 missiles before defeating the helicopter in order to unlock the Volcano weapon.",
-    points=1,
+    points=5,
     trigger=
         StageComplete() &&
         prev(g_weapons[WEAPON_VOLCANO]["m_owned"]) == 0 &&
@@ -892,25 +892,25 @@ TITLE_PARAMS = [
         "id": 0,
         "count": 25,
         "points": 5,
-        "title": "Small Disaster",
+        "title": "Part-Time Volunteer",
     },
     {
         "id": 0,
         "count": 50,
         "points": 10,
-        "title": "Real Disaster",
+        "title": "Rescuer",
     },
     {
         "id": 0,
         "count": 75,
         "points": 10,
-        "title": "Great Disaster",
+        "title": "Miracle Worker",
     },
     {
         "id": 0,
         "count": 100,
         "points": 50,
-        "title": "Exceptional Disaster",
+        "title": "Savior",
     }
 ]
 
@@ -937,9 +937,9 @@ for stage in COMBAT_STAGES
     
     achievement(
         id=0,
-        title=format("Stage {0} - Samurai (Combat)", stage_str),
-        description=format("Complete Stage {0} on the Disaster Real difficulty while wearing the Samurai costume.", stage_str),
-        points=1,
+        title=format("Way of the Samurai - Stage {0}", stage_str),
+        description=format("Complete Stage {0} on the Real Disaster difficulty while wearing the Samurai costume.", stage_str),
+        points=10,
         trigger=
             StageComplete(stage, now=true) &&
             g_costume == COSTUME_SAMURAI &&
@@ -1037,7 +1037,7 @@ STAMINAS_PARAMS = [
         "id": 0,
         "stage": 15,
         "title": "A Bear Is Coming",
-        "points": 1,
+        "points": 2,
         "signs": range(162, 164),
     },
     {
