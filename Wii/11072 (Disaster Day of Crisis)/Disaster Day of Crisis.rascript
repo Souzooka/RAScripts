@@ -149,14 +149,20 @@ function RangeComplete(now=false)
     return cond
 }
 
+function HasTitle(title)
+{
+    return __ornext(any_of(g_stage_result["m_titles"], v => title == v))
+}
+
 function TitleEarned(title, mech_ray_allowed=true)
 {
     cond =
+        __ornext(any_of(g_stage_result["m_titles"], v => title == v)) &&
         g_stage_result["m_screen_active"] == 1 &&
         g_stage_result["m_current_screen"] == 1 &&
         prev(g_stage_result["m_screen_transition"]) == 1 &&
-        g_stage_result["m_screen_transition"] == 0 &&
-        __ornext(any_of(g_stage_result["m_titles"], v => title == v))
+        g_stage_result["m_screen_transition"] == 0
+        
         
     if !mech_ray_allowed
         cond = cond && g_costume != COSTUME_MECH_RAY
@@ -304,6 +310,19 @@ function PauseMenu()
     
     obj = {
         "m_load_active": byte(addr + 0x5D0)
+    }
+    
+    return obj
+}
+
+function GetCheckpointState(checkpoint_id)
+{
+    SIZEOF_CHECKPOINTSTATE = 0x1424
+    checkpoint_id = checkpoint_id - 1
+    checkpoint_state = (dword_be(0x6E1334) & RA_MASK) + (checkpoint_id * SIZEOF_CHECKPOINTSTATE)
+    
+    obj = {
+        "m_damage_received": float_be(checkpoint_state + 0x350)
     }
     
     return obj
@@ -680,12 +699,26 @@ achievement(
         MinCompletionTrigger()
 )
 
+function DamagelessFallback(title, stage, before_damage, after_damage)
+{
+    // Fallback in case player received this title previously w/ Mech Ray costume
+    return
+        GetTitleUnlocked(title) == 1 &&
+        StageComplete(stage) &&
+        g_costume != COSTUME_MECH_RAY &&
+        before_damage == after_damage &&
+        g_stage_result["m_current_screen"] > 0 &&
+        g_stage_result["m_screen_transition"] == 0 &&
+        prev(g_stage_result["m_screen_transition"]) == 1
+}
+
 achievement(
-    id=0,
+    id=562401,
     title="Gordon Killer",
-    description="In Stage 01, defeat Gordon without taking damage and earn this title [No Mechanical Ray] [Read Comments].",
+    description="In Stage 01, defeat Gordon without taking damage and earn this title [No Mechanical Ray].",
     points=2,
-    trigger=TitleEarned(7, mech_ray_allowed=false) || (StageComplete(1, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(7, mech_ray_allowed=false) || 
+        DamagelessFallback(7, 1, GetCheckpointState(4)["m_damage_received"], GetCheckpointState(5)["m_damage_received"])
 )
 
 achievement(
@@ -693,7 +726,8 @@ achievement(
     title="Armoured Vehicle Killer",
     description="In Stage 03, defeat the armoured vehicles without taking damage and earn this title [No Mechanical Ray].",
     points=5,
-    trigger=TitleEarned(8, mech_ray_allowed=false) || (StageComplete(3, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(8, mech_ray_allowed=false) || 
+        DamagelessFallback(8, 3, GetCheckpointState(8)["m_damage_received"], GetCheckpointState(9)["m_damage_received"])
 )
 
 achievement(
@@ -701,7 +735,8 @@ achievement(
     title="Gordon Killer Returns",
     description="In Stage 05, defeat Gordon without taking damage and earn this title [No Mechanical Ray].",
     points=5,
-    trigger=TitleEarned(9, mech_ray_allowed=false) || (StageComplete(5, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(9, mech_ray_allowed=false) || 
+        DamagelessFallback(9, 5, GetCheckpointState(2)["m_damage_received"], g_stage_result["m_damage_received"])
 )
 
 achievement(
@@ -709,7 +744,8 @@ achievement(
     title="Chopper Killer",
     description="In Stage 07, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
     points=5,
-    trigger=TitleEarned(10, mech_ray_allowed=false) || (StageComplete(7, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(10, mech_ray_allowed=false) || 
+        DamagelessFallback(10, 7, GetCheckpointState(2)["m_damage_received"], GetCheckpointState(3)["m_damage_received"])
 )
 
 achievement(
@@ -717,7 +753,8 @@ achievement(
     title="Gregory Killer",
     description="In Stage 08, defeat Gregory without taking damage and earn this title [No Mechanical Ray].",
     points=5,
-    trigger=TitleEarned(11, mech_ray_allowed=false) || (StageComplete(8, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(11, mech_ray_allowed=false) || 
+        DamagelessFallback(11, 8, GetCheckpointState(4)["m_damage_received"], g_stage_result["m_damage_received"])
 )
 
 achievement(
@@ -725,7 +762,8 @@ achievement(
     title="Evans Killer",
     description="In Stage 10, defeat Evans without taking damage and earn this title [No Mechanical Ray].",
     points=10,
-    trigger=TitleEarned(12, mech_ray_allowed=false) || (StageComplete(10, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(12, mech_ray_allowed=false) || 
+        DamagelessFallback(12, 10, GetCheckpointState(10)["m_damage_received"], GetCheckpointState(12)["m_damage_received"])
 )
 
 achievement(
@@ -733,7 +771,12 @@ achievement(
     title="Bear Killer",
     description="In Stage 13, defeat the bear without taking damage and earn this title [No Mechanical Ray].",
     points=3,
-    trigger=TitleEarned(13, mech_ray_allowed=false) || (StageComplete(13, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(13, mech_ray_allowed=false) || 
+        (
+            DamagelessFallback(13, 13, GetCheckpointState(4)["m_damage_received"], GetCheckpointState(5)["m_damage_received"]) &&
+            DamagelessFallback(13, 13, GetCheckpointState(6)["m_damage_received"], GetCheckpointState(7)["m_damage_received"]) &&
+            DamagelessFallback(13, 13, GetCheckpointState(8)["m_damage_received"], GetCheckpointState(9)["m_damage_received"])
+        )
 )
 
 achievement(
@@ -741,7 +784,8 @@ achievement(
     title="Chopper Killer Returns",
     description="In Stage 14, defeat the chopper without taking damage and earn this title [No Mechanical Ray].",
     points=5,
-    trigger=TitleEarned(14, mech_ray_allowed=false) || (StageComplete(14, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(14, mech_ray_allowed=false) || 
+        DamagelessFallback(14, 14, GetCheckpointState(2)["m_damage_received"], GetCheckpointState(3)["m_damage_received"])
 )
 
 achievement(
@@ -757,7 +801,8 @@ achievement(
     title="Banks Killer",
     description="In Stage 18, defeat Banks without taking damage and earn this title [No Mechanical Ray].",
     points=10,
-    trigger=TitleEarned(15, mech_ray_allowed=false) || (StageComplete(18, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(15, mech_ray_allowed=false) || 
+        DamagelessFallback(15, 18, GetCheckpointState(12)["m_damage_received"], g_stage_result["m_damage_received"])
 )
 
 achievement(
@@ -765,7 +810,17 @@ achievement(
     title="SURGE Killer",
     description="In Stage 21, defeat the SURGE force on the Seaside Highway without taking damage and earn this title [No Mechanical Ray].",
     points=10,
-    trigger=TitleEarned(16, mech_ray_allowed=false) || (StageComplete(21, now=true) && g_costume == COSTUME_SAMURAI)
+    trigger=TitleEarned(16, mech_ray_allowed=false) || 
+        DamagelessFallback(16, 21, GetCheckpointState(8)["m_damage_received"], g_stage_result["m_damage_received"])
+)
+
+achievement(
+    id=0,
+    title="XA19 Killer",
+    description="In Stage 22, defeat the XA19 without taking damage and earn this title [No Mechanical Ray].",
+    points=10,
+    trigger=TitleEarned(17, mech_ray_allowed=false) || 
+        DamagelessFallback(17, 22, GetCheckpointState(7)["m_damage_received"], GetCheckpointState(8)["m_damage_received"])
 )
 
 achievement(
@@ -877,7 +932,7 @@ achievement(
 
 achievement(
     id=0,
-    title="Clogged Filter",
+    title="Primed to Explode",
     description="In Stage 14, shoot 10 missiles before defeating the helicopter in order to unlock the Volcano weapon.",
     points=5,
     trigger=
@@ -931,21 +986,7 @@ for params in TITLE_PARAMS
     )
 }
 
-for stage in COMBAT_STAGES
-{
-    stage_str = format("{0}", if_else(stage < 10, "0" + stage, stage))
-    
-    achievement(
-        id=0,
-        title=format("Way of the Samurai - Stage {0}", stage_str),
-        description=format("Complete Stage {0} on the Real Disaster difficulty while wearing the Samurai costume.", stage_str),
-        points=10,
-        trigger=
-            StageComplete(stage, now=true) &&
-            g_costume == COSTUME_SAMURAI &&
-            g_difficulty == DIFFICULTY_DISASTER
-    )
-}
+COMBAT_STAGES = [1, 2, 3, 5, 7, 8, 10, 13, 14, 17, 18, 19, 20, 21, 22]
 
 STAMINAS_PARAMS = [
     {
