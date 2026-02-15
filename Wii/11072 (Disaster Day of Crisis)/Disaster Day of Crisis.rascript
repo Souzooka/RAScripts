@@ -876,7 +876,7 @@ achievement(
 
 achievement(
     id=0,
-    title="Thinking With High Energy Pellets",
+    title="Thinking with High Energy Pellets",
     description="Score at least 6,000 BP on the Pulse Gun Shooting Range.",
     points=5,
     trigger=
@@ -1027,14 +1027,14 @@ STAMINAS_PARAMS = [
     {
         "id": 0,
         "stage": 7,
-        "title": "Running From the Helicopter",
+        "title": "Running from the Helicopter",
         "points": 4,
         "signs": range(72, 81),
     },
     {
         "id": 0,
         "stage": 8,
-        "title": "Plunge Into the Torrent",
+        "title": "Plunge into the Torrent",
         "points": 4,
         "signs": range(82, 92),
     },
@@ -1160,7 +1160,7 @@ for params in STAMINAS_PARAMS
     achievement(
         id=params["id"],
         title=params["title"],
-        description=format("Find all Staminas Campaign signs in Stage {0} and complete the stage.", stage_str),
+        description=format("Collect all Staminas campaign signs in Stage {0} and complete the stage.", stage_str),
         points=params["points"],
         trigger=visual_gameflags_measured(base_cond, measured_cond)
     )
@@ -1202,29 +1202,29 @@ for range in rp_range
 // (checkpoint ID is 0 until we get in game)
 rp_time_fallback = {
     "agu01_00": "Prologue", // prologue
-    "blu02_00": "7:06 AM Friday, September 21", // stage 01
-    "blu04_00": "8:50 AM Friday, September 21", // stage 02
-    "blu07_00": "9:15 AM Friday, September 21", // stage 03
-    "blu10_00": "9:40 AM Friday, September 21", // stage 04
-    "blu11_00": "9:57 AM Friday, September 21", // stage 05
-    "blu11_02": "10:12 AM Friday, September 21", // stage 06
-    "blu06_01": "10:33 AM Friday, September 21", // stage 07
-    "blu09_00": "10:42 AM Friday, September 21", // stage 08
-    "blu12_00": "11:07 AM Friday, September 21", // stage 09
-    "ros03_00": "1:08 PM Friday, September 21", // stage 10
-    "ros01_01": "1:32 PM Friday, September 21", // stage 11
-    "ros06_00": "2:12 PM Friday, September 21", // stage 12
-    "ros08_00": "5:12 PM Friday, September 21", // stage 13
-    "ros09_00": "5:39 PM Friday, September 21", // stage 14
-    "ros10_00": "6:09 PM Friday, September 21", // stage 15
-    "air01_00": "7:28 PM Friday, September 21", // stage 16
-    "rai01_00": "2:10 AM Saturday, September 22", // stage 17
-    "rai02_00": "2:30 AM Saturday, September 22", // stage 18
-    "rai04_00": "3:12 AM Saturday, September 22", // stage 19
-    "por01_00": "4:55 AM Saturday, September 22", // stage 20
-    "por03_00": "5:06 AM Saturday, September 22", // stage 21
-    "por05_00": "5:24 AM Saturday, September 22", // stage 22
-    "fer02_01": "5:40 AM Saturday, September 22", // stage 23
+    "blu02_00": "Stage 01", // stage 01
+    "blu04_00": "Stage 02", // stage 02
+    "blu07_00": "Stage 03", // stage 03
+    "blu10_00": "Stage 04", // stage 04
+    "blu11_00": "Stage 05", // stage 05
+    "blu11_02": "Stage 06", // stage 06
+    "blu06_01": "Stage 07", // stage 07
+    "blu09_00": "Stage 08", // stage 08
+    "blu12_00": "Stage 09", // stage 09
+    "ros03_00": "Stage 10", // stage 10
+    "ros01_01": "Stage 11", // stage 11
+    "ros06_00": "Stage 12", // stage 12
+    "ros08_00": "Stage 13", // stage 13
+    "ros09_00": "Stage 14", // stage 14
+    "ros10_00": "Stage 15", // stage 15
+    "air01_00": "Stage 16", // stage 16
+    "rai01_00": "Stage 17", // stage 17
+    "rai02_00": "Stage 18", // stage 18
+    "rai04_00": "Stage 19", // stage 19
+    "por01_00": "Stage 20", // stage 20
+    "por03_00": "Stage 21", // stage 21
+    "por05_00": "Stage 22", // stage 22
+    "fer02_01": "Stage 23", // stage 23
 }
 rp_activity_fallback = {
     "agu01_00": "Ray and Steve are rescuing survivors on Mt. Aguilas", // prologue
@@ -1259,172 +1259,172 @@ rp_time = {
     0x3: "Prologue",
     0x8: "Prologue",
     // Stage 1
-    0x12: "8:14 AM Friday, September 21",
-    0x13: "8:21 AM Friday, September 21",
-    0x14: "8:27 AM Friday, September 21",
-    0x15: "8:34 AM Friday, September 21",
-    0x17: "8:37 AM Friday, September 21",
-    0x18: "8:39 AM Friday, September 21",
-    0x19: "8:42 AM Friday, September 21",
-    0x1A: "8:44 AM Friday, September 21",
-    0x1B: "8:45 AM Friday, September 21",
-    0x1C: "8:47 AM Friday, September 21",
+    0x12: "Stage 01",
+    0x13: "Stage 01",
+    0x14: "Stage 01",
+    0x15: "Stage 01",
+    0x17: "Stage 01",
+    0x18: "Stage 01",
+    0x19: "Stage 01",
+    0x1A: "Stage 01",
+    0x1B: "Stage 01",
+    0x1C: "Stage 01",
     // Stage 2
-    0x2A: "8:51 AM Friday, September 21",
-    0x30: "8:58 AM Friday, September 21",
-    0x31: "9:02 AM Friday, September 21",
-    0x32: "9:03 AM Friday, September 21",
-    0x33: "9:05 AM Friday, September 21",
-    0x34: "9:06 AM Friday, September 21",
-    0x3C: "9:08 AM Friday, September 21",
-    0x3D: "9:09 AM Friday, September 21",
-    0x3E: "9:11 AM Friday, September 21",
-    0x3F: "9:12 AM Friday, September 21",
-    0x40: "9:14 AM Friday, September 21",
+    0x2A: "Stage 02",
+    0x30: "Stage 02",
+    0x31: "Stage 02",
+    0x32: "Stage 02",
+    0x33: "Stage 02",
+    0x34: "Stage 02",
+    0x3C: "Stage 02",
+    0x3D: "Stage 02",
+    0x3E: "Stage 02",
+    0x3F: "Stage 02",
+    0x40: "Stage 02",
     // Stage 3
-    0x50: "9:15 AM Friday, September 21",
-    0x51: "9:17 AM Friday, September 21",
-    0x52: "9:19 AM Friday, September 21",
-    0x53: "9:23 AM Friday, September 21",
-    0x54: "9:25 AM Friday, September 21",
-    0x55: "9:29 AM Friday, September 21",
-    0x56: "9:31 AM Friday, September 21",
-    0x60: "9:36 AM Friday, September 21",
-    0x61: "9:38 AM Friday, September 21",
+    0x50: "Stage 03",
+    0x51: "Stage 03",
+    0x52: "Stage 03",
+    0x53: "Stage 03",
+    0x54: "Stage 03",
+    0x55: "Stage 03",
+    0x56: "Stage 03",
+    0x60: "Stage 03",
+    0x61: "Stage 03",
     // Stage 4
-    0x7A: "9:41 AM Friday, September 21",
-    0x7B: "9:44 AM Friday, September 21",
-    0x7C: "9:49 AM Friday, September 21",
-    0x7D: "9:54 AM Friday, September 21",
+    0x7A: "Stage 04",
+    0x7B: "Stage 04",
+    0x7C: "Stage 04",
+    0x7D: "Stage 04",
     // Stage 5
-    0x87: "10:03 AM Friday, September 21",
-    0x89: "10:07 AM Friday, September 21",
-    0x8A: "10:10 AM Friday, September 21",
+    0x87: "Stage 05",
+    0x89: "Stage 05",
+    0x8A: "Stage 05",
     // Stage 6
-    0x88: "10:14 AM Friday, September 21",
-    0x8F: "10:22 AM Friday, September 21",
-    0x90: "10:25 AM Friday, September 21",
-    0x91: "10:28 AM Friday, September 21",
-    0x92: "10:31 AM Friday, September 21",
+    0x88: "Stage 06",
+    0x8F: "Stage 06",
+    0x90: "Stage 06",
+    0x91: "Stage 06",
+    0x92: "Stage 06",
     // Stage 7
-    0x46: "10:35 AM Friday, September 21",
-    0x47: "10:37 AM Friday, September 21",
-    0x48: "10:39 AM Friday, September 21",
-    0x4C: "10:41 AM Friday, September 21",
+    0x46: "Stage 07",
+    0x47: "Stage 07",
+    0x48: "Stage 07",
+    0x4C: "Stage 07",
     // Stage 8
-    0x6A: "10:44 AM Friday, September 21",
-    0x6B: "10:46 AM Friday, September 21",
-    0x6C: "10:50 AM Friday, September 21",
-    0x73: "10:54 AM Friday, September 21",
-    0x74: "10:58 AM Friday, September 21",
+    0x6A: "Stage 08",
+    0x6B: "Stage 08",
+    0x6C: "Stage 08",
+    0x73: "Stage 08",
+    0x74: "Stage 08",
     // Stage 9
-    0x98: "11:08 AM Friday, September 21",
-    0xA1: "1:00 PM Friday, September 21",
+    0x98: "Stage 09",
+    0xA1: "Stage 09",
     // Stage 10 - lots of "time dilation" in this stage
-    0xB1: "1:11 PM Friday, September 21",
-    0xB2: "1:12 PM Friday, September 21",
-    0xB3: "1:17 PM Friday, September 21",
-    0xBC: "1:20 PM Friday, September 21",
-    0xBD: "1:21 PM Friday, September 21",
-    0xBE: "1:22 PM Friday, September 21",
-    0xBF: "1:22 PM Friday, September 21",
-    0xC0: "1:24 PM Friday, September 21",
-    0xC1: "1:25 PM Friday, September 21",
-    0xC2: "1:28 PM Friday, September 21",
-    0xC3: "1:29 PM Friday, September 21",
-    0xC4: "1:30 PM Friday, September 21",
+    0xB1: "Stage 10",
+    0xB2: "Stage 10",
+    0xB3: "Stage 10",
+    0xBC: "Stage 10",
+    0xBD: "Stage 10",
+    0xBE: "Stage 10",
+    0xBF: "Stage 10",
+    0xC0: "Stage 10",
+    0xC1: "Stage 10",
+    0xC2: "Stage 10",
+    0xC3: "Stage 10",
+    0xC4: "Stage 10",
     // Stage 11
-    0xA2: "1:35 PM Friday, September 21",
-    0xAA: "1:57 PM Friday, September 21",
+    0xA2: "Stage 11",
+    0xAA: "Stage 11",
     // Stage 12
-    0xCB: "2:57 PM Friday, September 21",
-    0xCC: "4:45 PM Friday, September 21",
-    0xDB: "5:04 PM Friday, September 21",
+    0xCB: "Stage 12",
+    0xCC: "Stage 12",
+    0xDB: "Stage 12",
     // Stage 13
-    0xE2: "5:12 PM Friday, September 21",
-    0xE3: "5:15 PM Friday, September 21",
-    0xE4: "5:18 PM Friday, September 21",
-    0xE5: "5:23 PM Friday, September 21",
-    0xE6: "5:24 PM Friday, September 21",
-    0xE7: "5:27 PM Friday, September 21",
-    0xE8: "5:28 PM Friday, September 21",
-    0xE9: "5:31 PM Friday, September 21",
-    0xEA: "5:33 PM Friday, September 21",
+    0xE2: "Stage 13",
+    0xE3: "Stage 13",
+    0xE4: "Stage 13",
+    0xE5: "Stage 13",
+    0xE6: "Stage 13",
+    0xE7: "Stage 13",
+    0xE8: "Stage 13",
+    0xE9: "Stage 13",
+    0xEA: "Stage 13",
     // Stage 14
-    0xF3: "5:40 PM Friday, September 21",
-    0xF4: "5:42 PM Friday, September 21",
-    0xF5: "5:48 PM Friday, September 21",
-    0xF6: "5:56 PM Friday, September 21",
-    0xF9: "6:04 PM Friday, September 21",
-    0xFA: "6:05 PM Friday, September 21",
+    0xF3: "Stage 14",
+    0xF4: "Stage 14",
+    0xF5: "Stage 14",
+    0xF6: "Stage 14",
+    0xF9: "Stage 14",
+    0xFA: "Stage 14",
     // Stage 15
-    0x102: "6:10 PM Friday, September 21",
-    0x103: "6:12 PM Friday, September 21",
+    0x102: "Stage 15",
+    0x103: "Stage 15",
     // Stage 16
-    0x10B: "2:02 AM Saturday, September 22",
-    0x10C: "2:04 AM Saturday, September 22",
-    0x114: "2:06 AM Saturday, September 22",
+    0x10B: "Stage 16",
+    0x10C: "Stage 16",
+    0x114: "Stage 16",
     // Stage 17
-    0x119: "2:11 AM Saturday, September 22",
-    0x11A: "2:13 AM Saturday, September 22",
-    0x11B: "2:17 AM Saturday, September 22",
-    0x11C: "2:19 AM Saturday, September 22",
-    0x11D: "2:24 AM Saturday, September 22",
-    0x11E: "2:27 AM Saturday, September 22",
+    0x119: "Stage 17",
+    0x11A: "Stage 17",
+    0x11B: "Stage 17",
+    0x11C: "Stage 17",
+    0x11D: "Stage 17",
+    0x11E: "Stage 17",
     // Stage 18
-    0x126: "2:30 AM Saturday, September 22",
-    0x127: "2:33 AM Saturday, September 22",
-    0x128: "2:35 AM Saturday, September 22",
-    0x129: "2:37 AM Saturday, September 22",
-    0x12B: "2:40 AM Saturday, September 22",
-    0x12C: "2:45 AM Saturday, September 22",
-    0x12D: "2:46 AM Saturday, September 22",
-    0x12E: "2:48 AM Saturday, September 22",
-    0x12F: "2:51 AM Saturday, September 22",
-    0x137: "2:56 AM Saturday, September 22",
-    0x138: "2:58 AM Saturday, September 22",
-    0x157: "3:06 AM Saturday, September 22",
+    0x126: "Stage 18",
+    0x127: "Stage 18",
+    0x128: "Stage 18",
+    0x129: "Stage 18",
+    0x12B: "Stage 18",
+    0x12C: "Stage 18",
+    0x12D: "Stage 18",
+    0x12E: "Stage 18",
+    0x12F: "Stage 18",
+    0x137: "Stage 18",
+    0x138: "Stage 18",
+    0x157: "Stage 18",
     // Stage 19
-    0x140: "3:12 AM Saturday, September 22",
-    0x141: "3:20 AM Saturday, September 22",
-    0x149: "3:29 AM Saturday, September 22",
-    0x14A: "3:30 AM Saturday, September 22",
-    0x14B: "3:31 AM Saturday, September 22",
-    0x14C: "3:32 AM Saturday, September 22",
-    0x14D: "3:34 AM Saturday, September 22",
-    0x14E: "3:38 AM Saturday, September 22",
+    0x140: "Stage 19",
+    0x141: "Stage 19",
+    0x149: "Stage 19",
+    0x14A: "Stage 19",
+    0x14B: "Stage 19",
+    0x14C: "Stage 19",
+    0x14D: "Stage 19",
+    0x14E: "Stage 19",
     // Stage 20
-    0x15E: "4:55 AM Saturday, September 22",
-    0x165: "4:58 AM Saturday, September 22",
-    0x166: "5:00 AM Saturday, September 22",
-    0x167: "5:01 AM Saturday, September 22",
-    0x168: "5:04 AM Saturday, September 22",
+    0x15E: "Stage 20",
+    0x165: "Stage 20",
+    0x166: "Stage 20",
+    0x167: "Stage 20",
+    0x168: "Stage 20",
     // Stage 21
-    0x16F: "5:06 AM Saturday, September 22",
-    0x170: "5:07 AM Saturday, September 22",
-    0x171: "5:07 AM Saturday, September 22",
-    0x172: "5:11 AM Saturday, September 22",
-    0x173: "5:13 AM Saturday, September 22",
-    0x174: "5:15 AM Saturday, September 22",
-    0x175: "5:16 AM Saturday, September 22",
-    0x17E: "5:20 AM Saturday, September 22",
-    0x17F: "5:22 AM Saturday, September 22",
+    0x16F: "Stage 21",
+    0x170: "Stage 21",
+    0x171: "Stage 21",
+    0x172: "Stage 21",
+    0x173: "Stage 21",
+    0x174: "Stage 21",
+    0x175: "Stage 21",
+    0x17E: "Stage 21",
+    0x17F: "Stage 21",
     // Stage 22
-    0x187: "5:24 AM Saturday, September 22",
-    0x188: "5:27 AM Saturday, September 22",
-    0x18E: "5:28 AM Saturday, September 22",
-    0x18F: "5:31 AM Saturday, September 22",
-    0x190: "5:32 AM Saturday, September 22",
-    0x191: "5:33 AM Saturday, September 22",
-    0x192: "5:34 AM Saturday, September 22",
-    0x193: "5:37 AM Saturday, September 22",
+    0x187: "Stage 22",
+    0x188: "Stage 22",
+    0x18E: "Stage 22",
+    0x18F: "Stage 22",
+    0x190: "Stage 22",
+    0x191: "Stage 22",
+    0x192: "Stage 22",
+    0x193: "Stage 22",
     // Stage 23
-    0x1A3: "5:41 AM Saturday, September 22",
-    0x1A4: "5:43 AM Saturday, September 22",
-    0x1A5: "5:46 AM Saturday, September 22",
-    0x1A6: "5:48 AM Saturday, September 22",
-    0x1A7: "5:52 AM Saturday, September 22",
-    0x1A8: "5:53 AM Saturday, September 22",
+    0x1A3: "Stage 23",
+    0x1A4: "Stage 23",
+    0x1A5: "Stage 23",
+    0x1A6: "Stage 23",
+    0x1A7: "Stage 23",
+    0x1A8: "Stage 23",
 }
 rp_activity = {
     // Prologue
