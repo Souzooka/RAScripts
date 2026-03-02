@@ -286,8 +286,8 @@ BOSS_PARAMS = [
     {
         "level": LEVEL_BEARS_PATH,
         "id": 106193,
-        "title": "Bear's Path",
-        "description": "Completed Bear's Path.",
+        "title": "Bears' Path",
+        "description": "Completed Bears' Path.",
         "type": "",
         "points": 5,
     },
@@ -606,4 +606,39 @@ for params in LEVEL_PARAMS
                 stage_state["m_trial_seconds"] < prev(stage_state["m_trial_seconds"])
             )
     )
+}
+
+// LBs
+
+LB_ID = 157455
+
+for params in LEVEL_PARAMS
+{
+    level = params["level"]
+    stage_state = game_states[level]["m_stages"][level]
+    start = in_level(level) &&
+            __ornext(
+                stage_state["m_trial_hours"] < prev(stage_state["m_trial_hours"]) ||
+                stage_state["m_trial_minutes"] < prev(stage_state["m_trial_minutes"]) ||
+                stage_state["m_trial_seconds"] < prev(stage_state["m_trial_seconds"])
+            )
+    cancel = always_false()
+    submit = always_true()
+    value = stage_state["m_trial_hours"] * 3600 +
+            stage_state["m_trial_minutes"] * 60 +
+            stage_state["m_trial_seconds"]
+            
+    leaderboard(
+        id=LB_ID,
+        title=format("{0} - Time Trial", params["level_name"]),
+        description=format("Complete the time trial in {0} in the fastest time!", params["level_name"]),
+        format="SECS",
+        lower_is_better=true,
+        start=start,
+        cancel=cancel,
+        submit=submit,
+        value=value
+    )
+    
+    LB_ID = LB_ID + 1
 }
