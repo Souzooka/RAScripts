@@ -491,7 +491,7 @@ PROGRESSION_PARAMS = [
     {
         "id": 562381,
         "stage": 7,
-        "title": "Death From Above",
+        "title": "Death from Above",
         "description": "Complete Stage 07.",
         "points": 5,
     },
@@ -1160,7 +1160,7 @@ for params in STAMINAS_PARAMS
     achievement(
         id=params["id"],
         title=params["title"],
-        description=format("Collect all Staminas campaign signs in Stage {0} and complete the stage.", stage_str),
+        description=format("Collect all the Staminas campaign signs in Stage {0} and complete the stage.", stage_str),
         points=params["points"],
         trigger=visual_gameflags_measured(base_cond, measured_cond)
     )
