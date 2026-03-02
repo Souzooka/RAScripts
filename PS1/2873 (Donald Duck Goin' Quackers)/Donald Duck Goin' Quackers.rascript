@@ -310,7 +310,7 @@ BOSS_PARAMS = [
     {
         "level": LEVEL_BEAGLE_BOYS_TOWER,
         "id": 106209,
-        "title": "Beagle Boy's Tower",
+        "title": "Beagle Boys' Tower",
         "description": "Defeat the Beagle Boys.",
         "type": "progression",
         "points": 5,
@@ -334,7 +334,7 @@ BOSS_PARAMS = [
     {
         "level": LEVEL_HEAD_ALLEY,
         "id": 106238,
-        "title": "Bear's Path",
+        "title": "Bears' Path",
         "description": "Completed Bear's Path.",
         "type": "",
         "points": 5,
@@ -642,3 +642,42 @@ for params in LEVEL_PARAMS
     
     LB_ID = LB_ID + 1
 }
+
+// Rich Presence
+
+rp_strings = {
+    LEVEL_WORLD_MAP: "Donald Duck is in Gyro Gearloose's Lab",
+    LEVEL_FOREST_EDGE:  "Donald Duck is in \"Forest Edge\"",
+    LEVEL_THE_GORGE: "Donald Duck is in \"The Gorge\"",
+    LEVEL_DANGEROUS_CLIFF: "Donald Duck is in \"Dangerous Cliff\"",
+    LEVEL_HUEYS_TRACK: "Donald Duck is in \"Huey's Track\"",
+    LEVEL_FIRST_AVENUE: "Donald Duck is in \"First Avenue\"",
+    LEVEL_THE_ROOFS: "Donald Duck is in \"The Roofs\"",
+    LEVEL_URBAN_HIGH_RISES: "Donald Duck is in \"Urban High-Rises\"",
+    LEVEL_DEWEYS_ROOFTOPS: "Donald Duck is in \"Dewey's Rooftops\"",
+    LEVEL_HAUNTED_HALL: "Donald Duck is in \"Haunted Hall\"",
+    LEVEL_EARIE_ALLEY: "Donald Duck is in \"Earie Alley\"",
+    LEVEL_GHOSTLY_PATH: "Donald Duck is in \"Ghostly Path\"",
+    LEVEL_LOUIES_CREEPY_CORRIDOR: "Donald Duck is in \"Louie's Creepy Corridor\"",
+    LEVEL_TEMPLES_ENTRANCE: "Donald Duck is in \"Temple's Entrance\"",
+    LEVEL_ARTIFACT_WAY: "Donald Duck is in \"Artifact Way\"",
+    LEVEL_ANCIENT_FATE: "Donald Duck is in \"Ancient Fate\"",
+    LEVEL_THE_NEPHEWS_MURKY_WAY: "Donald Duck is in \"The Nephews' Murky Way\"",
+    LEVEL_BEARS_PATH: "Donald Duck is being chased in \"Bears' Path\"",
+    LEVEL_MAIN_STREET: "Donald Duck is being chased in \"Main Street\"",
+    LEVEL_UNDER_HANDED: "Donald Duck is being chased in \"Under Hand'ed\"",
+    LEVEL_HEAD_ALLEY: "Donald Duck is being chased in \"Head Alley\"",
+    LEVEL_BERNADETTES_PEAK: "Donald Duck is fighting Bernadette the Bird in \"Bernadette's Peak\"",
+    LEVEL_BEAGLE_BOYS_TOWER: "Donald Duck is fighting the Beagle Boys in \"Beagle Boys' Tower\"",
+    LEVEL_MAGICAS_DEVILISH_DOME: "Donald Duck is fighting Magica in \"Magica's Devilish Dome\"",
+    LEVEL_CEREMONIAL_ROOM: "Donald Duck is fighting Merlock the Wizard in \"Ceremonial Room\"",
+}
+
+for level in rp_strings
+{
+    rich_presence_conditional_display(
+        in_level(level),
+        rp_strings[level]
+    )
+}
+rich_presence_display("🦆Donald Duck is going to save Daisy!🦆")
