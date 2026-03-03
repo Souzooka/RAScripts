@@ -596,7 +596,7 @@ for params in LEVEL_PARAMS
     achievement(
         id=params["time_id"],
         title=format("Time Trial - {0}", params["level_name"]),
-        description=format("Complete the time trial in {0}", params["level_name"]),
+        description=format("Complete the time trial in {0}.", params["level_name"]),
         points=params["time_points"],
         trigger=
             in_level(level) &&
