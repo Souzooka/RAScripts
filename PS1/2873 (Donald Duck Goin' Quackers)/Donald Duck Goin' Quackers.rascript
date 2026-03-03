@@ -180,7 +180,7 @@ COMPLETION_PARAMS = [
         "levels": [LEVEL_FOREST_EDGE, LEVEL_THE_GORGE, LEVEL_DANGEROUS_CLIFF, LEVEL_HUEYS_TRACK],
         "bosses": [LEVEL_BEARS_PATH, LEVEL_BERNADETTES_PEAK],
         "title": "Tourist",
-        "description": "Attain a 100% completion of Duckie Mountain and unlock the Tourist costume.",
+        "description": "Attain a 100% completion of Duckie Mountain, including completion of the bonus stage.",
         "points": 10,
     },
     {
@@ -188,23 +188,23 @@ COMPLETION_PARAMS = [
         "levels": [LEVEL_FIRST_AVENUE, LEVEL_THE_ROOFS, LEVEL_URBAN_HIGH_RISES, LEVEL_DEWEYS_ROOFTOPS],
         "bosses": [LEVEL_MAIN_STREET, LEVEL_BEAGLE_BOYS_TOWER],
         "title": "Pajama",
-        "description": "Attain a 100% completion of Duckberg and unlock the Pajama costume.",
+        "description": "Attain a 100% completion of Duckberg, including completion of the bonus stage.",
         "points": 10,
     },
     {
         "id": 106225,
         "levels": [LEVEL_HAUNTED_HALL, LEVEL_EARIE_ALLEY, LEVEL_GHOSTLY_PATH, LEVEL_LOUIES_CREEPY_CORRIDOR],
         "bosses": [LEVEL_UNDER_HANDED, LEVEL_MAGICAS_DEVILISH_DOME],
-        "title": "Smoking",
-        "description": "Attain a 100% completion of Magica De Spell's Manor and unlock the Smoking costume.",
+        "title": "Tuxedo",
+        "description": "Attain a 100% completion of Magica De Spell's Manor, including completion of the bonus stage.",
         "points": 10,
     },
     {
         "id": 106240,
         "levels": [LEVEL_TEMPLES_ENTRANCE, LEVEL_ARTIFACT_WAY, LEVEL_ANCIENT_FATE, LEVEL_THE_NEPHEWS_MURKY_WAY],
         "bosses": [LEVEL_HEAD_ALLEY, LEVEL_CEREMONIAL_ROOM],
-        "title": "Cowboy",
-        "description": "Attain a 100% completion of Merlock's Temple and unlock the Cowboy costume.",
+        "title": "Archaeologist",
+        "description": "Attain a 100% completion of Merlock's Temple, including completion of the bonus stage.",
         "points": 10,
     },
     {
@@ -326,7 +326,7 @@ BOSS_PARAMS = [
     {
         "level": LEVEL_MAGICAS_DEVILISH_DOME,
         "id": 106224,
-        "title": "Magica's Devilish Dome",
+        "title": "Magica's Devilsh Dome",
         "description": "Defeat Magica.",
         "type": "progression",
         "points": 5,
@@ -525,7 +525,7 @@ LEVEL_PARAMS = [
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Airplane Toys",
+        "item_name": "Toy Airplanes",
     },
     {
         "level": LEVEL_ARTIFACT_WAY,
@@ -536,7 +536,7 @@ LEVEL_PARAMS = [
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Airplane Toys",
+        "item_name": "Toy Airplanes",
     },
     {
         "level": LEVEL_THE_NEPHEWS_MURKY_WAY,
@@ -547,7 +547,7 @@ LEVEL_PARAMS = [
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Airplane Toys",
+        "item_name": "Toy Airplanes",
     },
     {
         "level": LEVEL_ANCIENT_FATE,
@@ -558,7 +558,7 @@ LEVEL_PARAMS = [
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Airplane Toys",
+        "item_name": "Toy Airplanes",
     },
 ]
 
@@ -596,7 +596,7 @@ for params in LEVEL_PARAMS
     achievement(
         id=params["time_id"],
         title=format("Time Trial - {0}", params["level_name"]),
-        description=format("Complete the time trial in {0}.", params["level_name"]),
+        description=format("Beat Gladstone's time in {0}.", params["level_name"]),
         points=params["time_points"],
         trigger=
             in_level(level) &&
@@ -669,7 +669,7 @@ rp_strings = {
     LEVEL_HEAD_ALLEY: "Donald Duck is being chased in \"Head Alley\"",
     LEVEL_BERNADETTES_PEAK: "Donald Duck is fighting Bernadette the Bird in \"Bernadette's Peak\"",
     LEVEL_BEAGLE_BOYS_TOWER: "Donald Duck is fighting the Beagle Boy in \"Beagle Boy's Tower\"",
-    LEVEL_MAGICAS_DEVILISH_DOME: "Donald Duck is fighting Magica in \"Magica's Devilish Dome\"",
+    LEVEL_MAGICAS_DEVILISH_DOME: "Donald Duck is fighting Magica in \"Magica's Devilsh Dome\"",
     LEVEL_CEREMONIAL_ROOM: "Donald Duck is fighting Merlock the Wizard in \"Ceremonial Room\"",
 }
 
