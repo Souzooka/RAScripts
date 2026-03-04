@@ -78,7 +78,10 @@ function FlagsInvalid()
         InTitle() ||
         InSpecial() ||
         IntermissionMenu()["m_load_active"] == 1 ||
-        PauseMenu()["m_load_active"] == 1
+        PauseMenu()["m_load_active"] == 1 ||
+        // Prevents achievements from popping on boot -> intro FMV transition
+        // For whatever reason this function at 0x801233F8 just overwrites game flags with 
+        ptr(dword_be(0x6E035C), [0x0, 0x10], dword_be) == 0x801233F8
 }
 
 function InTitle()
