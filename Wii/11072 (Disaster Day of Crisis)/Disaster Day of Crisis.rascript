@@ -76,11 +76,12 @@ function FlagsInvalid()
     // (and thus cause weird measured popups)
     return
         InTitle() ||
+        prev(InTitle()) || // Prevents achievements from popping when selecting "Continue" in title menu
         InSpecial() ||
         IntermissionMenu()["m_load_active"] == 1 ||
         PauseMenu()["m_load_active"] == 1 ||
         // Prevents achievements from popping on boot -> intro FMV transition
-        // For whatever reason this function at 0x801233F8 just overwrites game flags with 
+        // For whatever reason this function at 0x801233F8 just overwrites game flags with random junk.
         ptr(dword_be(0x6E035C), [0x0, 0x10], dword_be) == 0x801233F8
 }
 
@@ -1651,4 +1652,5 @@ rich_presence_conditional_display(
     rich_presence_lookup("TIME", g_checkpoint, rp_time, "Unknown Time"),
     rich_presence_lookup("ACTIVITY", g_checkpoint, rp_activity, "Unknown Activity")
 )
+
 rich_presence_display("You can't save everyone")
