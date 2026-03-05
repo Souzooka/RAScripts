@@ -25,6 +25,7 @@ function CStageProgression(addr)
         "m_energy_ball": byte(addr + 0x1),
         "m_items": array_map(range(0, 3-1), i => byte(addr + 0x2 + i)),
         "m_trial_complete_flag": bit0(addr + 0x5) ^ 1, // we aren't expected to spend an hour on a trial, so we can use this as a quick trick for math
+        "m_trial_tbyte": tbyte(addr + 0x5),
         "m_trial_hours": byte(addr + 0x5),
         "m_trial_minutes": byte(addr + 0x6),
         "m_trial_seconds": byte(addr + 0x7),
@@ -36,10 +37,10 @@ function CStageProgression(addr)
 function CGameProgression(addr)
 {
     obj = {
-        "m_magic": dword(addr + 0x0),
-        "m_lives": word(addr + 0x18),
-        "m_stars": word(addr + 0x1A),
-        "m_stages": array_map(range(0, 16-1), i => CStageProgression(addr + 0x1C + i * 8)),
+        "m_magic": dword(addr + 0x8),
+        "m_lives": word(addr + 0x20),
+        "m_stars": word(addr + 0x22),
+        "m_stages": array_map(range(0, 16-1), i => CStageProgression(addr + 0x24 + i * 8)),
         // Bear's Path
         // Main Street
         // Under Hand'ed
@@ -48,7 +49,7 @@ function CGameProgression(addr)
         // Beagle Boy's Tower
         // Magica's Devilish Dome
         // Ceremonial Room
-        "m_bosses": array_map(range(0, 8-1), i => byte(addr + 0x9D + i * 2)),
+        "m_bosses": array_map(range(0, 8-1), i => byte(addr + 0xA5 + i * 2)),
     }
     
     return obj
@@ -81,31 +82,31 @@ LEVEL_MAGICAS_DEVILISH_DOME = 0x106
 LEVEL_CEREMONIAL_ROOM = 0x107
 
 state_addrs = {
-    LEVEL_WORLD_MAP: 0xa092c,
-    LEVEL_FOREST_EDGE: 0xa7f00,
-    LEVEL_THE_GORGE: 0xa0284,
-    LEVEL_DANGEROUS_CLIFF: 0x9f5dc,
-    LEVEL_HUEYS_TRACK: 0xa01e0,
-    LEVEL_FIRST_AVENUE: 0xa428c,
-    LEVEL_THE_ROOFS: 0xa35f8,
-    LEVEL_URBAN_HIGH_RISES: 0xa1898,
-    LEVEL_DEWEYS_ROOFTOPS: 0xa0924,
-    LEVEL_HAUNTED_HALL: 0xa2a20,
-    LEVEL_EARIE_ALLEY: 0xa1784,
-    LEVEL_GHOSTLY_PATH: 0xa3578,
-    LEVEL_LOUIES_CREEPY_CORRIDOR: 0xa3140,
-    LEVEL_TEMPLES_ENTRANCE: 0xa2f90,
-    LEVEL_ARTIFACT_WAY: 0xa2370,
-    LEVEL_ANCIENT_FATE: 0xa3aa8,
-    LEVEL_THE_NEPHEWS_MURKY_WAY: 0xa1c08,
-    LEVEL_BEARS_PATH: 0x9d590,
-    LEVEL_MAIN_STREET: 0xa12b0,
-    LEVEL_UNDER_HANDED: 0x9e08c,
-    LEVEL_HEAD_ALLEY: 0x9bbc4,
-    LEVEL_BERNADETTES_PEAK: 0x9ac28,
-    LEVEL_BEAGLE_BOYS_TOWER: 0x994ec,
-    LEVEL_MAGICAS_DEVILISH_DOME: 0x9b8b8,
-    LEVEL_CEREMONIAL_ROOM: 0xa1150,
+    LEVEL_WORLD_MAP: 0xa0924,
+    LEVEL_FOREST_EDGE: 0xa7ef8,
+    LEVEL_THE_GORGE: 0xa027c,
+    LEVEL_DANGEROUS_CLIFF: 0x9f5d4,
+    LEVEL_HUEYS_TRACK: 0xa01d8,
+    LEVEL_FIRST_AVENUE: 0xa4284,
+    LEVEL_THE_ROOFS: 0xa35f0,
+    LEVEL_URBAN_HIGH_RISES: 0xa1890,
+    LEVEL_DEWEYS_ROOFTOPS: 0xa091c,
+    LEVEL_HAUNTED_HALL: 0xa2a18,
+    LEVEL_EARIE_ALLEY: 0xa177c,
+    LEVEL_GHOSTLY_PATH: 0xa3570,
+    LEVEL_LOUIES_CREEPY_CORRIDOR: 0xa3138,
+    LEVEL_TEMPLES_ENTRANCE: 0xa2f88,
+    LEVEL_ARTIFACT_WAY: 0xa2368,
+    LEVEL_ANCIENT_FATE: 0xa3aa0,
+    LEVEL_THE_NEPHEWS_MURKY_WAY: 0xa1c00,
+    LEVEL_BEARS_PATH: 0x9d588,
+    LEVEL_MAIN_STREET: 0xa12a8,
+    LEVEL_UNDER_HANDED: 0x9e084,
+    LEVEL_HEAD_ALLEY: 0x9bbbc,
+    LEVEL_BERNADETTES_PEAK: 0x9ac20,
+    LEVEL_BEAGLE_BOYS_TOWER: 0x994e4,
+    LEVEL_MAGICAS_DEVILISH_DOME: 0x9b8b0,
+    LEVEL_CEREMONIAL_ROOM: 0xa1148,
 }
 
 game_states = {}
@@ -118,9 +119,29 @@ function level_to_boss(level)
 
 function in_level(level)
 {
-    MAGIC = 0x00FF0001
-    acc = game_states[level]["m_magic"]
-    return prev(acc) == MAGIC && acc == MAGIC && game_states[level]["m_lives"] != 0
+    game_state = game_states[level]
+    
+    // Check if the overlay's position for game state's time trials
+    // match up with the universal object. Since the time trial data isn't affected while in level
+    // (at least, until the very end), this data is expected to be the same.
+    // Due to length limitations, we can only check 7 stages for 112%, unfortunately. We should make sure to check
+    // both the beginning and end of the list to prevent some conflicts with overlapping overlays, at the least.
+    TO_CHECK = [0, 1, 14, 15, 5, 8, 11]
+    cond = always_true()
+    for i in TO_CHECK
+    {
+        universal_stage_state = CStageProgression(0x1ffb2c + i * 8)
+        stage_state = game_state["m_stages"][i]
+    
+        cond = cond && prev(stage_state["m_trial_tbyte"]) == prev(universal_stage_state["m_trial_tbyte"])
+        if i != level
+        {
+            cond = cond && stage_state["m_trial_tbyte"] == universal_stage_state["m_trial_tbyte"]
+        }
+    }
+
+
+    return cond && game_states[level]["m_lives"] != 0
 }
 
 // Misc.
