@@ -715,13 +715,21 @@ function DamagelessFallback(stage, before_damage, after_damage)
         prev(g_stage_result["m_screen_transition"]) == 1
 }
 
+function GetCheckpointDamage(stage, checkpoint)
+{
+    checkpoint = checkpoint - 1
+    offset = 0x2F4 + (0x5C * stage) + (0x1424 * checkpoint)
+    
+    return ptr(dword_be(0x6E1334), [offset], float_be)
+}
+
 achievement(
     id=562401,
     title="Gordon Killer",
     description="In Stage 01, defeat Gordon without taking damage and earn this title. Use of the Mechanical Ray costume is prohibited for all damageless achievements.",
     points=2,
     trigger=TitleEarned(7, mech_ray_allowed=false) || 
-        DamagelessFallback(1, GetCheckpointState(4)["m_damage_received"], GetCheckpointState(5)["m_damage_received"])
+        DamagelessFallback(1, GetCheckpointDamage(1, 4), GetCheckpointDamage(1, 5))
 )
 
 achievement(
@@ -730,7 +738,7 @@ achievement(
     description="In Stage 03, defeat the armoured vehicles without taking damage and earn this title.",
     points=5,
     trigger=TitleEarned(8, mech_ray_allowed=false) || 
-        DamagelessFallback(3, GetCheckpointState(8)["m_damage_received"], GetCheckpointState(9)["m_damage_received"])
+        DamagelessFallback(3, GetCheckpointDamage(3, 8), GetCheckpointDamage(3, 9))
 )
 
 achievement(
@@ -739,7 +747,7 @@ achievement(
     description="In Stage 05, defeat Gordon without taking damage and earn this title.",
     points=5,
     trigger=TitleEarned(9, mech_ray_allowed=false) || 
-        DamagelessFallback(5, GetCheckpointState(2)["m_damage_received"], g_stage_result["m_damage_received"])
+        DamagelessFallback(5, GetCheckpointDamage(5, 2), g_stage_result["m_damage_received"])
 )
 
 achievement(
@@ -748,7 +756,7 @@ achievement(
     description="In Stage 07, defeat the chopper without taking damage and earn this title.",
     points=5,
     trigger=TitleEarned(10, mech_ray_allowed=false) || 
-        DamagelessFallback(7, GetCheckpointState(2)["m_damage_received"], GetCheckpointState(3)["m_damage_received"])
+        DamagelessFallback(7, GetCheckpointDamage(7, 2), GetCheckpointDamage(7, 3))
 )
 
 achievement(
@@ -757,7 +765,7 @@ achievement(
     description="In Stage 08, defeat Gregory without taking damage and earn this title.",
     points=5,
     trigger=TitleEarned(11, mech_ray_allowed=false) || 
-        DamagelessFallback(8, GetCheckpointState(4)["m_damage_received"], g_stage_result["m_damage_received"])
+        DamagelessFallback(8, GetCheckpointDamage(8, 4), g_stage_result["m_damage_received"])
 )
 
 achievement(
@@ -766,7 +774,7 @@ achievement(
     description="In Stage 10, defeat Evans without taking damage and earn this title.",
     points=10,
     trigger=TitleEarned(12, mech_ray_allowed=false) || 
-        DamagelessFallback(10, GetCheckpointState(10)["m_damage_received"], GetCheckpointState(12)["m_damage_received"])
+        DamagelessFallback(10, GetCheckpointDamage(10, 10), GetCheckpointDamage(10, 12))
 )
 
 achievement(
@@ -776,9 +784,9 @@ achievement(
     points=3,
     trigger=TitleEarned(13, mech_ray_allowed=false) || 
         (
-            DamagelessFallback(13, GetCheckpointState(4)["m_damage_received"], GetCheckpointState(5)["m_damage_received"]) &&
-            DamagelessFallback(13, GetCheckpointState(6)["m_damage_received"], GetCheckpointState(7)["m_damage_received"]) &&
-            DamagelessFallback(13, GetCheckpointState(8)["m_damage_received"], GetCheckpointState(9)["m_damage_received"])
+            DamagelessFallback(13, GetCheckpointDamage(13, 4), GetCheckpointDamage(13, 5)) &&
+            DamagelessFallback(13, GetCheckpointDamage(13, 6), GetCheckpointDamage(13, 7)) &&
+            DamagelessFallback(13, GetCheckpointDamage(13, 8), GetCheckpointDamage(13, 9))
         )
 )
 
@@ -788,7 +796,7 @@ achievement(
     description="In Stage 14, defeat the chopper without taking damage and earn this title.",
     points=5,
     trigger=TitleEarned(14, mech_ray_allowed=false) || 
-        DamagelessFallback(14, GetCheckpointState(2)["m_damage_received"], GetCheckpointState(3)["m_damage_received"])
+        DamagelessFallback(14, GetCheckpointDamage(14, 2), GetCheckpointDamage(14, 3))
 )
 
 achievement(
@@ -805,7 +813,7 @@ achievement(
     description="In Stage 18, defeat Banks without taking damage and earn this title.",
     points=10,
     trigger=TitleEarned(15, mech_ray_allowed=false) || 
-        DamagelessFallback(18, GetCheckpointState(12)["m_damage_received"], g_stage_result["m_damage_received"])
+        DamagelessFallback(18, GetCheckpointDamage(18, 12), g_stage_result["m_damage_received"])
 )
 
 achievement(
@@ -814,7 +822,7 @@ achievement(
     description="In Stage 21, defeat the SURGE force on the Seaside Highway without taking damage and earn this title.",
     points=10,
     trigger=TitleEarned(16, mech_ray_allowed=false) || 
-        DamagelessFallback(21, GetCheckpointState(8)["m_damage_received"], g_stage_result["m_damage_received"])
+        DamagelessFallback(21, GetCheckpointDamage(21, 8), g_stage_result["m_damage_received"])
 )
 
 achievement(
@@ -823,7 +831,7 @@ achievement(
     description="In Stage 22, defeat the XA19 without taking damage and earn this title.",
     points=10,
     trigger=TitleEarned(17, mech_ray_allowed=false) || 
-        DamagelessFallback(22, GetCheckpointState(7)["m_damage_received"], GetCheckpointState(8)["m_damage_received"])
+        DamagelessFallback(22, GetCheckpointDamage(22, 7), GetCheckpointState(8)["m_damage_received"])
 )
 
 achievement(
