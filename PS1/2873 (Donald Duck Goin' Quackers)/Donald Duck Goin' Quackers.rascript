@@ -149,7 +149,7 @@ function in_level(level)
 achievement(
     id=106178,
     title="Tutorial TV",
-    description="Turn on the Tutorial TV channel.",
+    description="Use one of the Tutorial TVs in Forest Edge.",
     points=1,
     trigger=
         in_level(LEVEL_FOREST_EDGE) &&
@@ -159,8 +159,8 @@ achievement(
 
 achievement(
     id=106179,
-    title="Get Out of My Way!",
-    description="Beat your first enemy in Forest Edge.",
+    title="Quack Attack!",
+    description="Defeat your first enemy in Forest Edge.",
     points=1,
     trigger=
         in_level(LEVEL_FOREST_EDGE) &&
@@ -170,8 +170,8 @@ achievement(
 
 achievement(
     id=106180,
-    title="Delicious!",
-    description="Drink your first Milk Shake in Forest Edge.",
+    title="Shake Things Up!",
+    description="Drink your first milkshake in Forest Edge.",
     points=1,
     trigger=
         in_level(LEVEL_FOREST_EDGE) &&
@@ -181,8 +181,8 @@ achievement(
 
 achievement(
     id=106241,
-    title="Healthy",
-    description="Obtain 20 or more lives.",
+    title="Can't Pluck This Duck",
+    description="Have 20 or more lives at once.",
     points=10,
     trigger=
         any_of(
@@ -200,32 +200,32 @@ COMPLETION_PARAMS = [
         "id": 106195,
         "levels": [LEVEL_FOREST_EDGE, LEVEL_THE_GORGE, LEVEL_DANGEROUS_CLIFF, LEVEL_HUEYS_TRACK],
         "bosses": [LEVEL_BEARS_PATH, LEVEL_BERNADETTES_PEAK],
-        "title": "Tourist",
-        "description": "Attain a 100% completion of Duckie Mountain, including completion of the bonus stage.",
+        "title": "Tourist Trap",
+        "description": "Obtain 100% completion of every stage in Duckie Mountain.",
         "points": 10,
     },
     {
         "id": 106210,
         "levels": [LEVEL_FIRST_AVENUE, LEVEL_THE_ROOFS, LEVEL_URBAN_HIGH_RISES, LEVEL_DEWEYS_ROOFTOPS],
         "bosses": [LEVEL_MAIN_STREET, LEVEL_BEAGLE_BOYS_TOWER],
-        "title": "Pajama",
-        "description": "Attain a 100% completion of Duckberg, including completion of the bonus stage.",
+        "title": "Snooze Cruise",
+        "description": "Obtain 100% completion of every stage in Duckberg.",
         "points": 10,
     },
     {
         "id": 106225,
         "levels": [LEVEL_HAUNTED_HALL, LEVEL_EARIE_ALLEY, LEVEL_GHOSTLY_PATH, LEVEL_LOUIES_CREEPY_CORRIDOR],
         "bosses": [LEVEL_UNDER_HANDED, LEVEL_MAGICAS_DEVILISH_DOME],
-        "title": "Tuxedo",
-        "description": "Attain a 100% completion of Magica De Spell's Manor, including completion of the bonus stage.",
+        "title": "Penguin Suit",
+        "description": "Obtain 100% completion of every stage in Magica De Spell's Manor.",
         "points": 10,
     },
     {
         "id": 106240,
         "levels": [LEVEL_TEMPLES_ENTRANCE, LEVEL_ARTIFACT_WAY, LEVEL_ANCIENT_FATE, LEVEL_THE_NEPHEWS_MURKY_WAY],
         "bosses": [LEVEL_HEAD_ALLEY, LEVEL_CEREMONIAL_ROOM],
-        "title": "Archaeologist",
-        "description": "Attain a 100% completion of Merlock's Temple, including completion of the bonus stage.",
+        "title": "Now All You Need's a Whip",
+        "description": "Obtain 100% completion of every stage in Merlock's Temple.",
         "points": 10,
     },
     {
@@ -238,8 +238,8 @@ COMPLETION_PARAMS = [
                    LEVEL_MAIN_STREET, LEVEL_BEAGLE_BOYS_TOWER,
                    LEVEL_UNDER_HANDED, LEVEL_MAGICAS_DEVILISH_DOME,
                    LEVEL_HEAD_ALLEY, LEVEL_CEREMONIAL_ROOM],
-        "title": "112%",
-        "description": "Congratulations! Donald Duck is proud.",
+        "title": "Goin' Quackers",
+        "description": "Obtain 112% completion.",
         "points": 25,
     },
 ]
@@ -307,15 +307,15 @@ BOSS_PARAMS = [
     {
         "level": LEVEL_BEARS_PATH,
         "id": 106193,
-        "title": "Bears' Path",
-        "description": "Completed Bears' Path.",
+        "title": "Poking the Bear",
+        "description": "Complete Bears' Path.",
         "type": "",
         "points": 5,
     },
     {
         "level": LEVEL_BERNADETTES_PEAK,
         "id": 106194,
-        "title": "Bernadette's Peak",
+        "title": "Duck Duck Bird",
         "description": "Defeat Bernadette the Bird.",
         "type": "progression",
         "points": 5,
@@ -323,15 +323,15 @@ BOSS_PARAMS = [
     {
         "level": LEVEL_MAIN_STREET,
         "id": 106208,
-        "title": "Main Street",
-        "description": "Completed Main Street.",
+        "title": "Escape from the Street",
+        "description": "Complete Main Street.",
         "type": "",
         "points": 5,
     },
     {
         "level": LEVEL_BEAGLE_BOYS_TOWER,
         "id": 106209,
-        "title": "Beagle Boy's Tower",
+        "title": "Construction Cruise",
         "description": "Defeat the Beagle Boy.",
         "type": "progression",
         "points": 5,
@@ -339,31 +339,31 @@ BOSS_PARAMS = [
     {
         "level": LEVEL_UNDER_HANDED,
         "id": 106223,
-        "title": "Under 'Hand'ed",
-        "description": "Completed Under 'Hand'ed.",
+        "title": "It's No Master Hand",
+        "description": "Complete Under 'Hand'ed.",
         "type": "",
         "points": 5,
     },
     {
         "level": LEVEL_MAGICAS_DEVILISH_DOME,
         "id": 106224,
-        "title": "Magica's Devilsh Dome",
-        "description": "Defeat Magica.",
+        "title": "Let Me Spell This Out",
+        "description": "Defeat Magica De Spell.",
         "type": "progression",
         "points": 5,
     },
     {
         "level": LEVEL_HEAD_ALLEY,
         "id": 106238,
-        "title": "Head Alley",
-        "description": "Completed Head Alley.",
+        "title": "He's on a Roll!",
+        "description": "Complete Head Alley.",
         "type": "",
         "points": 5,
     },
     {
         "level": LEVEL_CEREMONIAL_ROOM,
         "id": 106239,
-        "title": "Ceremonial Room",
+        "title": "Save the Girl",
         "description": "Defeat Merlock the Wizard.",
         "type": "win_condition",
         "points": 5,
@@ -411,10 +411,14 @@ LEVEL_PARAMS = [
         "goal_id": 106182,
         "item_id": 106181,
         "time_id": 106183,
+        "lb_id": 157455,
+        "goal_name": "If a Ball Falls in the Forest...",
+        "item_name": "Silly Old Bears",
+        "time_name": "Duck Trails",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Teddy Bears",
+        "toy_name": "Huey's teddy bears",
     },
     {
         "level": LEVEL_THE_GORGE,
@@ -422,10 +426,14 @@ LEVEL_PARAMS = [
         "goal_id": 106184,
         "item_id": 106185,
         "time_id": 106186,
+        "lb_id": 157456,
+        "goal_name": "Second Spark",
+        "item_name": "Bear-ly Made It",
+        "time_name": "Don't Gorge Yourself",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Teddy Bears",
+        "toy_name": "Huey's teddy bears",
     },
     {
         "level": LEVEL_HUEYS_TRACK,
@@ -433,10 +441,14 @@ LEVEL_PARAMS = [
         "goal_id": 106187,
         "item_id": 106188,
         "time_id": 106189,
+        "lb_id": 157458,
+        "goal_name": "Hand It Over Huey!",
+        "item_name": "Tracked Them Down",
+        "time_name": "Quack and Field",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Teddy Bears",
+        "toy_name": "Huey's teddy bears",
     },
     {
         "level": LEVEL_DANGEROUS_CLIFF,
@@ -444,10 +456,14 @@ LEVEL_PARAMS = [
         "goal_id": 106190,
         "item_id": 106191,
         "time_id": 106192,
+        "lb_id": 157457,
+        "goal_name": "Let's Get Dangerous",
+        "item_name": "I Can't Bear This Anymore",
+        "time_name": "A Dip Into Danger",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Teddy Bears",
+        "toy_name": "Huey's teddy bears",
     },
     {
         "level": LEVEL_FIRST_AVENUE,
@@ -455,10 +471,14 @@ LEVEL_PARAMS = [
         "goal_id": 106196,
         "item_id": 106197,
         "time_id": 106198,
+        "lb_id": 157459,
+        "goal_name": "Balling in the Street",
+        "item_name": "Later Skater",
+        "time_name": "Over the Speed Limit",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Roller Skates",
+        "toy_name": "Dewey's roller skates",
     },
     {
         "level": LEVEL_THE_ROOFS,
@@ -466,10 +486,14 @@ LEVEL_PARAMS = [
         "goal_id": 106199,
         "item_id": 106200,
         "time_id": 106201,
+        "lb_id": 157460,
+        "goal_name": "Lightning Rod",
+        "item_name": "Rolling on The Roofs",
+        "time_name": "Raise the Rooftops",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Roller Skates",
+        "toy_name": "Dewey's roller skates",
     },
     {
         "level": LEVEL_DEWEYS_ROOFTOPS,
@@ -477,10 +501,14 @@ LEVEL_PARAMS = [
         "goal_id": 106202,
         "item_id": 106203,
         "time_id": 106204,
+        "lb_id": 157461,
+        "goal_name": "Drop It Dewey!",
+        "item_name": "But Why Three Skates?",
+        "time_name": "Rooftop Run",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Roller Skates",
+        "toy_name": "Dewey's roller skates",
     },
     {
         "level": LEVEL_URBAN_HIGH_RISES,
@@ -488,10 +516,14 @@ LEVEL_PARAMS = [
         "goal_id": 106205,
         "item_id": 106206,
         "time_id": 106207,
+        "lb_id": 157462,
+        "goal_name": "A Spark in the Sky",
+        "item_name": "A Real Pro Skater",
+        "time_name": "He Rises to the Occasion",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Roller Skates",
+        "toy_name": "Dewey's roller skates",
     },
     {
         "level": LEVEL_HAUNTED_HALL,
@@ -499,10 +531,14 @@ LEVEL_PARAMS = [
         "goal_id": 106211,
         "item_id": 106212,
         "time_id": 106213,
+        "lb_id": 157463,
+        "goal_name": "Hall Monitor",
+        "item_name": "Set Phasers to Stun",
+        "time_name": "Not Your Usual Haunt",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Ray Guns",
+        "toy_name": "Louie's ray guns",
     },
     {
         "level": LEVEL_EARIE_ALLEY,
@@ -510,10 +546,14 @@ LEVEL_PARAMS = [
         "goal_id": 106214,
         "item_id": 106215,
         "time_id": 106216,
+        "lb_id": 157464,
+        "goal_name": "Keep the Ball Rolling!",
+        "item_name": "Straight Shot",
+        "time_name": "Peaks and Alleys",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Ray Guns",
+        "toy_name": "Louie's ray guns",
     },
     {
         "level": LEVEL_LOUIES_CREEPY_CORRIDOR,
@@ -521,10 +561,14 @@ LEVEL_PARAMS = [
         "goal_id": 106217,
         "item_id": 106218,
         "time_id": 106219,
+        "lb_id": 157465,
+        "goal_name": "Leave It Louie!",
+        "item_name": "Run and Gun",
+        "time_name": "No More Corridor",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Ray Guns",
+        "toy_name": "Louie's ray guns",
     },
     {
         "level": LEVEL_GHOSTLY_PATH,
@@ -532,10 +576,14 @@ LEVEL_PARAMS = [
         "goal_id": 106220,
         "item_id": 106221,
         "time_id": 106222,
+        "lb_id": 157466,
+        "goal_name": "Signs of Life",
+        "item_name": "Blaster Master",
+        "time_name": "Gone and Ghosted",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Ray Guns",
+        "toy_name": "Louie's ray guns",
     },
     {
         "level": LEVEL_TEMPLES_ENTRANCE,
@@ -543,10 +591,14 @@ LEVEL_PARAMS = [
         "goal_id": 106226,
         "item_id": 106227,
         "time_id": 106228,
+        "lb_id": 157467,
+        "goal_name": "Wak like an Egyptian",
+        "item_name": "No Fly Zone",
+        "time_name": "Temple Run",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Toy Airplanes",
+        "toy_name": "the triplets' toy airplanes",
     },
     {
         "level": LEVEL_ARTIFACT_WAY,
@@ -554,10 +606,14 @@ LEVEL_PARAMS = [
         "goal_id": 106229,
         "item_id": 106230,
         "time_id": 106231,
+        "lb_id": 157468,
+        "goal_name": "Go with the Lava Flow",
+        "item_name": "Bit of a Bumpy Flight",
+        "time_name": "No Respect for the Ruins",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Toy Airplanes",
+        "toy_name": "the triplets' toy airplanes",
     },
     {
         "level": LEVEL_THE_NEPHEWS_MURKY_WAY,
@@ -565,10 +621,14 @@ LEVEL_PARAMS = [
         "goal_id": 106232,
         "item_id": 106233,
         "time_id": 106234,
+        "lb_id": 157469,
+        "goal_name": "Triple Trouble",
+        "item_name": "Stop Toying with Me!",
+        "time_name": "Playing with Fire",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Toy Airplanes",
+        "toy_name": "the triplets' toy airplanes",
     },
     {
         "level": LEVEL_ANCIENT_FATE,
@@ -576,10 +636,14 @@ LEVEL_PARAMS = [
         "goal_id": 106235,
         "item_id": 106236,
         "time_id": 106237,
+        "lb_id": 157470,
+        "goal_name": "The Ball's in your Court",
+        "item_name": "Last Call for This Flight",
+        "time_name": "Faster than Fate",
         "goal_points": 2,
         "item_points": 3,
         "time_points": 5,
-        "item_name": "Toy Airplanes",
+        "toy_name": "the triplets' toy airplanes",
     },
 ]
 
@@ -592,8 +656,8 @@ for params in LEVEL_PARAMS
     // Goal
     achievement(
         id=params["goal_id"],
-        title=format("Energy Ball - {0}", params["level_name"]),
-        description=format("Obtain the Energy Ball in {0}.", params["level_name"]),
+        title=params["goal_name"],
+        description=format("Collect {0}'s energy ball.", params["level_name"]),
         points=params["goal_points"],
         trigger=
             in_level(level) &&
@@ -604,8 +668,8 @@ for params in LEVEL_PARAMS
     // Items
     achievement(
         id=params["item_id"],
-        title=format("{0} - {1}", params["item_name"], params["level_name"]),
-        description=format("Obtain all {0} in {1}.", params["item_name"], params["level_name"]),
+        title=params["item_name"],
+        description=format("Collect all of {0} in {1}.", params["toy_name"], params["level_name"]),
         points=params["item_points"],
         trigger=
             in_level(level) &&
@@ -616,8 +680,8 @@ for params in LEVEL_PARAMS
     // Time Trials
     achievement(
         id=params["time_id"],
-        title=format("Time Trial - {0}", params["level_name"]),
-        description=format("Beat Gladstone's time in {0}.", params["level_name"]),
+        title=params["time_name"],
+        description=format("Set a new record time in {0}.", params["level_name"]),
         points=params["time_points"],
         trigger=
             in_level(level) &&
@@ -630,8 +694,6 @@ for params in LEVEL_PARAMS
 }
 
 // LBs
-
-LB_ID = 157455
 
 for params in LEVEL_PARAMS
 {
@@ -650,7 +712,7 @@ for params in LEVEL_PARAMS
             stage_state["m_trial_seconds"]
             
     leaderboard(
-        id=LB_ID,
+        id=params["lb_id"],
         title=format("{0} - Time Trial", params["level_name"]),
         description=format("Complete the time trial in {0} in the fastest time!", params["level_name"]),
         format="SECS",
@@ -660,8 +722,6 @@ for params in LEVEL_PARAMS
         submit=submit,
         value=value
     )
-    
-    LB_ID = LB_ID + 1
 }
 
 // Rich Presence
@@ -690,7 +750,7 @@ rp_strings = {
     LEVEL_HEAD_ALLEY: "Donald Duck is being chased in \"Head Alley\"",
     LEVEL_BERNADETTES_PEAK: "Donald Duck is fighting Bernadette the Bird in \"Bernadette's Peak\"",
     LEVEL_BEAGLE_BOYS_TOWER: "Donald Duck is fighting the Beagle Boy in \"Beagle Boy's Tower\"",
-    LEVEL_MAGICAS_DEVILISH_DOME: "Donald Duck is fighting Magica in \"Magica's Devilsh Dome\"",
+    LEVEL_MAGICAS_DEVILISH_DOME: "Donald Duck is fighting Magica De Spell in \"Magica's Devilsh Dome\"",
     LEVEL_CEREMONIAL_ROOM: "Donald Duck is fighting Merlock the Wizard in \"Ceremonial Room\"",
 }
 
