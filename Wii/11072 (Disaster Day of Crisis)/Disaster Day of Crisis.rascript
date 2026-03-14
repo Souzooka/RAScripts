@@ -319,19 +319,6 @@ function PauseMenu()
     return obj
 }
 
-function GetCheckpointState(checkpoint_id)
-{
-    SIZEOF_CHECKPOINTSTATE = 0x1424
-    checkpoint_id = checkpoint_id - 1
-    checkpoint_state = (dword_be(0x6E1334) & RA_MASK) + (checkpoint_id * SIZEOF_CHECKPOINTSTATE)
-    
-    obj = {
-        "m_damage_received": float_be(checkpoint_state + 0x350)
-    }
-    
-    return obj
-}
-
 p_player = ptr(dword_be(0x6E10DC), [0x10, 0x14C], dword_be)
 g_player = Player(p_player)
 g_costume = dword_be(0x616b04)
@@ -831,7 +818,7 @@ achievement(
     description="In Stage 22, defeat the XA19 without taking damage and earn this title.",
     points=10,
     trigger=TitleEarned(17, mech_ray_allowed=false) || 
-        DamagelessFallback(22, GetCheckpointDamage(22, 7), GetCheckpointState(8)["m_damage_received"])
+        DamagelessFallback(22, GetCheckpointDamage(22, 7), GetCheckpointDamage(22, 8))
 )
 
 achievement(
