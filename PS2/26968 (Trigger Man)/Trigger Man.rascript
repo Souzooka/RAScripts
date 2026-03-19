@@ -48,6 +48,13 @@ function MissionComplete(mission)
         g_mission_complete == 0
 }
 
+function GetIGT()
+{
+    g_game_days = dword(0x277610)
+    g_game_time = float(0x277614)
+    return g_game_time * 100 + (g_game_days * 100 * 60 * 60 * 24)
+}
+
 function Human(addr)
 {
     obj = {
@@ -185,6 +192,27 @@ for params in MISSION_PARAMS
         trigger=
             MissionComplete(params["mission"]) &&
             g_difficulty == DIFFICULTY_DEADLY
+    )
+}
+
+for mission in range(1, 9)
+{
+    leaderboard(
+        id=0,
+        title=format("Mission {0} - Time Attack", mission),
+        description=format("Complete mission {0} as quickly as possible!", mission),
+        format="CENTISECS",
+        lower_is_better=true,
+        start=
+            level_id == mission &&
+            GetIGT() != 0 &&
+            prev(GetIGT()) == 0,
+        cancel=
+            !AntiCheat() || g_scene_id != -1 && level_id != mission,
+        submit=
+            MissionComplete(mission),
+        value=
+            GetIGT()
     )
 }
 
