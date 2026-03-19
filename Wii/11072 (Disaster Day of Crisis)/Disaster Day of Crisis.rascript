@@ -80,6 +80,7 @@ function FlagsInvalid()
         InSpecial() ||
         IntermissionMenu()["m_load_active"] == 1 ||
         PauseMenu()["m_load_active"] == 1 ||
+        PrologueSaveMenu()["m_load_active"] == 1 ||
         PostGameMenu()["m_load_active"] == 1 ||
         // Prevents achievements from popping on boot -> intro FMV transition
         // For whatever reason this function at 0x801233F8 just overwrites game flags with random junk.
@@ -98,7 +99,7 @@ function InSpecial()
 
 function SaveScreenActive(now=false)
 {
-    val = ptr(dword_be(0x6E0850), [0x4C], byte)
+    val = PrologueSaveMenu()["m_menu_active"]
     if now
         return prev(val) == 0 && val == 1
     return val == 1
@@ -326,6 +327,18 @@ function PostGameMenu()
     
     obj = {
         "m_load_active": byte(addr + 0x84)
+    }
+    
+    return obj
+}
+
+function PrologueSaveMenu()
+{
+    addr = dword_be(0x6E0850) & RA_MASK
+    
+    obj = {
+        "m_menu_active": byte(addr + 0x4C),
+        "m_load_active": byte(addr + 0x60),
     }
     
     return obj
