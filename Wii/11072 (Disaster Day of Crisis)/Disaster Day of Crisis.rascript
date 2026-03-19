@@ -80,6 +80,7 @@ function FlagsInvalid()
         InSpecial() ||
         IntermissionMenu()["m_load_active"] == 1 ||
         PauseMenu()["m_load_active"] == 1 ||
+        PostGameMenu()["m_load_active"] == 1 ||
         // Prevents achievements from popping on boot -> intro FMV transition
         // For whatever reason this function at 0x801233F8 just overwrites game flags with random junk.
         ptr(dword_be(0x6E035C), [0x0, 0x10], dword_be) == 0x801233F8
@@ -314,6 +315,17 @@ function PauseMenu()
     
     obj = {
         "m_load_active": byte(addr + 0x5D0)
+    }
+    
+    return obj
+}
+
+function PostGameMenu()
+{
+    addr = dword_be(0x6e0848) & RA_MASK
+    
+    obj = {
+        "m_load_active": byte(addr + 0x84)
     }
     
     return obj
