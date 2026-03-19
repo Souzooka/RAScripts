@@ -913,6 +913,7 @@ achievement(
     points=5,
     trigger=
         StageComplete() &&
+        !FlagsInvalid() &&
         prev(g_weapons[WEAPON_DEEP_IMPACT]["m_owned"]) == 0 &&
         g_weapons[WEAPON_DEEP_IMPACT]["m_owned"] == 1
 )
@@ -924,6 +925,7 @@ achievement(
     points=5,
     trigger=
         StageComplete() &&
+        !FlagsInvalid() &&
         prev(g_weapons[WEAPON_IMMOLATOR]["m_owned"]) == 0 &&
         g_weapons[WEAPON_IMMOLATOR]["m_owned"] == 1
 )
@@ -935,6 +937,7 @@ achievement(
     points=5,
     trigger=
         StageComplete() &&
+        !FlagsInvalid() &&
         prev(g_weapons[WEAPON_VOLCANO]["m_owned"]) == 0 &&
         g_weapons[WEAPON_VOLCANO]["m_owned"] == 1
 )
@@ -956,13 +959,13 @@ TITLE_PARAMS = [
     {
         "id": 0,
         "count": 75,
-        "points": 10,
+        "points": 25,
         "title": "Miracle Worker",
     },
     {
         "id": 0,
-        "count": 100,
-        "points": 50,
+        "count": 90,
+        "points": 25,
         "title": "Savior",
     }
 ]
