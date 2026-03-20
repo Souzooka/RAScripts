@@ -39,6 +39,13 @@ function ptr(base, offsets, accessor=dword)
     return val
 }
 
+function time_to_centisecs(minutes=0, seconds=0)
+{
+    return
+        seconds * 100 +
+        minutes * 60 * 100
+}
+
 function AntiCheat()
 {
     // there's 8 but only the first 2 can be edited without a cheat device
@@ -82,11 +89,25 @@ function MissionCancel(mission)
     return !AntiCheat() || g_scene_id != -1 && level_id != mission
 }
 
+function Vec4(addr)
+{
+    obj = {
+        "x": float(addr + 0x0),
+        "y": float(addr + 0x4),
+        "z": float(addr + 0x8),
+        "w": float(addr + 0xC),
+    }
+    
+    return obj
+}
+
 function Human(addr)
 {
     obj = {
         "m_health_max": float(addr + 0x34),
         "m_health": float(addr + 0x3C),
+        "m_position": Vec4(addr + 0x60),
+        "p_weapon": dword(addr + 0x604),
         "m_weapon": Weapon(dword(addr + 0x604)),
     }
     
@@ -97,6 +118,8 @@ function Weapon(addr)
 {
     obj = {
         "m_params": WeaponParams(dword(addr + 0x14)),
+        "m_clip": WeaponClip(dword(addr + 0x64)),
+        "m_ammo": byte(addr + 0x82),
     }
     
     return obj
@@ -109,6 +132,55 @@ function WeaponParams(addr)
     }
     
     return obj
+}
+
+function WeaponClip(addr)
+{
+    obj = {
+        "p_projectile": dword(addr + 0xC),
+        "m_projectile": Projectile(dword(addr + 0xC)),
+    }
+    
+    return obj
+}
+
+function Projectile(addr)
+{
+    obj = {
+        "m_count": word(addr + 0x10),
+    }
+    
+    return obj
+}
+
+function WeaponHasReserveAmmo()
+{
+    return g_player["m_weapon"]["m_clip"]["p_projectile"] != NULL
+}
+
+function WeaponGetReserveAmmo()
+{
+    return g_player["m_weapon"]["m_clip"]["m_projectile"]["m_count"]
+}
+
+STAT_DIFFICULTY = 0
+STAT_IGT_DAYS = 1
+STAT_IGT_HOURS = 2
+STAT_IGT_MINUTES = 3
+STAT_IGT_SECONDS = 4
+STAT_TOTAL_KILLS = 5
+STAT_PLAYER_KILLS = 6
+STAT_HEAD_SHOTS = 7
+STAT_KNIFE_STRIKES = 8
+STAT_SHOTS_FIRED = 10
+STAT_HITS = 11
+
+function StatGet(stat)
+{
+    g_scoreMan = 0x54A6E0
+    addr = g_scoreMan + 0x720
+    addr = addr + (stat * 4)
+    return dword(addr)
 }
 
 g_scene_id = dword(0x277940)
@@ -244,11 +316,110 @@ for params in MISSION_PARAMS
 
 WEAPON_MP5 = 0x5
 WEAPON_M203 = 0xC
+WEAPON_5ROUNDSNIPER = 0xD
 
 achievement(
     id=0,
-    title="Jack Where the Hell Are We",
-    description="In mission 4, complete the first area without your escort taking any damage.",
+    title="Finger on the Trigger, Man",
+    description="Complete mission 1 without ever reloading any of your weapons.",
+    points=10,
+    type="missable",
+    trigger=
+        // Record mission start
+        once(MissionStart(1)) &&
+        // Reset upon weapon ammo increasing (and last weapon is same as now weapon)
+        never(
+            MissionCancel(1) ||
+            (
+                p_player != NULL &&
+                // Prevents respawns from invalidating achievement
+                g_scene_id != -1 &&
+                // Ammo in magazine for equipped weapon increased (thus the player reloaded)
+                g_player["p_weapon"] != NULL &&
+                prev(g_player["p_weapon"]) == g_player["p_weapon"] &&
+                g_player["m_weapon"]["m_ammo"] > prev(g_player["m_weapon"]["m_ammo"])
+            )
+        ) &&
+        // Trigger upon mission completion
+        trigger_when(MissionComplete(1))
+)
+
+achievement(
+    id=0,
+    title="Remember the Basics of CQC, Jack",
+    description="Complete mission 2 while only firing your sniper rifle or using your knife.",
+    points=10,
+    type="missable",
+    trigger=
+        // Record mission start
+        once(MissionStart(2)) &&
+        // Reset upon weapon ammo decreasing (if not sniper) (and last weapon is same as now weapon)
+        never(
+            MissionCancel(2) ||
+            (
+                p_player != NULL &&
+                // Prevents respawns from invalidating achievement
+                g_scene_id != -1 &&
+                // Ammo in magazine for equipped weapon decreased (thus the player used the weapon)
+                g_player["p_weapon"] != NULL &&
+                prev(g_player["p_weapon"]) == g_player["p_weapon"] &&
+                g_player["m_weapon"]["m_params"]["m_type"] != WEAPON_5ROUNDSNIPER &&
+                (
+                    g_player["m_weapon"]["m_ammo"] < prev(g_player["m_weapon"]["m_ammo"]) ||
+                    (
+                        // The weapon actually uses projectiles (and isn't like, the (non-thrown) knife)
+                        WeaponHasReserveAmmo() &&
+                        // Weapon reserve ammo decreased (detects auto-reloaded weapons like throwing knife)
+                        WeaponGetReserveAmmo() < prev(WeaponGetReserveAmmo())
+                    )
+                )
+            )
+        ) &&
+        // Trigger upon mission completion
+        trigger_when(MissionComplete(2))
+)
+
+// Without dying since dying doesn't reset the knife strikes set to a checkpoint value :(
+KNIFE_AMOUNT = 15
+achievement(
+    id=0,
+    title="Donkey Punch!",
+    description=format("From the start of mission 3, kill {0} enemies using your knife without dying.", KNIFE_AMOUNT),
+    points=10,
+    type="missable",
+    trigger=
+        // Record mission start
+        once(MissionStart(3)) &&
+        never(MissionCancel(3) || g_scene_id == -1) &&
+        (
+            (
+                trigger_when(always_false())
+            ) ||
+            (
+                // Activate when getting enough knife strikes
+                prev(StatGet(STAT_KNIFE_STRIKES)) == KNIFE_AMOUNT-1 &&
+                measured(StatGet(STAT_KNIFE_STRIKES) == KNIFE_AMOUNT, when=once(MissionStart(3)))
+            )
+        )
+)
+
+achievement(
+    id=0,
+    title="Subway Surfer",
+    description="Complete mission 4 with an in-game time of less than 4 minutes and 44 seconds.",
+    points=10,
+    type="missable",
+    trigger=
+        once(MissionStart(4)) &&
+        never(MissionCancel(4)) &&
+        GetIGT() < time_to_centisecs(minutes=4, seconds=4) &&
+        trigger_when(MissionComplete(4))
+)
+
+achievement(
+    id=0,
+    title="Wake Me Up When Septober Ends",
+    description="In mission 5, defeat the boss without letting him leave the office area.",
     points=10,
     type="missable",
     trigger=always_false()
@@ -264,14 +435,22 @@ achievement(
         // Record mission start
         once(MissionStart(6)) &&
         never(MissionCancel(6)) &&
+        // Trigger on switching to MP5
         trigger_when(
             prev(g_player["m_weapon"]["m_params"]["m_type"]) != WEAPON_MP5 &&
             g_player["m_weapon"]["m_params"]["m_type"] == WEAPON_MP5
         )
 )
 
-// Need to "use after free" here because she's tossed from g_boss as soon as she dies (even though the actor still exists, so this data *should* be fine and not actually free)
-prev_g_boss = Human(prev(p_boss))
+achievement(
+    id=0,
+    title="i need to think up a title for this one",
+    description="In mission 7, find the stashed ???.",
+    points=2,
+    type="missable",
+    trigger=always_false()
+)
+
 achievement(
     id=0,
     title="W+M1",
@@ -287,10 +466,12 @@ achievement(
         trigger_when(BossDead())
 )
 
+LB_ID = 159451
+
 for mission in range(1, 8)
 {
     leaderboard(
-        id=0,
+        id=LB_ID + mission - 1,
         title=format("Mission {0} - Time Attack", mission),
         description=format("Complete mission {0} as quickly as possible!", mission),
         format="CENTISECS",
