@@ -22,6 +22,16 @@ function dict_get(dict, key, default=false)
     return default
 }
 
+function max(a, b)
+{
+    return if_else(a > b, a, b)
+}
+
+function min(a, b)
+{
+    return if_else(a < b, a, b)
+}
+
 addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
 function ptr(base, offsets, accessor=dword)
 {
@@ -74,7 +84,7 @@ function BossDead()
     // Need to "use after free" here because bosses are tossed from g_boss as soon as they die
     // (even though the actor still exists, so this data *should* be fine and not actually free)
     prev_g_boss = Human(prev(p_boss))
-    return prev(p_boss) != NULL && prev(prev_g_boss["m_health"] > 0.0) && prev_g_boss["m_health"] <= 0.0
+    return p_boss == NULL && prev(p_boss) != NULL && prev(prev_g_boss["m_health"] > 0.0) && prev_g_boss["m_health"] <= 0.0
 }
 
 function MissionStart(mission)
@@ -99,6 +109,33 @@ function Vec4(addr)
     }
     
     return obj
+}
+
+function Box2(x1, x2, z1, z2)
+{
+    obj = {
+        "x1": min(x1, x2),
+        "x2": max(x1, x2),
+        "z1": min(z1, z2),
+        "z2": max(z1, z2),
+    }
+    
+    return obj
+}
+
+function Box2_enter(box, point)
+{
+    return
+        box["x1"] <= point["x"] &&
+        box["x2"] >= point["x"] &&
+        box["z1"] <= point["z"] &&
+        box["z2"] >= point["z"] &&
+        __ornext(
+            box["x1"] > prev(point["x"]) ||
+            box["x2"] < prev(point["x"]) ||
+            box["z1"] > prev(point["z"]) ||
+            box["z2"] < prev(point["z"])
+        )
 }
 
 function Human(addr)
@@ -319,7 +356,7 @@ WEAPON_M203 = 0xC
 WEAPON_5ROUNDSNIPER = 0xD
 
 achievement(
-    id=0,
+    id=596495,
     title="Finger on the Trigger, Man",
     description="Complete mission 1 without ever reloading any of your weapons.",
     points=10,
@@ -345,7 +382,7 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=596496,
     title="Remember the Basics of CQC, Jack",
     description="Complete mission 2 while only firing your sniper rifle or using your knife.",
     points=10,
@@ -382,7 +419,7 @@ achievement(
 // Without dying since dying doesn't reset the knife strikes set to a checkpoint value :(
 KNIFE_AMOUNT = 15
 achievement(
-    id=0,
+    id=596497,
     title="Donkey Punch!",
     description=format("From the start of mission 3, kill {0} enemies using your knife without dying.", KNIFE_AMOUNT),
     points=10,
@@ -404,7 +441,7 @@ achievement(
 )
 
 achievement(
-    id=0,
+    id=596498,
     title="Subway Surfer",
     description="Complete mission 4 with an in-game time of less than 4 minutes and 44 seconds.",
     points=10,
@@ -412,21 +449,36 @@ achievement(
     trigger=
         once(MissionStart(4)) &&
         never(MissionCancel(4)) &&
-        GetIGT() < time_to_centisecs(minutes=4, seconds=4) &&
+        GetIGT() < time_to_centisecs(minutes=4, seconds=44) &&
         trigger_when(MissionComplete(4))
 )
 
 achievement(
-    id=0,
+    id=596499,
     title="Wake Me Up When Septober Ends",
-    description="In mission 5, defeat the boss without letting him leave the office area.",
+    description="In mission 5, defeat Johnny Navarro without letting him leave the office area.",
     points=10,
     type="missable",
-    trigger=always_false()
+    trigger=
+        // Record mission start (or having respawned)
+        once(MissionStart(5) || prev(g_scene_id) == -1 && level_id == 5) &&
+        // Reset upon boss leaving office
+        never(MissionCancel(5) || 
+            (
+                p_boss != NULL &&
+                g_boss["m_position"]["x"] != 0.0 && // boss not yet initialized
+                (
+                    g_boss["m_position"]["x"] > -16.0 ||
+                    g_boss["m_position"]["z"] > -3.5
+                )
+            )
+        ) &&
+        // Trigger upon boss death
+        trigger_when(BossDead())
 )
 
 achievement(
-    id=0,
+    id=596500,
     title="Greet My Friend",
     description="In mission 6, find the stashed MP5.",
     points=2,
@@ -434,7 +486,7 @@ achievement(
     trigger=
         // Record mission start
         once(MissionStart(6)) &&
-        never(MissionCancel(6)) &&
+        never(MissionCancel(6) || g_next_scene_id != 601) &&
         // Trigger on switching to MP5
         trigger_when(
             prev(g_player["m_weapon"]["m_params"]["m_type"]) != WEAPON_MP5 &&
@@ -443,16 +495,21 @@ achievement(
 )
 
 achievement(
-    id=0,
-    title="i need to think up a title for this one",
-    description="In mission 7, find the stashed ???.",
+    id=596501,
+    title="Tip the Collector",
+    description="In mission 7, locate the weapon shipment.",
     points=2,
     type="missable",
-    trigger=always_false()
+    trigger=
+        g_next_scene_id == 707 &&
+        trigger_when(
+            p_player != NULL &&
+            Box2_enter(Box2(18.5, 27.0, -5.0, 2.0), g_player["m_position"])
+        )
 )
 
 achievement(
-    id=0,
+    id=596502,
     title="W+M1",
     description="In mission 8, beat Donna Bella without having picked up the M203 Grenade Launcher.",
     points=10,
