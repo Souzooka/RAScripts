@@ -57,6 +57,16 @@ function CGame(addr)
     return obj
 }
 
+function CGameResultMenu(addr)
+{
+    obj = {
+        "m_medal": dword(addr + 0x60),
+        "m_medal_revealed": dword(addr + 0xD8),
+    }
+    
+    return obj
+}
+
 MODE_BOOT = 3
 MODE_LOGO = 4
 MODE_TITLE = 5
@@ -87,6 +97,14 @@ MODE_SETSOUND = 30
 MODE_2PLAYER = 31
 MODE_2PLAYERPASSENGER = 33
 MODE_BUSSTOP = 34
+
+// Medal values in the GameResult state
+MEDAL_NONE = -1
+MEDAL_BRONZE = 2
+MEDAL_SILVER = 3
+MEDAL_GOLD = 4
+MEDAL_PLATINUM = 5
+
 p_game = dword(0x1EA8E0)
 g_game = CGame(p_game)
 g_game_mode = byte(0x2a6795)
@@ -94,6 +112,16 @@ g_course = byte(0x1d15ba0)
 g_reverse_course = byte(0x1d15ba1)
 g_time_of_day = byte(0x1d15ba2)
 practices_completed = array_map(range(0, 12-1), i => bit(i, 0x01d65d28))
+
+// Menus
+p_temp_menu_data = dword(0x2A7D18)
+g_gameresult_menu = CGameResultMenu(p_temp_menu_data)
+
+////
+// Achievements
+////
+
+// Tutorial
 
 achievement(
     title="Stamp of Approval",
@@ -104,6 +132,204 @@ achievement(
         sum_of(practices_completed, v => prev(v)) == 11 &&
         measured(sum_of(practices_completed, v => v) == 12)
 )
+
+// Platinum medals
+// No continues; <=60 violation pts; <=5 bad manner pts
+
+function GameResultDone()
+{
+    menu_data = CGameResultMenu(p_temp_menu_data)
+
+    return
+        g_game_mode == MODE_GAMERESULT &&
+        prev(g_gameresult_menu["m_medal_revealed"]) == 0 &&
+        g_gameresult_menu["m_medal_revealed"] == 1
+}
+
+PLATINUM_PARAMS = [
+    {
+        "id": 0,
+        "title": "Tan 96 (Midday) Platinum",
+        "description": "Earn a Platinum Medal on the Tan 96 (Midday) route.",
+        "points": 5,
+        "course": 0,
+        "reverse": 0,
+        "time": 0,
+    },
+    {
+        "id": 0,
+        "title": "Tan 96 (Evening) Platinum",
+        "description": "Earn a Platinum Medal on the Tan 96 (Evening) route.",
+        "points": 5,
+        "course": 0,
+        "reverse": 0,
+        "time": 1,
+    },
+    {
+        "id": 0,
+        "title": "Tan 96 (Night) Platinum",
+        "description": "Earn a Platinum Medal on the Tan 96 (Night) route.",
+        "points": 5,
+        "course": 0,
+        "reverse": 0,
+        "time": 2,
+    },
+    {
+        "id": 0,
+        "title": "Haya 81 (Midday) Platinum",
+        "description": "Earn a Platinum Medal on the Haya 81 (Midday) route.",
+        "points": 5,
+        "course": 1,
+        "reverse": 0,
+        "time": 0,
+    },
+    {
+        "id": 0,
+        "title": "Haya 81 (Evening) Platinum",
+        "description": "Earn a Platinum Medal on the Haya 81 (Evening) route.",
+        "points": 5,
+        "course": 1,
+        "reverse": 0,
+        "time": 1,
+    },
+    {
+        "id": 0,
+        "title": "Haya 81 (Night) Platinum",
+        "description": "Earn a Platinum Medal on the Haya 81 (Night) route.",
+        "points": 5,
+        "course": 1,
+        "reverse": 0,
+        "time": 2,
+    },
+    {
+        "id": 0,
+        "title": "Ue 23 (Midday) Platinum",
+        "description": "Earn a Platinum Medal on the Ue 23 (Midday) route.",
+        "points": 5,
+        "course": 2,
+        "reverse": 0,
+        "time": 0,
+    },
+    {
+        "id": 0,
+        "title": "Ue 23 (Evening) Platinum",
+        "description": "Earn a Platinum Medal on the Ue 23 (Evening) route.",
+        "points": 5,
+        "course": 2,
+        "reverse": 0,
+        "time": 1,
+    },
+    {
+        "id": 0,
+        "title": "Ue 23 (Night) Platinum",
+        "description": "Earn a Platinum Medal on the Ue 23 (Night) route.",
+        "points": 5,
+        "course": 2,
+        "reverse": 0,
+        "time": 2,
+    },
+    // TODO: Figure out if reverse courses are accessible in game (and how)
+    {
+        "id": 0,
+        "title": "Tan 96 (Midday) (Reverse) Platinum",
+        "description": "Earn a Platinum Medal on the Tan 96 (Midday) (Reverse) route.",
+        "points": 5,
+        "course": 0,
+        "reverse": 1,
+        "time": 0,
+    },
+    {
+        "id": 0,
+        "title": "Tan 96 (Evening) (Reverse) Platinum",
+        "description": "Earn a Platinum Medal on the Tan 96 (Evening) (Reverse) route.",
+        "points": 5,
+        "course": 0,
+        "reverse": 1,
+        "time": 1,
+    },
+    {
+        "id": 0,
+        "title": "Tan 96 (Night) (Reverse) Platinum",
+        "description": "Earn a Platinum Medal on the Tan 96 (Night) (Reverse) route.",
+        "points": 5,
+        "course": 0,
+        "reverse": 1,
+        "time": 2,
+    },
+    {
+        "id": 0,
+        "title": "Haya 81 (Midday) (Reverse) Platinum",
+        "description": "Earn a Platinum Medal on the Haya 81 (Midday) (Reverse) route.",
+        "points": 5,
+        "course": 1,
+        "reverse": 1,
+        "time": 0,
+    },
+    {
+        "id": 0,
+        "title": "Haya 81 (Evening) (Reverse) Platinum",
+        "description": "Earn a Platinum Medal on the Haya 81 (Evening) (Reverse) route.",
+        "points": 5,
+        "course": 1,
+        "reverse": 1,
+        "time": 1,
+    },
+    {
+        "id": 0,
+        "title": "Haya 81 (Night) (Reverse) Platinum",
+        "description": "Earn a Platinum Medal on the Haya 81 (Night) (Reverse) route.",
+        "points": 5,
+        "course": 1,
+        "reverse": 1,
+        "time": 2,
+    },
+    {
+        "id": 0,
+        "title": "Ue 23 (Midday) (Reverse) Platinum",
+        "description": "Earn a Platinum Medal on the Ue 23 (Midday) (Reverse) route.",
+        "points": 5,
+        "course": 2,
+        "reverse": 1,
+        "time": 0,
+    },
+    {
+        "id": 0,
+        "title": "Ue 23 (Evening) (Reverse) Platinum",
+        "description": "Earn a Platinum Medal on the Ue 23 (Evening) (Reverse) route.",
+        "points": 5,
+        "course": 2,
+        "reverse": 1,
+        "time": 1,
+    },
+    {
+        "id": 0,
+        "title": "Ue 23 (Night) (Reverse) Platinum",
+        "description": "Earn a Platinum Medal on the Ue 23 (Night) (Reverse) route.",
+        "points": 5,
+        "course": 2,
+        "reverse": 1,
+        "time": 2,
+    },
+]
+
+for params in PLATINUM_PARAMS
+{
+    achievement(
+        id=params["id"],
+        title=params["title"],
+        description=params["description"],
+        points=params["points"],
+        trigger=
+            g_course == params["course"] &&
+            g_reverse_course == params["reverse"] &&
+            g_time_of_day == params["time"] &&
+            GameResultDone()
+    )
+}
+
+////
+// Rich Presence
+////
 
 boot_string = "Starting up the bus"
 menu_string = "In menus"
