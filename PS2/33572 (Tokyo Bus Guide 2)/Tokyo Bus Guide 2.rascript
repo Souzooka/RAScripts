@@ -10,6 +10,9 @@ function if_else(cond, a, b)
     return b
 }
 
+function min(a, b) { return if_else(a < b, a, b) }
+function max(a, b) { return if_else(a > b, a, b) }
+
 addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
 function ptr(base, offsets, accessor=dword)
 {
@@ -33,6 +36,7 @@ function ptr(base, offsets, accessor=dword)
 
 function call_with_args(fn, args)
 {
+    // spread operator when
     if (length(args) == 0) fn()
     if (length(args) == 1) fn(args[0])
     if (length(args) == 2) fn(args[0], args[1])
@@ -42,6 +46,15 @@ function call_with_args(fn, args)
     if (length(args) == 6) fn(args[0], args[1], args[2], args[3], args[4], args[5])
     if (length(args) == 7) fn(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
     if (length(args) == 8) fn(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+}
+
+function CGame(addr)
+{
+    obj = {
+        "m_stop_index": word(addr + 0x44E),
+    }
+    
+    return obj
 }
 
 MODE_BOOT = 3
@@ -74,7 +87,12 @@ MODE_SETSOUND = 30
 MODE_2PLAYER = 31
 MODE_2PLAYERPASSENGER = 33
 MODE_BUSSTOP = 34
+p_game = dword(0x1EA8E0)
+g_game = CGame(p_game)
 g_game_mode = byte(0x2a6795)
+g_course = byte(0x1d15ba0)
+g_reverse_course = byte(0x1d15ba1)
+g_time_of_day = byte(0x1d15ba2)
 practices_completed = array_map(range(0, 12-1), i => bit(i, 0x01d65d28))
 
 achievement(
@@ -90,13 +108,144 @@ achievement(
 boot_string = "Starting up the bus"
 menu_string = "In menus"
 
+rp_course_lookup = {
+    0: "反９６",
+    1: "早８１",
+    2: "上２３",
+}
+
+rp_time_lookup = {
+    0: "Midday",
+    1: "Evening",
+    2: "Night",
+}
+
+// TODO: Clean up/verify these English names
+COURSE0_STOPS = 16
+rp_course0_stop_lookup = {
+    0: "Akabanebashi Station ({0}/{1})", // 赤羽橋駅前 - Akabanebashi Station front
+    1: "Nakanohashi ({0}/{1})", // 中ノ橋 - don't think this refers to a specific bridge
+    2: "Azabu Station 10 ({0}/{1})", // 麻布十番駅前
+    3: "Ninohashi ({0}/{1})", // 二ノ橋
+    4: "Sannohashi ({0}/{1})", // 三ノ橋
+    5: "Furukawabashi ({0}/{1})", // 古川橋
+    6: "Gyoranzaka Lower ({0}/{1})", // 魚籃坂下
+    7: "Takanawa Block 1 ({0}/{1})", // 高輪一丁目
+    8: "Sengakuji ({0}/{1})", // 泉岳寺前
+    9: "Takanawa North ({0}/{1})", // 高輪北町
+    10: "Shinagawa Station ({0}/{1})", // 品川駅前
+    11: "Gotenyama ({0}/{1})", // 御殿山
+    12: "Sony ({0}/{1})", // ソニー前
+    13: "Higashigotanda Block 3 ({0}/{1})", // 東五反田三丁目
+    14: "Gotanda Station ({0}/{1})", // 五反田駅
+    15: "Gotanda Station Front ({0}/{1})", // 五反田駅前
+    16: "Yatsuyamabashi ({0}/{1})", // 八ツ山橋
+}
+rp_course0_stop_lookup_reverse = {}
+// FIXME: These loops are split up because what appears to be an RAScript (1.16.1) issue causes the reverse list to not generate appropriately when put into one loop.
+for i in range(0, COURSE0_STOPS) rp_course0_stop_lookup_reverse[i] = rp_course0_stop_lookup[COURSE0_STOPS - i]
+for i in range(0, COURSE0_STOPS) rp_course0_stop_lookup[i] = format(rp_course0_stop_lookup[i], i, COURSE0_STOPS)   
+for i in range(0, COURSE0_STOPS) rp_course0_stop_lookup_reverse[i] = format(rp_course0_stop_lookup_reverse[i], i, COURSE0_STOPS) 
+rp_course0_stop_lookup[COURSE0_STOPS+1] = rp_course0_stop_lookup[COURSE0_STOPS]
+rp_course0_stop_lookup_reverse[COURSE0_STOPS+1] = rp_course0_stop_lookup_reverse[COURSE0_STOPS]
+
+COURSE1_STOPS = 22
+rp_course1_stop_lookup = {
+    0: "Waseda University ({0}/{1})", // 早大正門 - Waseda University Main Gate
+    1: "Babashitachou ({0}/{1})", // 馬場下町
+    2: "Kikuichou ({0}/{1})", // 喜久井町
+    3: "Wakamatsuchou ({0}/{1})", // 若松町
+    4: "Wakadachou ({0}/{1})", // 河田町
+    5: "Tokyo Women's Medical University ({0}/{1})", // 東京女子医大前 - In front of Tokyo Women's Medical University
+    6: "Ichigayanakanochou Intersection ({0}/{1})", // 市谷仲之町交差点
+    7: "Arakichou ({0}/{1})", // 荒木町
+    8: "Yotsuya Block 3 ({0}/{1})", // 四谷三丁目
+    9: "Yotsuya Block 4 ({0}/{1})", // 四谷四丁目
+    10: "Daikyouchou in Naitoumachi ({0}/{1})", // 内藤町大京町
+    11: "Yotsuya Sixth District Elementary ({0}/{1})", // 四谷第六小学校入口 - Elementary school entrance in Yotsuya 6th district
+    12: "Sendagaya Station ({0}/{1})", // 千駄ヶ谷駅前 - Sendagaya Station front
+    13: "Sendagaya Hachiman Shrine ({0}/{1})", // 千駄ヶ谷八幡前 - Sendagaya Hachiman Shrine front
+    14: "Meiji Park ({0}/{1})", // 明治公園前 - Meiji Park front
+    15: "Kasumigaoka Apartments ({0}/{1})", // 霞ヶ丘団地前 - Kasumigaoka Apartments front
+    16: "Sendagaya Block 2 ({0}/{1})", // 千駄ヶ谷二丁目
+    17: "Harajuku Gardens Middle School ({0}/{1})", // 原宿外苑中学校
+    18: "Harajuku Station ({0}/{1})", // 原宿駅前 - Harajuku Station front
+    19: "Yoyogi National Stadium ({0}/{1})", // 国立代々木競技場前 - Yoyogi National Stadium front
+    20: "Shibuya District Government Office ({0}/{1})", // 渋谷区役所前 - Shibuya District Government Office
+    21: "Shibuya Station West Entrance ({0}/{1})", // 渋谷駅西口
+    22: "Shibuya Station East Entrance ({0}/{1})", // 渋谷駅東口
+}
+rp_course1_stop_lookup_reverse = {}
+// FIXME: These loops are split up because what appears to be an RAScript (1.16.1) issue causes the reverse list to not generate appropriately when put into one loop.
+for i in range(0, COURSE1_STOPS) rp_course1_stop_lookup_reverse[i] = rp_course1_stop_lookup[COURSE1_STOPS - i]
+for i in range(0, COURSE1_STOPS) rp_course1_stop_lookup[i] = format(rp_course1_stop_lookup[i], i, COURSE1_STOPS)   
+for i in range(0, COURSE1_STOPS) rp_course1_stop_lookup_reverse[i] = format(rp_course1_stop_lookup_reverse[i], i, COURSE1_STOPS) 
+rp_course1_stop_lookup[COURSE1_STOPS+1] = rp_course1_stop_lookup[COURSE1_STOPS]
+rp_course1_stop_lookup_reverse[COURSE1_STOPS+1] = rp_course1_stop_lookup_reverse[COURSE1_STOPS]
+
+COURSE2_STOPS = 28
+rp_course2_stop_lookup = {
+    0: "Hirai Station ({0}/{1})", // 平井駅前
+    1: "Hirai Elementary School ({0}/{1})", // 平井小学校前
+    2: "Hirai Block 6 Kouban ({0}/{1})", // 平井六丁目交番前
+    3: "Hirai Block 7 ({0}/{1})", // 平井七丁目
+    4: "Hirai Block 7 North Park ({0}/{1})", // 平井七丁目北公園前
+    5: "Hirai Block 7 Apartments 3 ({0}/{1})", // 平井七丁目第三アパート前
+    6: "Higashisumida Block 1 ({0}/{1})", // 東墨田一丁目
+    7: "Higashisumida Block 3 ({0}/{1})", // 東墨田三丁目
+    8: "Higashisumida Meeting Hall ({0}/{1})", // 東墨田会館前
+    9: "Higashisumida Block 2 ({0}/{1})", // 東墨田二丁目
+    10: "Welfare Society Meeting Hall ({0}/{1})", // 社会福祉会館前
+    11: "Yahiro Block 2 ({0}/{1})", // 八広二丁目
+    12: "Nakaibori ({0}/{1})", // 中居堀
+    13: "Bunka Block 3 ({0}/{1})", // 文花三丁目
+    14: "Towards Jukken Bridge ({0}/{1})", // 十間橋通り
+    15: "Jukken Bridge ({0}/{1})", // 十間橋
+    16: "Oshiage ({0}/{1})", // 押上
+    17: "Narihira Bridge ({0}/{1})", // 業平橋
+    18: "Azuma Bridge Main Office ({0}/{1})", // 本所吾妻橋
+    19: "Azuma Bridge Riverpia Apartments ({0}/{1})", // リバーピア吾妻橋前
+    20: "Asakusa Temple Gate ({0}/{1})", // 浅草雷門
+    21: "Asakusa Block 1 ({0}/{1})", // 浅草一丁目
+    22: "Asakusakotobukichou ({0}/{1})", // 浅草寿町
+    23: "Kikuya Bridge ({0}/{1})", // 浅草寿町
+    24: "East Ueno Block 6 ({0}/{1})", // 東上野六丁目
+    25: "Shitaya Corporation ({0}/{1})", // 下谷神社前
+    26: "Ueno Station ({0}/{1})", // 上野駅前
+    27: "Ueno Park Lower ({0}/{1})", // 上野公園山下
+    28: "Ueno Matsuzakaya ({0}/{1})", // 上野松坂屋前
+}
+rp_course2_stop_lookup_reverse = {}
+// FIXME: These loops are split up because what appears to be an RAScript (1.16.1) issue causes the reverse list to not generate appropriately when put into one loop.
+for i in range(0, COURSE2_STOPS) rp_course2_stop_lookup_reverse[i] = rp_course2_stop_lookup[COURSE2_STOPS - i]
+for i in range(0, COURSE2_STOPS) rp_course2_stop_lookup[i] = format(rp_course2_stop_lookup[i], i, COURSE2_STOPS)   
+for i in range(0, COURSE2_STOPS) rp_course2_stop_lookup_reverse[i] = format(rp_course2_stop_lookup_reverse[i], i, COURSE2_STOPS) 
+rp_course2_stop_lookup[COURSE2_STOPS+1] = rp_course2_stop_lookup[COURSE2_STOPS]
+rp_course2_stop_lookup_reverse[COURSE2_STOPS+1] = rp_course2_stop_lookup_reverse[COURSE2_STOPS]
+
+rp_stop_lookup = {}
+for i in rp_course0_stop_lookup rp_stop_lookup[(0x1000 * 0) + (0x100 * 0) + i] = rp_course0_stop_lookup[i]
+for i in rp_course1_stop_lookup rp_stop_lookup[(0x1000 * 0) + (0x100 * 1) + i] = rp_course1_stop_lookup[i]
+for i in rp_course2_stop_lookup rp_stop_lookup[(0x1000 * 0) + (0x100 * 2) + i] = rp_course2_stop_lookup[i]
+for i in rp_course0_stop_lookup_reverse rp_stop_lookup[(0x1000 * 1) + (0x100 * 0) + i] = rp_course0_stop_lookup_reverse[i]
+for i in rp_course1_stop_lookup_reverse rp_stop_lookup[(0x1000 * 1) + (0x100 * 1) + i] = rp_course1_stop_lookup_reverse[i]
+for i in rp_course2_stop_lookup_reverse rp_stop_lookup[(0x1000 * 1) + (0x100 * 2) + i] = rp_course2_stop_lookup_reverse[i]
+bus_stop_idx = (0x1000 * g_reverse_course) + (0x100 * g_course) + g_game["m_stop_index"]
+
 rp_format_strings = [
     [g_game_mode < MODE_BOOT, boot_string],
     [g_game_mode == MODE_BOOT, boot_string],
     [g_game_mode == MODE_LOGO, boot_string],
     [g_game_mode == MODE_TITLE, "In title screen"],
     [g_game_mode == MODE_NEWGAME, "Meeting Minkuru"],
-    [g_game_mode == MODE_GAME, "Driving the bus"],
+    [g_game_mode == MODE_GAME && g_course == 3, "Learning how to drive the bus"],
+    [
+        g_game_mode == MODE_GAME, 
+        "Driving the bus on {0} ({1}). Next stop: {2}.", 
+        rich_presence_lookup("ROUTE", g_course, rp_course_lookup),
+        rich_presence_lookup("TIME_OF_DAY", g_time_of_day, rp_time_lookup),
+        rich_presence_lookup("BUS_STOP", bus_stop_idx + 1, rp_stop_lookup)
+    ],
     [g_game_mode == MODE_GAMERESULT, "Reviewing route performance"],
     [g_game_mode == MODE_OPTION, menu_string],
     [g_game_mode == MODE_SAVE, menu_string],
@@ -104,7 +253,7 @@ rp_format_strings = [
     [g_game_mode == MODE_STAFFROLL, "Watching credits"],
     [g_game_mode == MODE_NOWLOADING, "In loading screen"],
     [g_game_mode == MODE_MODESELECT, menu_string],
-    [g_game_mode == MODE_PRACTICE , menu_string],
+    [g_game_mode == MODE_PRACTICE, menu_string],
     [g_game_mode == MODE_PASSENGER, "In Passenger state?"],
     [g_game_mode == MODE_MAP, "Checking the map"],
     [g_game_mode == MODE_DRIVERMODE, menu_string],
@@ -121,7 +270,13 @@ rp_format_strings = [
     [g_game_mode == MODE_SETSOUND, menu_string],
     [g_game_mode == MODE_2PLAYER, "In 2-player mode"],
     [g_game_mode == MODE_2PLAYERPASSENGER, "In 2-player mode"],
-    [g_game_mode == MODE_BUSSTOP, "In Bus Stop state?"],
+    [
+        g_game_mode == MODE_BUSSTOP, 
+        "Driving the bus on {0} ({1}). Currently stopped at: {2}.", 
+        rich_presence_lookup("ROUTE", g_course, rp_course_lookup),
+        rich_presence_lookup("TIME_OF_DAY", g_time_of_day, rp_time_lookup),
+        rich_presence_lookup("BUS_STOP", bus_stop_idx, rp_stop_lookup)
+    ],
 ]
 
 for args in rp_format_strings
