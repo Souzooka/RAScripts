@@ -13,6 +13,15 @@ function if_else(cond, a, b)
 function min(a, b) { return if_else(a < b, a, b) }
 function max(a, b) { return if_else(a > b, a, b) }
 
+function dict_copy(dict)
+{
+    // shallow copy
+    new_dict = {}
+    for k in dict new_dict[k] = dict[k]
+    
+    return new_dict
+}
+
 addr = (v) => v // Dummy accessor for ptr for if the pointed-to address is desired
 function ptr(base, offsets, accessor=dword)
 {
@@ -37,15 +46,16 @@ function ptr(base, offsets, accessor=dword)
 function call_with_args(fn, args)
 {
     // spread operator when
-    if (length(args) == 0) fn()
-    if (length(args) == 1) fn(args[0])
-    if (length(args) == 2) fn(args[0], args[1])
-    if (length(args) == 3) fn(args[0], args[1], args[2])
-    if (length(args) == 4) fn(args[0], args[1], args[2], args[3])
-    if (length(args) == 5) fn(args[0], args[1], args[2], args[3], args[4])
-    if (length(args) == 6) fn(args[0], args[1], args[2], args[3], args[4], args[5])
-    if (length(args) == 7) fn(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
-    if (length(args) == 8) fn(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+         if (length(args) == 0) fn()
+    else if (length(args) == 1) fn(args[0])
+    else if (length(args) == 2) fn(args[0], args[1])
+    else if (length(args) == 3) fn(args[0], args[1], args[2])
+    else if (length(args) == 4) fn(args[0], args[1], args[2], args[3])
+    else if (length(args) == 5) fn(args[0], args[1], args[2], args[3], args[4])
+    else if (length(args) == 6) fn(args[0], args[1], args[2], args[3], args[4], args[5])
+    else if (length(args) == 7) fn(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+    else if (length(args) == 8) fn(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+    else    assert(false, "call_with_args args length unsupported (length={0})", length(args))
 }
 
 function CGame(addr)
@@ -160,7 +170,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Tan 96 (Evening) Platinum",
         "description": "Earn a Platinum Medal on the Tan 96 (Evening) route.",
-        "points": 5,
+        "points": 10,
         "course": 0,
         "reverse": 0,
         "time": 1,
@@ -169,7 +179,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Tan 96 (Night) Platinum",
         "description": "Earn a Platinum Medal on the Tan 96 (Night) route.",
-        "points": 5,
+        "points": 25,
         "course": 0,
         "reverse": 0,
         "time": 2,
@@ -178,7 +188,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Haya 81 (Midday) Platinum",
         "description": "Earn a Platinum Medal on the Haya 81 (Midday) route.",
-        "points": 5,
+        "points": 10,
         "course": 1,
         "reverse": 0,
         "time": 0,
@@ -187,7 +197,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Haya 81 (Evening) Platinum",
         "description": "Earn a Platinum Medal on the Haya 81 (Evening) route.",
-        "points": 5,
+        "points": 25,
         "course": 1,
         "reverse": 0,
         "time": 1,
@@ -196,7 +206,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Haya 81 (Night) Platinum",
         "description": "Earn a Platinum Medal on the Haya 81 (Night) route.",
-        "points": 5,
+        "points": 25,
         "course": 1,
         "reverse": 0,
         "time": 2,
@@ -205,7 +215,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Ue 23 (Midday) Platinum",
         "description": "Earn a Platinum Medal on the Ue 23 (Midday) route.",
-        "points": 5,
+        "points": 10,
         "course": 2,
         "reverse": 0,
         "time": 0,
@@ -214,7 +224,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Ue 23 (Evening) Platinum",
         "description": "Earn a Platinum Medal on the Ue 23 (Evening) route.",
-        "points": 5,
+        "points": 25,
         "course": 2,
         "reverse": 0,
         "time": 1,
@@ -223,7 +233,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Ue 23 (Night) Platinum",
         "description": "Earn a Platinum Medal on the Ue 23 (Night) route.",
-        "points": 5,
+        "points": 25,
         "course": 2,
         "reverse": 0,
         "time": 2,
@@ -233,7 +243,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Tan 96 (Midday) (Reverse) Platinum",
         "description": "Earn a Platinum Medal on the Tan 96 (Midday) (Reverse) route.",
-        "points": 5,
+        "points": 10,
         "course": 0,
         "reverse": 1,
         "time": 0,
@@ -242,7 +252,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Tan 96 (Evening) (Reverse) Platinum",
         "description": "Earn a Platinum Medal on the Tan 96 (Evening) (Reverse) route.",
-        "points": 5,
+        "points": 25,
         "course": 0,
         "reverse": 1,
         "time": 1,
@@ -251,7 +261,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Tan 96 (Night) (Reverse) Platinum",
         "description": "Earn a Platinum Medal on the Tan 96 (Night) (Reverse) route.",
-        "points": 5,
+        "points": 25,
         "course": 0,
         "reverse": 1,
         "time": 2,
@@ -260,7 +270,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Haya 81 (Midday) (Reverse) Platinum",
         "description": "Earn a Platinum Medal on the Haya 81 (Midday) (Reverse) route.",
-        "points": 5,
+        "points": 10,
         "course": 1,
         "reverse": 1,
         "time": 0,
@@ -269,7 +279,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Haya 81 (Evening) (Reverse) Platinum",
         "description": "Earn a Platinum Medal on the Haya 81 (Evening) (Reverse) route.",
-        "points": 5,
+        "points": 10,
         "course": 1,
         "reverse": 1,
         "time": 1,
@@ -278,7 +288,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Haya 81 (Night) (Reverse) Platinum",
         "description": "Earn a Platinum Medal on the Haya 81 (Night) (Reverse) route.",
-        "points": 5,
+        "points": 25,
         "course": 1,
         "reverse": 1,
         "time": 2,
@@ -287,7 +297,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Ue 23 (Midday) (Reverse) Platinum",
         "description": "Earn a Platinum Medal on the Ue 23 (Midday) (Reverse) route.",
-        "points": 5,
+        "points": 10,
         "course": 2,
         "reverse": 1,
         "time": 0,
@@ -296,7 +306,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Ue 23 (Evening) (Reverse) Platinum",
         "description": "Earn a Platinum Medal on the Ue 23 (Evening) (Reverse) route.",
-        "points": 5,
+        "points": 25,
         "course": 2,
         "reverse": 1,
         "time": 1,
@@ -305,7 +315,7 @@ PLATINUM_PARAMS = [
         "id": 0,
         "title": "Ue 23 (Night) (Reverse) Platinum",
         "description": "Earn a Platinum Medal on the Ue 23 (Night) (Reverse) route.",
-        "points": 5,
+        "points": 25,
         "course": 2,
         "reverse": 1,
         "time": 2,
@@ -347,7 +357,7 @@ rp_time_lookup = {
 }
 
 // TODO: Clean up/verify these English names
-COURSE0_STOPS = 16
+COURSE0_STOPS = 14
 rp_course0_stop_lookup = {
     0: "Akabanebashi Station ({0}/{1})", // 赤羽橋駅前 - Akabanebashi Station front
     1: "Nakanohashi ({0}/{1})", // 中ノ橋 - don't think this refers to a specific bridge
@@ -364,14 +374,15 @@ rp_course0_stop_lookup = {
     12: "Sony ({0}/{1})", // ソニー前
     13: "Higashigotanda Block 3 ({0}/{1})", // 東五反田三丁目
     14: "Gotanda Station ({0}/{1})", // 五反田駅
-    15: "Gotanda Station Front ({0}/{1})", // 五反田駅前
-    16: "Yatsuyamabashi ({0}/{1})", // 八ツ山橋
 }
 rp_course0_stop_lookup_reverse = {}
-// FIXME: These loops are split up because what appears to be an RAScript (1.16.1) issue causes the reverse list to not generate appropriately when put into one loop.
-for i in range(0, COURSE0_STOPS) rp_course0_stop_lookup_reverse[i] = rp_course0_stop_lookup[COURSE0_STOPS - i]
-for i in range(0, COURSE0_STOPS) rp_course0_stop_lookup[i] = format(rp_course0_stop_lookup[i], i, COURSE0_STOPS)   
-for i in range(0, COURSE0_STOPS) rp_course0_stop_lookup_reverse[i] = format(rp_course0_stop_lookup_reverse[i], i, COURSE0_STOPS) 
+lookup_copy = dict_copy(rp_course0_stop_lookup)
+for i in range(0, COURSE0_STOPS)
+{
+    rp_course0_stop_lookup_reverse[i] = lookup_copy[COURSE0_STOPS - i]
+    rp_course0_stop_lookup[i] = format(rp_course0_stop_lookup[i], i, COURSE0_STOPS)
+    rp_course0_stop_lookup_reverse[i] = format(rp_course0_stop_lookup_reverse[i], i, COURSE0_STOPS)
+}
 rp_course0_stop_lookup[COURSE0_STOPS+1] = rp_course0_stop_lookup[COURSE0_STOPS]
 rp_course0_stop_lookup_reverse[COURSE0_STOPS+1] = rp_course0_stop_lookup_reverse[COURSE0_STOPS]
 
@@ -402,10 +413,13 @@ rp_course1_stop_lookup = {
     22: "Shibuya Station East Entrance ({0}/{1})", // 渋谷駅東口
 }
 rp_course1_stop_lookup_reverse = {}
-// FIXME: These loops are split up because what appears to be an RAScript (1.16.1) issue causes the reverse list to not generate appropriately when put into one loop.
-for i in range(0, COURSE1_STOPS) rp_course1_stop_lookup_reverse[i] = rp_course1_stop_lookup[COURSE1_STOPS - i]
-for i in range(0, COURSE1_STOPS) rp_course1_stop_lookup[i] = format(rp_course1_stop_lookup[i], i, COURSE1_STOPS)   
-for i in range(0, COURSE1_STOPS) rp_course1_stop_lookup_reverse[i] = format(rp_course1_stop_lookup_reverse[i], i, COURSE1_STOPS) 
+lookup_copy = dict_copy(rp_course1_stop_lookup)
+for i in range(0, COURSE1_STOPS)
+{
+    rp_course1_stop_lookup_reverse[i] = lookup_copy[COURSE1_STOPS - i]
+    rp_course1_stop_lookup[i] = format(rp_course1_stop_lookup[i], i, COURSE1_STOPS)
+    rp_course1_stop_lookup_reverse[i] = format(rp_course1_stop_lookup_reverse[i], i, COURSE1_STOPS)
+}
 rp_course1_stop_lookup[COURSE1_STOPS+1] = rp_course1_stop_lookup[COURSE1_STOPS]
 rp_course1_stop_lookup_reverse[COURSE1_STOPS+1] = rp_course1_stop_lookup_reverse[COURSE1_STOPS]
 
@@ -442,10 +456,13 @@ rp_course2_stop_lookup = {
     28: "Ueno Matsuzakaya ({0}/{1})", // 上野松坂屋前
 }
 rp_course2_stop_lookup_reverse = {}
-// FIXME: These loops are split up because what appears to be an RAScript (1.16.1) issue causes the reverse list to not generate appropriately when put into one loop.
-for i in range(0, COURSE2_STOPS) rp_course2_stop_lookup_reverse[i] = rp_course2_stop_lookup[COURSE2_STOPS - i]
-for i in range(0, COURSE2_STOPS) rp_course2_stop_lookup[i] = format(rp_course2_stop_lookup[i], i, COURSE2_STOPS)   
-for i in range(0, COURSE2_STOPS) rp_course2_stop_lookup_reverse[i] = format(rp_course2_stop_lookup_reverse[i], i, COURSE2_STOPS) 
+lookup_copy = dict_copy(rp_course2_stop_lookup)
+for i in range(0, COURSE2_STOPS)
+{
+    rp_course2_stop_lookup_reverse[i] = lookup_copy[COURSE2_STOPS - i]
+    rp_course2_stop_lookup[i] = format(rp_course2_stop_lookup[i], i, COURSE2_STOPS)
+    rp_course2_stop_lookup_reverse[i] = format(rp_course2_stop_lookup_reverse[i], i, COURSE2_STOPS)
+}
 rp_course2_stop_lookup[COURSE2_STOPS+1] = rp_course2_stop_lookup[COURSE2_STOPS]
 rp_course2_stop_lookup_reverse[COURSE2_STOPS+1] = rp_course2_stop_lookup_reverse[COURSE2_STOPS]
 
