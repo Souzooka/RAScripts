@@ -53,15 +53,28 @@ function IGT2Centisecs()
 
 function LevelID2DisplayID(level_id)
 {
-    return format("#{0}{1}", if_else(level_id + 1 >= 10, "", "0"), level_id + 1)
+    if level_id == FINAL_LEVEL + 1 || level_id == FINAL_LEVEL + 2
+        return "Mission #13α"
+    if level_id == LEVEL_SHORT_TEST_COURSE
+        return "Test Course (Short)"
+    if level_id == LEVEL_LONG_TEST_COURSE
+        return "Test Course (Long)"
+
+    return format("Mission #{0}{1}", if_else(level_id + 1 >= 10, "", "0"), level_id + 1)
 }
 
-FINAL_LEVEL = 12
+
 
 g_current_level = byte(0x42518)
+FINAL_LEVEL = 12
+LEVEL_SHORT_TEST_COURSE = 15
+LEVEL_LONG_TEST_COURSE = 16
 
 g_game_mode = byte(0x42526)
 GAME_MODE_RUNABOUT = 0x0
+GAME_MODE_ROUTE_CHECK = 0x1
+GAME_MODE_TIME_TRIAL = 0x2
+GAME_MODE_TEST_RUN = 0x3
 
 g_total_amount = dword(0x86a80)
 
@@ -73,6 +86,12 @@ g_cutscene_id = dword(0x8F5C4)
 g_overlay_id = dword(0x9bf50)
 OVERLAY_GAME_IN = 0x4
 OVERLAY_GAME_OUT = 0x5
+
+g_car_index = byte(0x8f5c0)
+g_car_ids = 0x4251c
+g_current_car_id = byte(g_car_ids + g_car_index)
+g_transmissions = 0x8f490
+g_current_transmission = byte(g_transmissions + g_car_index)
 
 LEVEL_PARAMS = [
     {
@@ -146,10 +165,10 @@ for params in LEVEL_PARAMS
 {
     leaderboard(
         id=params["lb_id"],
-        title=format("Mission {0} - Fastest Time", LevelID2DisplayID(params["level_id"])),
+        title=format("{0} - Fastest Time", LevelID2DisplayID(params["level_id"])),
         description=
             format(
-                "Complete Mission {0}{1} in the fastest time!", 
+                "Complete {0}{1} in the fastest time!", 
                 LevelID2DisplayID(params["level_id"]),
                 if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
             ),
@@ -166,10 +185,10 @@ for params in LEVEL_PARAMS
     
      leaderboard(
         id=params["lb_id_pacifist"],
-        title=format("Mission {0} - Fastest Time (Pacifist)", LevelID2DisplayID(params["level_id"])),
+        title=format("{0} - Fastest Time (Pacifist)", LevelID2DisplayID(params["level_id"])),
         description=
             format(
-                "Complete Mission {0}{1} in the fastest time with $0 in damages!", 
+                "Complete {0}{1} in the fastest time with $0 in damages!", 
                 LevelID2DisplayID(params["level_id"]),
                 if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
             ),
@@ -186,3 +205,68 @@ for params in LEVEL_PARAMS
         value=IGT2Centisecs()
     )
 }
+
+RP_LEVEL_NAMES = {}
+for i in range(0, 0x10)
+    RP_LEVEL_NAMES[i] = LevelID2DisplayID(i)
+    
+RP_CAR_NAMES = {
+    0: "1500",
+    1: "A156",
+    2: "REVU",
+    3: "REVU II",
+    4: "SCOOTER",
+    5: "DELIVERY",
+    6: "ROADSTER",
+    7: "NSR",
+    8: "BZ - VAN",
+    9: "MIUR",
+    10: "TRACTOR",
+    11: "TRACTOR II",
+    12: "FIRE ENG.",
+    13: "HALLI",
+    14: "HALLI II",
+    15: "Y800",
+    16: "Y800-GT1",
+    17: "FT500",
+    18: "FT500 S",
+    19: "CORVY74",
+    20: "CB427",
+    21: "FERY250",
+    22: "WRC",
+    23: "N390",
+    24: "N390ROAD",
+    25: "RANGER",
+    26: "LUNCH VAN",
+    27: "MISSILE",
+    28: "DRAGSTER",
+    29: "G - TANK",
+    30: "PANDA",
+}
+
+RP_TRANSMISSION_NAMES = {
+    0: "AT",
+    1: "MT",
+}
+
+RP_GAME_MODE_NAMES = {
+    GAME_MODE_RUNABOUT: "Runabout",
+    GAME_MODE_ROUTE_CHECK: "Route Check",
+    GAME_MODE_TIME_TRIAL: "Time Trial",
+    GAME_MODE_TEST_RUN: "Test Run",
+}
+
+rich_presence_conditional_display(
+    g_overlay_id == OVERLAY_GAME_OUT,
+    "In a menu"
+)
+rich_presence_conditional_display(
+    g_overlay_id == OVERLAY_GAME_IN,
+    "{0} | {1} ({2}) | {3}",
+    rich_presence_lookup("LEVEL_NAME", g_current_level, RP_LEVEL_NAMES, "Unknown level"),
+    rich_presence_lookup("CAR_NAME", g_current_car_id, RP_CAR_NAMES, "Unknown car"),
+    rich_presence_lookup("TRANSMISSION", g_current_transmission, RP_TRANSMISSION_NAMES, "AT"),
+    rich_presence_lookup("GAME_MODE", g_game_mode, RP_GAME_MODE_NAMES, "Unknown game mode")
+    
+)
+rich_presence_display("Playing Runabout 2")
