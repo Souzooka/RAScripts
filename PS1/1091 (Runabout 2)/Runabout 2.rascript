@@ -17,6 +17,13 @@ function dict_in(dict, key)
     return any_of(dict, k => k == key)
 }
 
+function dict_get(dict, key, default=0)
+{
+    if dict_in(dict, key)
+        return dict[key]
+    return default
+}
+
 function AntiBios()
 {
     return ascii_string_equals(0x101e9, "RUN2")
@@ -74,6 +81,7 @@ function LevelID2DisplayID(level_id)
 
 g_current_level = byte(0x42518)
 FINAL_LEVEL = 12
+OPTIONAL_LEVELS = [3, 4, 5, 6, 10]
 LEVEL_SHORT_TEST_COURSE = 15
 LEVEL_LONG_TEST_COURSE = 16
 
@@ -106,66 +114,118 @@ g_lap_counter = word(0x13c984)
 LEVEL_PARAMS = [
     {
         "level_id": 0,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170095,
         "lb_id_pacifist": 170118,
     },
     {
         "level_id": 1,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170119,
         "lb_id_pacifist": 170120,
     },
     {
         "level_id": 2,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170121,
         "lb_id_pacifist": 170122,
     },
     {
         "level_id": 3,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170123,
         "lb_id_pacifist": 170124,
     },
     {
         "level_id": 4,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170125,
         "lb_id_pacifist": 170126,
     },
     {
         "level_id": 5,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170127,
         "lb_id_pacifist": 170128,
     },
     {
         "level_id": 6,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170129,
         "lb_id_pacifist": 170130,
     },
     {
         "level_id": 7,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170131,
         "lb_id_pacifist": 170132,
     },
     {
         "level_id": 8,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170133,
         "lb_id_pacifist": 170134,
     },
     {
         "level_id": 9,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170135,
         "lb_id_pacifist": 170136,
     },
     {
         "level_id": 10,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170137,
         "lb_id_pacifist": 170138,
     },
     {
         "level_id": 11,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170139,
         "lb_id_pacifist": 170140,
     },
     {
         "level_id": 12,
+        "ach_id_progression": 0,
+        "ach_id_pacifist": 0,
+        "ach_points_progression": 5,
+        "ach_points_pacifist": 5,
         "lb_id": 170141,
         "lb_id_pacifist": 170142,
     },
@@ -181,6 +241,54 @@ LEVEL_PARAMS = [
 
 for params in LEVEL_PARAMS
 {
+    // Progression achievements
+    if dict_in(params, "ach_id_progression")
+    {
+        progression_type = "progression"
+        if any_of(OPTIONAL_LEVELS, id => params["level_id"] == id)
+            progression_type = ""
+        else if params["level_id"] == FINAL_LEVEL
+            progression_type = "win_condition"
+        
+        achievement(
+            id=params["ach_id_progression"],
+            title=dict_get(params, "ach_title_progression", format("{0} - Progression", LevelID2DisplayID(params["level_id"]))),
+            description=
+                format(
+                    "Complete {0}{1}", 
+                    LevelID2DisplayID(params["level_id"]),
+                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                ),
+            type=progression_type,
+            points=params["ach_points_progression"],
+            trigger=
+                AntiBios() &&
+                InGame() &&
+                LevelComplete(params["level_id"])
+        )    
+    }
+    
+    // Pacifist achievements
+    if dict_in(params, "ach_id_pacifist")
+    { 
+        achievement(
+            id=params["ach_id_pacifist"],
+            title=dict_get(params, "ach_title_pacifist", format("{0} - Pacifist", LevelID2DisplayID(params["level_id"]))),
+            description=
+                format(
+                    "Complete {0}{1}", 
+                    LevelID2DisplayID(params["level_id"]),
+                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                ),
+            points=params["ach_points_progression"],
+            trigger=
+                AntiBios() &&
+                InGame() &&
+                LevelComplete(params["level_id"])
+        )    
+    }
+
+    // Time trial leaderboards
     if dict_in(params, "lb_id")
     {
         start_cond =
@@ -232,6 +340,7 @@ for params in LEVEL_PARAMS
         )
     }
     
+    // Time trial leaderboards (pacifist)
     if dict_in(params, "lb_id_pacifist")
     {
         leaderboard(
