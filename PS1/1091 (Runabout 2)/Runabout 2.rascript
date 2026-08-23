@@ -12,6 +12,11 @@ function if_else(cond, a, b)
     return b
 }
 
+function dict_in(dict, key)
+{
+    return any_of(dict, k => k == key)
+}
+
 function AntiBios()
 {
     return ascii_string_equals(0x101e9, "RUN2")
@@ -42,9 +47,13 @@ function LevelComplete(level_id)
         acc > prev(acc)
 }
 
-function IGT2Centisecs()
+function GetIGT()
 {
-    ticks = g_total_time - g_total_time_interp
+    return g_total_time - g_total_time_interp
+}
+
+function IGT2Centisecs(ticks)
+{
     frames = ticks / (IGT_FRAMERATE / LB_FRAMERATE)
     centis = frames * (100.0 / LB_FRAMERATE)
 
@@ -63,8 +72,6 @@ function LevelID2DisplayID(level_id)
     return format("Mission #{0}{1}", if_else(level_id + 1 >= 10, "", "0"), level_id + 1)
 }
 
-
-
 g_current_level = byte(0x42518)
 FINAL_LEVEL = 12
 LEVEL_SHORT_TEST_COURSE = 15
@@ -73,8 +80,8 @@ LEVEL_LONG_TEST_COURSE = 16
 g_game_mode = byte(0x42526)
 GAME_MODE_RUNABOUT = 0x0
 GAME_MODE_ROUTE_CHECK = 0x1
-GAME_MODE_TIME_TRIAL = 0x2
-GAME_MODE_TEST_RUN = 0x3
+GAME_MODE_TEST_RUN = 0x2
+GAME_MODE_TIME_TRIAL = 0x3
 
 g_total_amount = dword(0x86a80)
 
@@ -92,6 +99,9 @@ g_car_ids = 0x4251c
 g_current_car_id = byte(g_car_ids + g_car_index)
 g_transmissions = 0x8f490
 g_current_transmission = byte(g_transmissions + g_car_index)
+
+g_last_lap_time = dword(0x13c97c)
+g_lap_counter = word(0x13c984)
 
 LEVEL_PARAMS = [
     {
@@ -159,51 +169,93 @@ LEVEL_PARAMS = [
         "lb_id": 170141,
         "lb_id_pacifist": 170142,
     },
+    {
+        "level_id": 15,
+        "lb_id": 170160,
+    },
+    {
+        "level_id": 16,
+        "lb_id": 170161,
+    },
 ]
 
 for params in LEVEL_PARAMS
 {
-    leaderboard(
-        id=params["lb_id"],
-        title=format("{0} - Fastest Time", LevelID2DisplayID(params["level_id"])),
-        description=
-            format(
-                "Complete {0}{1} in the fastest time!", 
-                LevelID2DisplayID(params["level_id"]),
-                if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
-            ),
-        format="CENTISECS",
-        lower_is_better=true,
-        start=
+    if dict_in(params, "lb_id")
+    {
+        start_cond =
             AntiBios() &&
-            InGame() &&
-            LevelComplete(params["level_id"]),
-        cancel=always_false(),
-        submit=always_true(),
-        value=IGT2Centisecs()
-    )
+            InGame()
+        
+        if params["level_id"] == LEVEL_SHORT_TEST_COURSE || params["level_id"] == LEVEL_LONG_TEST_COURSE
+        {
+            start_cond =
+                start_cond &&
+                g_current_level == params["level_id"] &&
+                g_lap_counter >= 2 &&
+                g_lap_counter > prev(g_lap_counter)
+            value_cond = IGT2Centisecs(g_last_lap_time)
+            description =
+                format(
+                    "Record the fastest lap on {0}!",
+                    LevelID2DisplayID(params["level_id"])
+                )
+        }
+        else
+        {
+            start_cond = 
+                start_cond &&
+                LevelComplete(params["level_id"])
+            value_cond = IGT2Centisecs(GetIGT())
+            description =
+                format(
+                    "Complete {0}{1} in the fastest time!", 
+                    LevelID2DisplayID(params["level_id"]),
+                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                )
+        }
     
-     leaderboard(
-        id=params["lb_id_pacifist"],
-        title=format("{0} - Fastest Time (Pacifist)", LevelID2DisplayID(params["level_id"])),
-        description=
-            format(
-                "Complete {0}{1} in the fastest time with $0 in damages!", 
+        leaderboard(
+            id=params["lb_id"],
+            title=format(
+                "{0} - Fastest {1}",
                 LevelID2DisplayID(params["level_id"]),
-                if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                if_else(params["level_id"] < LEVEL_SHORT_TEST_COURSE, "Time", "Lap")
             ),
-        format="CENTISECS",
-        lower_is_better=true,
-        start=
-            AntiBios() &&
-            InGame() &&
-            g_game_mode == GAME_MODE_RUNABOUT &&
-            g_total_amount == 0 &&
-            LevelComplete(params["level_id"]),
-        cancel=always_false(),
-        submit=always_true(),
-        value=IGT2Centisecs()
-    )
+            description=description,
+            format="CENTISECS",
+            lower_is_better=true,
+            start=start_cond,
+            cancel=always_false(),
+            submit=always_true(),
+            value=value_cond
+        )
+    }
+    
+    if dict_in(params, "lb_id_pacifist")
+    {
+        leaderboard(
+            id=params["lb_id_pacifist"],
+            title=format("{0} - Fastest Time (Pacifist)", LevelID2DisplayID(params["level_id"])),
+            description=
+                format(
+                    "Complete {0}{1} in the fastest time with $0 in damages!", 
+                    LevelID2DisplayID(params["level_id"]),
+                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                ),
+            format="CENTISECS",
+            lower_is_better=true,
+            start=
+                AntiBios() &&
+                InGame() &&
+                g_game_mode == GAME_MODE_RUNABOUT &&
+                g_total_amount == 0 &&
+                LevelComplete(params["level_id"]),
+            cancel=always_false(),
+            submit=always_true(),
+            value=IGT2Centisecs(GetIGT())
+        )
+    }
 }
 
 RP_LEVEL_NAMES = {}
