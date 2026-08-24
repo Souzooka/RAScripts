@@ -24,6 +24,50 @@ function dict_get(dict, key, default=0)
     return default
 }
 
+function format_number(n)
+{   
+    billions = n / 1000000000
+    millions = n % 1000000000 / 1000000
+    thousands = n % 1000000 / 1000
+    ones = n % 1000
+    
+    COMMA = ","
+
+    return format(
+        "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}",
+        if_else(billions > 0, billions, ""),
+        if_else(billions > 0, COMMA, ""),
+        if_else(billions > 0 && millions < 100, "0", ""),
+        if_else(billions > 0 && millions < 10, "0", ""),
+        if_else(billions > 0 || millions > 0, millions, ""),
+        if_else(billions > 0 || millions > 0, COMMA, ""),
+        if_else((billions > 0 || millions > 0) && thousands < 100, "0", ""),
+        if_else((billions > 0 || millions > 0) && thousands < 10, "0", ""),
+        if_else(billions > 0 || millions > 0 || thousands > 0, thousands, ""),
+        if_else(billions > 0 || millions > 0 || thousands > 0, COMMA, ""),
+        if_else((billions > 0 || millions > 0 || thousands > 0) && ones < 100, "0", ""),
+        if_else((billions > 0 || millions > 0 || thousands > 0) && ones < 10, "0", ""),
+        ones
+    )
+}
+
+function format_ticks(ticks)
+{
+    centisecs = (ticks / 3) % 100
+    secs = (ticks / 300) % 60
+    mins = (ticks / (300 * 60))
+    
+    return format(
+        "{0}{1}:{2}{3}.{4}{5}",
+        if_else(mins < 10, "0", ""),
+        mins,
+        if_else(secs < 10, "0", ""),
+        secs,
+        if_else(centisecs < 10, "0", ""),
+        centisecs
+    )
+}
+
 function AntiBios()
 {
     return ascii_string_equals(0x101e9, "RUN2")
@@ -65,6 +109,13 @@ function IGT2Centisecs(ticks)
     centis = frames * (100.0 / LB_FRAMERATE)
 
     return centis
+}
+
+function Time2Ticks(minutes=0, seconds=0, centiseconds=0)
+{
+    centiseconds = centiseconds + (seconds * 100)
+    centiseconds = centiseconds + (minutes * 6000)
+    return centiseconds * 3
 }
 
 function LevelID2DisplayID(level_id)
@@ -116,8 +167,14 @@ LEVEL_PARAMS = [
         "level_id": 0,
         "ach_id_progression": 0,
         "ach_id_pacifist": 0,
+        "ach_id_damage": 0,
+        "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
+        "ach_points_damage": 5,
+        "ach_points_time_trial": 5,
+        "ach_damage_amount": 600000,
+        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=4),
         "lb_id": 170095,
         "lb_id_pacifist": 170118,
     },
@@ -267,7 +324,10 @@ for params in LEVEL_PARAMS
                 LevelComplete(params["level_id"])
         )    
     }
-    
+}
+ 
+for params in LEVEL_PARAMS
+{   
     // Pacifist achievements
     if dict_in(params, "ach_id_pacifist")
     { 
@@ -276,7 +336,7 @@ for params in LEVEL_PARAMS
             title=dict_get(params, "ach_title_pacifist", format("{0} - Pacifist", LevelID2DisplayID(params["level_id"]))),
             description=
                 format(
-                    "Complete {0}{1}", 
+                    "Complete {0} with $0 in damage{1}", 
                     LevelID2DisplayID(params["level_id"]),
                     if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
                 ),
@@ -284,8 +344,63 @@ for params in LEVEL_PARAMS
             trigger=
                 AntiBios() &&
                 InGame() &&
+                g_game_mode == GAME_MODE_RUNABOUT &&
+                g_total_amount == 0 &&
                 LevelComplete(params["level_id"])
         )    
+    }
+    
+    // Damage achievements
+    if dict_in(params, "ach_id_damage")
+    {
+        achievement(
+            id=params["ach_id_damage"],
+            title=dict_get(params, "ach_title_damage", format("{0} - Damage", LevelID2DisplayID(params["level_id"]))),
+            description=
+                format(
+                    "Complete {0} with at least ${1} in damage{2}", 
+                    LevelID2DisplayID(params["level_id"]),
+                    format_number(params["ach_damage_amount"]),
+                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                ),
+            points=params["ach_points_damage"],
+            trigger=
+                AntiBios() &&
+                InGame() &&
+                g_game_mode == GAME_MODE_RUNABOUT &&
+                g_total_amount >= params["ach_damage_amount"] &&
+                LevelComplete(params["level_id"])
+        )    
+    }
+    
+    // Time trial achievements
+    if dict_in(params, "ach_id_time_trial")
+    {
+        time = GetIGT()
+        complete_check = LevelComplete(params["level_id"])
+        if params["level_id"] == LEVEL_SHORT_TEST_COURSE || params["level_id"] == LEVEL_LONG_TEST_COURSE
+        {
+            time = g_last_lap_time
+            complete_check = g_lap_counter > prev(g_lap_counter)
+        }
+    
+        achievement(
+            id=params["ach_id_time_trial"],
+            title=dict_get(params, "ach_title_time_trial", format("{0} - Time Trial", LevelID2DisplayID(params["level_id"]))),
+            description=
+                format(
+                    "Complete {0} in under {1}{2}", 
+                    LevelID2DisplayID(params["level_id"]),
+                    format_ticks(params["ach_time_trial_time"]),
+                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                ),
+            points=params["ach_points_time_trial"],
+            trigger=
+                AntiBios() &&
+                InGame() &&
+                time <= params["ach_time_trial_time"] &&
+                complete_check
+        )
     }
 
     // Time trial leaderboards
