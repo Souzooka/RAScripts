@@ -461,7 +461,10 @@ for params in LEVEL_PARAMS
         if is_test_course
         {
             time = g_last_lap_time
-            complete_check = g_lap_counter > prev(g_lap_counter)
+            complete_check = 
+                g_current_level == params["level_id"] && 
+                g_lap_counter >= 2 &&
+                g_lap_counter > prev(g_lap_counter)
         }
     
         achievement(
