@@ -144,6 +144,7 @@ GAME_MODE_TIME_TRIAL = 0x3
 
 g_total_amount = dword(0x86a80)
 
+g_remaining_time = dword(0x8f5b8)
 g_total_time = dword(0x8f5bc)
 g_total_time_interp = dword(0x11C858)
 
@@ -400,6 +401,70 @@ for params in LEVEL_PARAMS
                 InGame() &&
                 time <= params["ach_time_trial_time"] &&
                 complete_check
+        )
+    }
+    
+    // Specialty achievements
+    if params["level_id"] == 2
+    {
+        doors = [word(0x12b7d6), word(0x12b80e), word(0x12b846), word(0x12b87e)]
+        car2_height = dword(0x125dc0)
+        
+        achievement(
+            id=0,
+            title="Mission Possible",
+            description="Complete Mission #03 without triggering any security lasers",
+            points=2,
+            trigger=
+                AntiBios() &&
+                InGame() &&
+                g_current_level == 2 &&
+                g_car_index == 1 &&
+                (
+                    once((car2_height > 0x11000 && prev(car2_height) <= 0x11000) && car2_height < 0x80000000) && 
+                    never(!InGame() || g_total_time == 0 || car2_height > 0x3A000 && car2_height < 0x80000000)
+                ) &&
+                all_of(doors, door => door == 0) &&
+                trigger_when(LevelComplete(2))
+        )
+    }
+    if params["level_id"] == 7
+    {
+        car1_x = dword(0x125484)
+        car1_z = dword(0x12548C)
+        stands = [
+            bit1(0x12927b), bit1(0x1292b3), bit1(0x1292eb), bit1(0x129323),
+            bit1(0x12935b), bit1(0x12aafb), bit1(0x12ab33), bit1(0x12ab6b),
+            bit1(0x12aba3), bit1(0x12abdb), bit1(0x12ac13), bit1(0x12ac4b),
+            bit1(0x12ac83), bit1(0x12acbb), bit1(0x12acf3), bit1(0x12ad2b),
+        ]
+    
+        achievement(
+            id=0,
+            title="Standabout",
+            description="Complete Mission #08 after smashing all 16 food stands and shooting galleries",
+            points=5,
+            trigger=
+                AntiBios() &&
+                InGame() &&
+                g_current_level == 7 &&
+                (
+                    (
+                        once(
+                            (car1_x > 0x11C000 && car1_x < 0x80000000) &&
+                            (car1_z < 0x11C000 && prev(car1_z) >= 0x11C000)
+                        ) &&
+                        never(!InGame() || g_total_time == 0 || g_remaining_time == 0) &&
+                        trigger_when(always_false())
+                    ) ||
+                    (
+                        measured(
+                            sum_of(stands, v=>v) == 16,
+                            when=InGame() && g_current_level == 7 && g_total_time != 0
+                        ) &&
+                        LevelComplete(7)
+                    )
+                )
         )
     }
 
