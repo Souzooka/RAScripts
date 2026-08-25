@@ -172,12 +172,13 @@ LEVEL_PARAMS = [
         "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
-        "ach_points_damage": 5,
+        "ach_points_damage": 10,
         "ach_points_time_trial": 5,
-        "ach_damage_amount": 600000,
-        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=4),
+        "ach_damage_amount": 1000000, // Easy=600k, Hard=1mil
+        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=6),
         "lb_id": 170095,
         "lb_id_pacifist": 170118,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 1,
@@ -187,12 +188,13 @@ LEVEL_PARAMS = [
         "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
-        "ach_points_damage": 5,
-        "ach_points_time_trial": 5,
-        "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=26),
+        "ach_points_damage": 10,
+        "ach_points_time_trial": 10,
+        "ach_damage_amount": 750000, // Hard=750k
+        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=28),
         "lb_id": 170119,
         "lb_id_pacifist": 170120,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 2,
@@ -203,11 +205,12 @@ LEVEL_PARAMS = [
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
-        "ach_points_time_trial": 5,
-        "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_points_time_trial": 10,
+        "ach_damage_amount": 1000000,
+        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=55),
         "lb_id": 170121,
         "lb_id_pacifist": 170122,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 3,
@@ -217,12 +220,13 @@ LEVEL_PARAMS = [
         "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
-        "ach_points_damage": 5,
-        "ach_points_time_trial": 5,
-        "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_points_damage": 10,
+        "ach_points_time_trial": 10,
+        "ach_damage_amount": 750000,
+        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=16),
         "lb_id": 170123,
         "lb_id_pacifist": 170124,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 4,
@@ -232,12 +236,13 @@ LEVEL_PARAMS = [
         "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
-        "ach_points_damage": 5,
-        "ach_points_time_trial": 5,
-        "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_points_damage": 10,
+        "ach_points_time_trial": 10,
+        "ach_damage_amount": 1000000,
+        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=16),
         "lb_id": 170125,
         "lb_id_pacifist": 170126,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 5,
@@ -247,12 +252,13 @@ LEVEL_PARAMS = [
         "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
-        "ach_points_damage": 5,
-        "ach_points_time_trial": 5,
-        "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_points_damage": 10,
+        "ach_points_time_trial": 10,
+        "ach_damage_amount": 3500000,
+        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=42),
         "lb_id": 170127,
         "lb_id_pacifist": 170128,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 6,
@@ -265,9 +271,10 @@ LEVEL_PARAMS = [
         "ach_points_damage": 5,
         "ach_points_time_trial": 5,
         "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_time_trial_time": Time2Ticks(minutes=2, seconds=22),
         "lb_id": 170129,
         "lb_id_pacifist": 170130,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 7,
@@ -283,6 +290,7 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
         "lb_id": 170131,
         "lb_id_pacifist": 170132,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 8,
@@ -292,12 +300,13 @@ LEVEL_PARAMS = [
         "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
-        "ach_points_damage": 5,
+        "ach_points_damage": 10,
         "ach_points_time_trial": 5,
-        "ach_damage_amount": 123456789,
+        "ach_damage_amount": 1150000,
         "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
         "lb_id": 170133,
         "lb_id_pacifist": 170134,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 9,
@@ -307,10 +316,11 @@ LEVEL_PARAMS = [
         "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
-        "ach_points_damage": 5,
-        "ach_points_time_trial": 5,
+        "ach_points_damage": 10,
+        "ach_points_time_trial": 10,
         "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_damage_time": Time2Ticks(minutes=3, seconds=0),
+        "ach_time_trial_time": Time2Ticks(minutes=2, seconds=46),
         "lb_id": 170135,
         "lb_id_pacifist": 170136,
     },
@@ -328,6 +338,7 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
         "lb_id": 170137,
         "lb_id_pacifist": 170138,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 11,
@@ -338,11 +349,12 @@ LEVEL_PARAMS = [
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
-        "ach_points_time_trial": 5,
+        "ach_points_time_trial": 10,
         "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_time_trial_time": Time2Ticks(minutes=2, seconds=35),
         "lb_id": 170139,
         "lb_id_pacifist": 170140,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 12,
@@ -355,23 +367,24 @@ LEVEL_PARAMS = [
         "ach_points_damage": 10,
         "ach_points_time_trial": 10,
         "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_time_trial_time": Time2Ticks(minutes=4, seconds=0),
         "lb_id": 170141,
         "lb_id_pacifist": 170142,
+        "lb_id_damage": 0,
     },
     {
-        "level_id": 15,
-        "lb_id": 170160,
+        "level_id": LEVEL_SHORT_TEST_COURSE,
         "ach_id_time_trial": 0,
         "ach_points_time_trial": 10,
         "ach_time_trial_time": Time2Ticks(minutes=0, seconds=58),
+        "lb_id": 170160,
     },
     {
-        "level_id": 16,
-        "lb_id": 170161,
+        "level_id": LEVEL_LONG_TEST_COURSE,
         "ach_id_time_trial": 0,
         "ach_points_time_trial": 10,
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=37),
+        "lb_id": 170161,
     },
 ]
 
@@ -432,21 +445,27 @@ for params in LEVEL_PARAMS
     // Damage achievements
     if dict_in(params, "ach_id_damage")
     {
+        time_check = always_true()
+        if dict_in(params, "ach_damage_time")
+            time_check = GetIGT() <= params["ach_damage_time"]
+    
         achievement(
             id=params["ach_id_damage"],
             title=dict_get(params, "ach_title_damage", format("{0} - Damage", LevelID2DisplayID(params["level_id"]))),
             description=
                 format(
-                    "Complete {0} with at least ${1} in damage{2}", 
+                    "Complete {0} with at least ${1} in damage{2}{3}", 
                     LevelID2DisplayID(params["level_id"]),
                     format_number(params["ach_damage_amount"]),
-                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", ""),
+                    if_else(dict_in(params, "ach_damage_time"), format(" in under {0}", format_ticks(dict_get(params, "ach_damage_time", -1))), "")
                 ),
             points=params["ach_points_damage"],
             trigger=
                 AntiBios() &&
                 InGame() &&
                 g_game_mode == GAME_MODE_RUNABOUT &&
+                time_check &&
                 g_total_amount >= params["ach_damage_amount"] &&
                 LevelComplete(params["level_id"])
         )    
@@ -626,6 +645,30 @@ for params in LEVEL_PARAMS
             cancel=always_false(),
             submit=always_true(),
             value=IGT2Centisecs(GetIGT())
+        )
+    }
+    
+    // Damage leaderboards
+    if dict_in(params, "lb_id_damage")
+    {
+        leaderboard(
+            id=params["lb_id_damage"],
+            title=format("{0} - Highest Amount", LevelID2DisplayID(params["level_id"])),
+            description=
+                format(
+                    "Complete {0}{1} with the highest amount in damages!",
+                    LevelID2DisplayID(params["level_id"]),
+                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                ),
+            format="VALUE",
+            start=
+                AntiBios() &&
+                InGame() &&
+                g_game_mode == GAME_MODE_RUNABOUT &&
+                LevelComplete(params["level_id"]),
+            cancel=always_false(),
+            submit=always_true(),
+            value=g_total_amount
         )
     }
 }
