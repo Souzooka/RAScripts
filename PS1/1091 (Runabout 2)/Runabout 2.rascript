@@ -132,7 +132,7 @@ function LevelID2DisplayID(level_id)
 
 g_current_level = byte(0x42518)
 FINAL_LEVEL = 12
-OPTIONAL_LEVELS = [3, 4, 5, 6, 10]
+OPTIONAL_LEVELS = [3, 4, 5, 6, 9, 10]
 LEVEL_SHORT_TEST_COURSE = 15
 LEVEL_LONG_TEST_COURSE = 16
 
@@ -270,7 +270,7 @@ LEVEL_PARAMS = [
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
         "ach_points_time_trial": 5,
-        "ach_damage_amount": 123456789,
+        "ach_damage_amount": 600000,
         "ach_time_trial_time": Time2Ticks(minutes=2, seconds=22),
         "lb_id": 170129,
         "lb_id_pacifist": 170130,
@@ -284,10 +284,10 @@ LEVEL_PARAMS = [
         "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
-        "ach_points_damage": 5,
-        "ach_points_time_trial": 5,
-        "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_points_damage": 10,
+        "ach_points_time_trial": 10,
+        "ach_damage_amount": 900000,
+        "ach_time_trial_time": Time2Ticks(minutes=2, seconds=14),
         "lb_id": 170131,
         "lb_id_pacifist": 170132,
         "lb_id_damage": 0,
@@ -301,9 +301,9 @@ LEVEL_PARAMS = [
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
-        "ach_points_time_trial": 5,
+        "ach_points_time_trial": 10,
         "ach_damage_amount": 1150000,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_time_trial_time": Time2Ticks(minutes=1, seconds=28),
         "lb_id": 170133,
         "lb_id_pacifist": 170134,
         "lb_id_damage": 0,
@@ -318,11 +318,12 @@ LEVEL_PARAMS = [
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
         "ach_points_time_trial": 10,
-        "ach_damage_amount": 123456789,
+        "ach_damage_amount": 3200000,
         "ach_damage_time": Time2Ticks(minutes=3, seconds=0),
         "ach_time_trial_time": Time2Ticks(minutes=2, seconds=46),
         "lb_id": 170135,
         "lb_id_pacifist": 170136,
+        "lb_id_damage": 0,
     },
     {
         "level_id": 10,
@@ -332,10 +333,10 @@ LEVEL_PARAMS = [
         "ach_id_time_trial": 0,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
-        "ach_points_damage": 5,
+        "ach_points_damage": 10,
         "ach_points_time_trial": 5,
-        "ach_damage_amount": 123456789,
-        "ach_time_trial_time": Time2Ticks(minutes=0, seconds=10),
+        "ach_damage_amount": 1000000,
+        "ach_time_trial_time": Time2Ticks(minutes=3, seconds=4),
         "lb_id": 170137,
         "lb_id_pacifist": 170138,
         "lb_id_damage": 0,
@@ -350,7 +351,7 @@ LEVEL_PARAMS = [
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
         "ach_points_time_trial": 10,
-        "ach_damage_amount": 123456789,
+        "ach_damage_amount": 1000000,
         "ach_time_trial_time": Time2Ticks(minutes=2, seconds=35),
         "lb_id": 170139,
         "lb_id_pacifist": 170140,
@@ -362,11 +363,12 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 0,
         "ach_id_damage": 0,
         "ach_id_time_trial": 0,
+        "ach_title_damage": "Everything's Computer",
         "ach_points_progression": 10,
-        "ach_points_pacifist": 10,
+        "ach_points_pacifist": 25,
         "ach_points_damage": 10,
         "ach_points_time_trial": 10,
-        "ach_damage_amount": 123456789,
+        "ach_damage_amount": 2000000,
         "ach_time_trial_time": Time2Ticks(minutes=4, seconds=0),
         "lb_id": 170141,
         "lb_id_pacifist": 170142,
@@ -507,6 +509,27 @@ for params in LEVEL_PARAMS
     }
     
     // Specialty achievements
+    if params["level_id"] == 0
+    {
+        car1_surface = word(0x125730)
+        SAND = 0x28
+        
+        achievement(
+            id=0,
+            title="I Hate Sand",
+            description="Complete Mission #01 using the 1500 without driving on the beach",
+            points=10,
+            trigger=
+                AntiBios() &&
+                InGame() &&
+                g_game_mode == GAME_MODE_RUNABOUT &&
+                g_current_level == 0 &&
+                g_current_car_id == 0 &&
+                once(g_total_time > 0 && prev(g_total_time) == 0) &&
+                never(car1_surface == SAND || g_total_time == 0 || !InGame()) &&
+                trigger_when(LevelComplete(0))
+        )
+    }
     if params["level_id"] == 2
     {
         doors = [word(0x12b7d6), word(0x12b80e), word(0x12b846), word(0x12b87e)]
@@ -550,6 +573,7 @@ for params in LEVEL_PARAMS
                 AntiBios() &&
                 InGame() &&
                 g_current_level == 7 &&
+                g_game_mode == GAME_MODE_RUNABOUT &&
                 (
                     (
                         once(
@@ -651,20 +675,26 @@ for params in LEVEL_PARAMS
     // Damage leaderboards
     if dict_in(params, "lb_id_damage")
     {
+        time_check = always_true()
+        if dict_in(params, "ach_damage_time")
+            time_check = GetIGT() <= params["ach_damage_time"]
+    
         leaderboard(
             id=params["lb_id_damage"],
             title=format("{0} - Highest Amount", LevelID2DisplayID(params["level_id"])),
             description=
                 format(
-                    "Complete {0}{1} with the highest amount in damages!",
+                    "Complete {0}{1} with the highest amount in damages{2}!",
                     LevelID2DisplayID(params["level_id"]),
-                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", "")
+                    if_else(params["level_id"] == FINAL_LEVEL, " and escape with Lisa", ""),
+                    if_else(dict_in(params, "ach_damage_time"), format(" in under {0}", format_ticks(dict_get(params, "ach_damage_time", -1))), "")
                 ),
             format="VALUE",
             start=
                 AntiBios() &&
                 InGame() &&
                 g_game_mode == GAME_MODE_RUNABOUT &&
+                time_check &&
                 LevelComplete(params["level_id"]),
             cancel=always_false(),
             submit=always_true(),
