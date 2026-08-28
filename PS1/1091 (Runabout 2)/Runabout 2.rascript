@@ -79,14 +79,14 @@ function InGame()
     return g_overlay_id == OVERLAY_GAME_IN
 }
 
-function LevelComplete(level_id)
+function LevelComplete(level_id, first_half=false)
 {
     acc = bit4(0x905ff)
     cond = always_true()
     
     // Mission #13 is cut into two halves, and we actually want to
     // consider only the second half
-    if level_id == FINAL_LEVEL
+    if level_id == FINAL_LEVEL && !first_half
     {
         level_id = FINAL_LEVEL + 1
         cond = cond && g_cutscene_id == 0x15
@@ -132,7 +132,7 @@ function LevelID2DisplayID(level_id)
 
 g_current_level = byte(0x42518)
 FINAL_LEVEL = 12
-OPTIONAL_LEVELS = [3, 4, 5, 6, 9, 10]
+OPTIONAL_LEVELS = [3, 4, 5, 6, 7, 8, 9, 10]
 LEVEL_SHORT_TEST_COURSE = 15
 LEVEL_LONG_TEST_COURSE = 16
 
@@ -166,10 +166,10 @@ g_lap_counter = word(0x13c984)
 LEVEL_PARAMS = [
     {
         "level_id": 0,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633237,
+        "ach_id_pacifist": 633250,
+        "ach_id_damage": 633251,
+        "ach_id_time_trial": 633252,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -178,14 +178,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=6),
         "lb_id": 170095,
         "lb_id_pacifist": 170118,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170199,
     },
     {
         "level_id": 1,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633238,
+        "ach_id_pacifist": 633254,
+        "ach_id_damage": 633255,
+        "ach_id_time_trial": 633256,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -194,14 +194,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=28),
         "lb_id": 170119,
         "lb_id_pacifist": 170120,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170200,
     },
     {
         "level_id": 2,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633239,
+        "ach_id_pacifist": 633257,
+        "ach_id_damage": 633258,
+        "ach_id_time_trial": 633259,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
@@ -210,14 +210,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=55),
         "lb_id": 170121,
         "lb_id_pacifist": 170122,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170201,
     },
     {
         "level_id": 3,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633240,
+        "ach_id_pacifist": 633261,
+        "ach_id_damage": 633262,
+        "ach_id_time_trial": 633263,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -226,14 +226,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=16),
         "lb_id": 170123,
         "lb_id_pacifist": 170124,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170202,
     },
     {
         "level_id": 4,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633241,
+        "ach_id_pacifist": 633264,
+        "ach_id_damage": 633265,
+        "ach_id_time_trial": 633266,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -242,14 +242,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=16),
         "lb_id": 170125,
         "lb_id_pacifist": 170126,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170203,
     },
     {
         "level_id": 5,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633242,
+        "ach_id_pacifist": 633267,
+        "ach_id_damage": 633268,
+        "ach_id_time_trial": 633269,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -258,14 +258,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=42),
         "lb_id": 170127,
         "lb_id_pacifist": 170128,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170204,
     },
     {
         "level_id": 6,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633243,
+        "ach_id_pacifist": 633270,
+        "ach_id_damage": 633271,
+        "ach_id_time_trial": 633272,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
@@ -274,14 +274,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=2, seconds=22),
         "lb_id": 170129,
         "lb_id_pacifist": 170130,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170205,
     },
     {
         "level_id": 7,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633244,
+        "ach_id_pacifist": 633273,
+        "ach_id_damage": 633274,
+        "ach_id_time_trial": 633275,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -290,14 +290,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=2, seconds=14),
         "lb_id": 170131,
         "lb_id_pacifist": 170132,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170206,
     },
     {
         "level_id": 8,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633245,
+        "ach_id_pacifist": 633277,
+        "ach_id_damage": 633278,
+        "ach_id_time_trial": 633279,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -306,14 +306,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=28),
         "lb_id": 170133,
         "lb_id_pacifist": 170134,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170207,
     },
     {
         "level_id": 9,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633246,
+        "ach_id_pacifist": 633280,
+        "ach_id_damage": 633281,
+        "ach_id_time_trial": 633282,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -323,14 +323,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=2, seconds=46),
         "lb_id": 170135,
         "lb_id_pacifist": 170136,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170211,
     },
     {
         "level_id": 10,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633247,
+        "ach_id_pacifist": 633283,
+        "ach_id_damage": 633284,
+        "ach_id_time_trial": 633285,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -339,14 +339,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=3, seconds=4),
         "lb_id": 170137,
         "lb_id_pacifist": 170138,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170208,
     },
     {
         "level_id": 11,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633248,
+        "ach_id_pacifist": 633286,
+        "ach_id_damage": 633287,
+        "ach_id_time_trial": 633288,
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
@@ -355,14 +355,14 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=2, seconds=35),
         "lb_id": 170139,
         "lb_id_pacifist": 170140,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170209,
     },
     {
         "level_id": 12,
-        "ach_id_progression": 0,
-        "ach_id_pacifist": 0,
-        "ach_id_damage": 0,
-        "ach_id_time_trial": 0,
+        "ach_id_progression": 633243,
+        "ach_id_pacifist": 633289,
+        "ach_id_damage": 633290,
+        "ach_id_time_trial": 633291,
         "ach_title_damage": "Everything's Computer",
         "ach_points_progression": 10,
         "ach_points_pacifist": 25,
@@ -372,18 +372,18 @@ LEVEL_PARAMS = [
         "ach_time_trial_time": Time2Ticks(minutes=4, seconds=0),
         "lb_id": 170141,
         "lb_id_pacifist": 170142,
-        "lb_id_damage": 0,
+        "lb_id_damage": 170210,
     },
     {
         "level_id": LEVEL_SHORT_TEST_COURSE,
-        "ach_id_time_trial": 0,
+        "ach_id_time_trial": 633293,
         "ach_points_time_trial": 10,
         "ach_time_trial_time": Time2Ticks(minutes=0, seconds=58),
         "lb_id": 170160,
     },
     {
         "level_id": LEVEL_LONG_TEST_COURSE,
-        "ach_id_time_trial": 0,
+        "ach_id_time_trial": 633294,
         "ach_points_time_trial": 10,
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=37),
         "lb_id": 170161,
@@ -515,7 +515,7 @@ for params in LEVEL_PARAMS
         SAND = 0x28
         
         achievement(
-            id=0,
+            id=633253,
             title="I Hate Sand",
             description="Complete Mission #01 using the 1500 without driving on the beach",
             points=10,
@@ -536,7 +536,7 @@ for params in LEVEL_PARAMS
         car2_height = dword(0x125dc0)
         
         achievement(
-            id=0,
+            id=633260,
             title="Mission Possible",
             description="Complete Mission #03 without triggering any security lasers",
             points=2,
@@ -553,6 +553,21 @@ for params in LEVEL_PARAMS
                 trigger_when(LevelComplete(2))
         )
     }
+    if params["level_id"] == 6
+    {
+        achievement(
+            id=633300,
+            title="Courier Chaos",
+            description="Complete Mission #07 after having swapped to the Scooter mid-mission",
+            points=2,
+            trigger=
+                AntiBios() &&
+                InGame() &&
+                g_current_level == 6 &&
+                g_car_index == 1 &&
+                LevelComplete(6)
+        )
+    }
     if params["level_id"] == 7
     {
         car1_x = dword(0x125484)
@@ -565,7 +580,7 @@ for params in LEVEL_PARAMS
         ]
     
         achievement(
-            id=0,
+            id=633276,
             title="Standabout",
             description="Complete Mission #08 after smashing all 16 food stands and shooting galleries",
             points=5,
@@ -591,6 +606,20 @@ for params in LEVEL_PARAMS
                         LevelComplete(7)
                     )
                 )
+        )
+    }
+    if params["level_id"] == FINAL_LEVEL
+    {
+        // fake progression achievement
+        achievement(
+            id=633292,
+            title="The End is Never",
+            description="Complete Mission #13",
+            points=0,
+            trigger=
+                AntiBios() &&
+                InGame() &&
+                LevelComplete(FINAL_LEVEL, first_half=true)
         )
     }
 
@@ -695,6 +724,8 @@ for params in LEVEL_PARAMS
                 InGame() &&
                 g_game_mode == GAME_MODE_RUNABOUT &&
                 time_check &&
+                // Just to prevent leaderboard popup spam with pacifist time trial lb
+                g_total_amount != 0 &&
                 LevelComplete(params["level_id"]),
             cancel=always_false(),
             submit=always_true(),
@@ -708,31 +739,31 @@ NOT_ITEMS = [5, 7, 8, 9, 10, 11, 12, 13, 27, 28, 29]
 
 ITEM_PARAMS = [
     {
-        "id": 0,
+        "id": 633295,
         "title": "10 Items",
         "amount": 10,
         "points": 10,
     },
     {
-        "id": 0,
+        "id": 633296,
         "title": "20 Items",
         "amount": 20,
         "points": 10,
     },
     {
-        "id": 0,
+        "id": 633297,
         "title": "30 Items",
         "amount": 30,
         "points": 10,
     },
     {
-        "id": 0,
+        "id": 633298,
         "title": "40 Items",
         "amount": 40,
         "points": 10,
     },
     {
-        "id": 0,
+        "id": 633299,
         "title": "47 Items",
         "amount": 47,
         "points": 25,
