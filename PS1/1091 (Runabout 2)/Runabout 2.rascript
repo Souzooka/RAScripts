@@ -161,7 +161,7 @@ g_transmissions = 0x8f490
 g_current_transmission = byte(g_transmissions + g_car_index)
 
 g_last_lap_time = dword(0x13c97c)
-g_lap_counter = word(0x13c984)
+g_lap_counter = dword(0x13c984)
 
 LEVEL_PARAMS = [
     {
@@ -170,6 +170,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633250,
         "ach_id_damage": 633251,
         "ach_id_time_trial": 633252,
+        "ach_title_progression": "Transport the Dragon's Fang",
+        "ach_title_pacifist": "Beach Day",
+        "ach_title_damage": "Party Crasher",
+        "ach_title_time_trial": "Wave Racer",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -186,6 +190,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633254,
         "ach_id_damage": 633255,
         "ach_id_time_trial": 633256,
+        "ach_title_progression": "Reclaim the Sacred Cup",
+        "ach_title_pacifist": "Clean Rally",
+        "ach_title_damage": "Mud Slinger",
+        "ach_title_time_trial": "Made My Flight",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -202,6 +210,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633257,
         "ach_id_damage": 633258,
         "ach_id_time_trial": 633259,
+        "ach_title_progression": "Transfer the Sacred Cup",
+        "ach_title_pacifist": "Laser Limbo",
+        "ach_title_damage": "Blinded by the Lights",
+        "ach_title_time_trial": "Mall Madness",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
@@ -218,6 +230,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633261,
         "ach_id_damage": 633262,
         "ach_id_time_trial": 633263,
+        "ach_title_progression": "Recover the Crystal Skull",
+        "ach_title_pacifist": "Is This Really Pacifism?",
+        "ach_title_damage": "Casino Crackdown",
+        "ach_title_time_trial": "Shopping Spree",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -234,6 +250,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633264,
         "ach_id_damage": 633265,
         "ach_id_time_trial": 633266,
+        "ach_title_progression": "Transfer Crystal Skull",
+        "ach_title_pacifist": "Lovely Night for a Drive",
+        "ach_title_damage": "Mutually-Assured Destruction",
+        "ach_title_time_trial": "Overnight Shipping",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -250,6 +270,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633267,
         "ach_id_damage": 633268,
         "ach_id_time_trial": 633269,
+        "ach_title_progression": "Reveal the Mystery of Sanju",
+        "ach_title_pacifist": "We Need to Pay for That",
+        "ach_title_damage": "The Jewels Are Mine",
+        "ach_title_time_trial": "No Time for Consumerism",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -266,6 +290,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633270,
         "ach_id_damage": 633271,
         "ach_id_time_trial": 633272,
+        "ach_title_progression": "Research Computer Network",
+        "ach_title_pacifist": "Hackerman",
+        "ach_title_damage": "Brute Force Access",
+        "ach_title_time_trial": "I Don't Use Dial-Up",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
@@ -282,6 +310,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633273,
         "ach_id_damage": 633274,
         "ach_id_time_trial": 633275,
+        "ach_title_progression": "Destroy Shrines",
+        "ach_title_pacifist": "But Just the Shrines",
+        "ach_title_damage": "And Everything Else",
+        "ach_title_time_trial": "Whichever Is Fastest",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -298,6 +330,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633277,
         "ach_id_damage": 633278,
         "ach_id_time_trial": 633279,
+        "ach_title_progression": "Deliver the Microfilm",
+        "ach_title_pacifist": "Handle with Care",
+        "ach_title_damage": "Delays Expected",
+        "ach_title_time_trial": "Faster Than Ground Shipping",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -314,6 +350,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633280,
         "ach_id_damage": 633281,
         "ach_id_time_trial": 633282,
+        "ach_title_progression": "Investigate Ruins",
+        "ach_title_pacifist": "Like a Museum",
+        "ach_title_damage": "Like a Flood",
+        "ach_title_time_trial": "Like a Tourist",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -331,6 +371,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633283,
         "ach_id_damage": 633284,
         "ach_id_time_trial": 633285,
+        "ach_title_progression": "Recapture the Microfilm",
+        "ach_title_pacifist": "Cat Tail",
+        "ach_title_damage": "Elephant Tail",
+        "ach_title_time_trial": "Cheetah Tail",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 10,
@@ -347,6 +391,10 @@ LEVEL_PARAMS = [
         "ach_id_pacifist": 633286,
         "ach_id_damage": 633287,
         "ach_id_time_trial": 633288,
+        "ach_title_progression": "Neutralize an Urgent Threat",
+        "ach_title_pacifist": "Mostly Harmless",
+        "ach_title_damage": "An Urgent Threat",
+        "ach_title_time_trial": "Neutral One Way or the Other",
         "ach_points_progression": 5,
         "ach_points_pacifist": 5,
         "ach_points_damage": 5,
@@ -359,11 +407,14 @@ LEVEL_PARAMS = [
     },
     {
         "level_id": 12,
-        "ach_id_progression": 633243,
+        "ach_id_progression": 633249,
         "ach_id_pacifist": 633289,
         "ach_id_damage": 633290,
         "ach_id_time_trial": 633291,
+        "ach_title_progression": "Destroy the Foundation Building",
+        "ach_title_pacifist": "Property Damage Is Violence",
         "ach_title_damage": "Everything's Computer",
+        "ach_title_time_trial": "Four Minute Police Response",
         "ach_points_progression": 10,
         "ach_points_pacifist": 25,
         "ach_points_damage": 10,
@@ -377,6 +428,7 @@ LEVEL_PARAMS = [
     {
         "level_id": LEVEL_SHORT_TEST_COURSE,
         "ach_id_time_trial": 633293,
+        "ach_title_time_trial": "Actually a Racing Game",
         "ach_points_time_trial": 10,
         "ach_time_trial_time": Time2Ticks(minutes=0, seconds=58),
         "lb_id": 170160,
@@ -384,6 +436,7 @@ LEVEL_PARAMS = [
     {
         "level_id": LEVEL_LONG_TEST_COURSE,
         "ach_id_time_trial": 633294,
+        "ach_title_time_trial": "Actually a Rally Game",
         "ach_points_time_trial": 10,
         "ach_time_trial_time": Time2Ticks(minutes=1, seconds=37),
         "lb_id": 170161,
@@ -443,7 +496,10 @@ for params in LEVEL_PARAMS
                 LevelComplete(params["level_id"])
         )    
     }
-    
+}
+
+for params in LEVEL_PARAMS
+{   
     // Damage achievements
     if dict_in(params, "ach_id_damage")
     {
@@ -472,7 +528,10 @@ for params in LEVEL_PARAMS
                 LevelComplete(params["level_id"])
         )    
     }
-    
+}
+
+for params in LEVEL_PARAMS
+{   
     // Time trial achievements
     if dict_in(params, "ach_id_time_trial")
     {
@@ -507,7 +566,10 @@ for params in LEVEL_PARAMS
                 complete_check
         )
     }
-    
+}
+
+for params in LEVEL_PARAMS
+{   
     // Specialty achievements
     if params["level_id"] == 0
     {
@@ -613,7 +675,7 @@ for params in LEVEL_PARAMS
         // fake progression achievement
         achievement(
             id=633292,
-            title="The End is Never",
+            title="The End Is Never",
             description="Complete Mission #13",
             points=0,
             trigger=
@@ -622,7 +684,10 @@ for params in LEVEL_PARAMS
                 LevelComplete(FINAL_LEVEL, first_half=true)
         )
     }
+}
 
+for params in LEVEL_PARAMS
+{   
     // Time trial leaderboards
     if dict_in(params, "lb_id")
     {
@@ -674,7 +739,10 @@ for params in LEVEL_PARAMS
             value=value_cond
         )
     }
-    
+}
+ 
+for params in LEVEL_PARAMS
+{      
     // Time trial leaderboards (pacifist)
     if dict_in(params, "lb_id_pacifist")
     {
@@ -700,7 +768,10 @@ for params in LEVEL_PARAMS
             value=IGT2Centisecs(GetIGT())
         )
     }
-    
+}
+
+for params in LEVEL_PARAMS
+{       
     // Damage leaderboards
     if dict_in(params, "lb_id_damage")
     {
@@ -740,31 +811,31 @@ NOT_ITEMS = [5, 7, 8, 9, 10, 11, 12, 13, 27, 28, 29]
 ITEM_PARAMS = [
     {
         "id": 633295,
-        "title": "10 Items",
+        "title": "Walk to the Store",
         "amount": 10,
         "points": 10,
     },
     {
         "id": 633296,
-        "title": "20 Items",
+        "title": "Jog, Don't Walk",
         "amount": 20,
         "points": 10,
     },
     {
         "id": 633297,
-        "title": "30 Items",
+        "title": "Run, Don't Jog",
         "amount": 30,
         "points": 10,
     },
     {
         "id": 633298,
-        "title": "40 Items",
+        "title": "Drive, Don't Run",
         "amount": 40,
         "points": 10,
     },
     {
         "id": 633299,
-        "title": "47 Items",
+        "title": "Runabout, Don't Drive",
         "amount": 47,
         "points": 25,
     },
