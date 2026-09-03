@@ -1,18 +1,33 @@
 // Smashing Drive
 // #ID = 30565
 
+function if_else(cond, a, b)
+{
+    if cond
+        return a
+    return b
+}
+
 u8 = byte
 u16 = word_be
 u32 = dword_be
 f32 = float_be
 
+g_game_mode = u32(0xf1a48)
+
+GAME_MODE_ARCADE = 0x0
+GAME_MODE_SURVIVAL = 0x1
+GAME_MODE_MULTI = 0x2
+
 g_game_state = u32(0x1ee660)
 g_game_state_sub = u32(0x1ee664)
 
+GAME_STATE_DRIVING_START = 0x3
 GAME_STATE_DRIVING = 0x4
 GAME_STATE_HIT_GOAL = 0x5
 
 GAME_STATE_SUB_DEMO = 0x4
+GAME_STATE_SUB_DRIVING = 0x6
 GAME_STATE_SUB_INSERT_NAME = 0x7
 
 g_route_id = u16(0x1ee7a2)
@@ -33,7 +48,11 @@ ROUTE_NIGHTOWL_BONUS = 13
 
 g_route_time = u32(0x1ee808)
 
+g_risky_routes = u32(0x1ee8ac)
+
 g_score = f32(0x1ee904)
+
+g_boosters_obtained = u32(0x1ee9e0)
 
 function InDemo()
 {
@@ -45,6 +64,8 @@ function RouteFinished(route_id)
     return
         !InDemo() &&
         g_route_id == route_id &&
+        g_game_mode != GAME_MODE_MULTI &&
+        g_game_state_sub == GAME_STATE_SUB_DRIVING &&
         prev(g_game_state) == GAME_STATE_DRIVING &&
         g_game_state == GAME_STATE_HIT_GOAL
 }
@@ -110,6 +131,7 @@ leaderboard(
     description="Obtain the highest score!",
     format="VALUE",
     start=
+        g_game_mode != GAME_MODE_MULTI &&
         prev(g_game_state_sub) != GAME_STATE_SUB_INSERT_NAME &&
         g_game_state_sub == GAME_STATE_SUB_INSERT_NAME &&
         g_score > 0,
@@ -133,3 +155,189 @@ for route_id in range(ROUTE_EARLYBIRD_1, ROUTE_DUSKANDWIRED)
         value=g_route_time
     )
 }
+
+ROUTE_PARAMS = {
+    ROUTE_EARLYBIRD_1: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_booster_amount": 11,
+        "ach_shortcut_amount": 3,
+        "ach_booster_points": 2,
+        "ach_shortcut_points": 2,
+    },
+    ROUTE_EARLYBIRD_2: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_booster_amount": 9,
+        "ach_shortcut_amount": 5,
+        "ach_booster_points": 2,
+        "ach_shortcut_points": 2,
+    },
+    ROUTE_EARLYBIRD_3: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_progression_id": 0,
+        "ach_survival_id": 0,
+        "ach_booster_amount": 19,
+        "ach_shortcut_amount": 5,
+        "ach_booster_points": 2,
+        "ach_shortcut_points": 2,
+        "ach_progression_points": 3,
+        "ach_survival_points": 3,
+    },
+    ROUTE_EARLYBIRD_BONUS: {
+        "ach_bonus_id": 0,
+        "ach_bonus_points": 5,
+    },
+    ROUTE_RUSHHOUR_1: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_booster_amount": 12,
+        "ach_shortcut_amount": 5,
+        "ach_booster_points": 2,
+        "ach_shortcut_points": 2,
+    },
+    ROUTE_RUSHHOUR_2: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_booster_amount": 12,
+        "ach_shortcut_amount": 5,
+        "ach_booster_points": 2,
+        "ach_shortcut_points": 2,
+    },
+    ROUTE_RUSHHOUR_3: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_progression_id": 0,
+        "ach_survival_id": 0,
+        "ach_booster_amount": 12,
+        "ach_shortcut_amount": 5,
+        "ach_booster_points": 2,
+        "ach_shortcut_points": 2,
+        "ach_progression_points": 3,
+        "ach_survival_points": 3,
+    },
+    ROUTE_RUSHHOUR_BONUS: {
+        "ach_bonus_id": 0,
+        "ach_bonus_points": 5,
+    },
+    ROUTE_NIGHTOWL_1: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_booster_amount": 15,
+        "ach_shortcut_amount": 4,
+        "ach_booster_points": 2,
+        "ach_shortcut_points": 2,
+    },
+    ROUTE_NIGHTOWL_2: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_booster_amount": 14,
+        "ach_shortcut_amount": 3,
+        "ach_booster_points": 2,
+        "ach_shortcut_points": 2,
+    },
+    ROUTE_NIGHTOWL_3: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_progression_id": 0,
+        "ach_survival_id": 0,
+        "ach_booster_amount": 17,
+        "ach_shortcut_amount": 4,
+        "ach_booster_points": 2,
+        "ach_shortcut_points": 2,
+        "ach_progression_points": 3,
+        "ach_survival_points": 3,
+    },
+    ROUTE_NIGHTOWL_BONUS: {
+        "ach_bonus_id": 0,
+        "ach_bonus_points": 5,
+    },
+    ROUTE_DUSKANDWIRED: {
+        "ach_booster_id": 0,
+        "ach_shortcut_id": 0,
+        "ach_progression_id": 0,
+        "ach_survival_id": 0,
+        "ach_booster_amount": 35,
+        "ach_shortcut_amount": 9,
+        "ach_booster_points": 4,
+        "ach_shortcut_points": 4,
+        "ach_progression_points": 5,
+        "ach_survival_points": 5,
+    },
+}
+
+for route_id in [ROUTE_EARLYBIRD_3, ROUTE_RUSHHOUR_3, ROUTE_NIGHTOWL_3, ROUTE_DUSKANDWIRED]
+{
+    achievement(
+        id=ROUTE_PARAMS[route_id]["ach_progression_id"],
+        title=format("{0} - Progression", ROUTE_NAMES[route_id]["route"]),
+        description=format("Complete {0}", ROUTE_NAMES[route_id]["route"]),
+        type=if_else(route_id == ROUTE_DUSKANDWIRED, "win_condition", "progression"),
+        points=ROUTE_PARAMS[route_id]["ach_progression_points"],
+        trigger=RouteFinished(route_id)
+    )
+}
+
+for route_id in [ROUTE_EARLYBIRD_BONUS, ROUTE_RUSHHOUR_BONUS, ROUTE_NIGHTOWL_BONUS]
+{
+    achievement(
+        id=ROUTE_PARAMS[route_id]["ach_bonus_id"],
+        title=format("{0} - Bonus", ROUTE_NAMES[route_id]["route"]),
+        description=format("Earn a high enough score to access and then complete the Bonus Route for {0}", ROUTE_NAMES[route_id]["route"]),
+        points=ROUTE_PARAMS[route_id]["ach_bonus_points"],
+        trigger=RouteFinished(route_id)
+    )
+}
+
+for route_id in [ROUTE_EARLYBIRD_3, ROUTE_RUSHHOUR_3, ROUTE_NIGHTOWL_3, ROUTE_DUSKANDWIRED]
+{
+    achievement(
+        id=ROUTE_PARAMS[route_id]["ach_survival_id"],
+        title=format("{0} - Survival", ROUTE_NAMES[route_id]["route"]),
+        description=format("Complete {0} in the Survival Mode", ROUTE_NAMES[route_id]["route"]),
+        points=ROUTE_PARAMS[route_id]["ach_survival_points"],
+        trigger=RouteFinished(route_id) && g_game_mode == GAME_MODE_SURVIVAL
+    )
+}
+
+for route_id in range(ROUTE_EARLYBIRD_1, ROUTE_DUSKANDWIRED)
+{
+    achievement(
+        id=ROUTE_PARAMS[route_id]["ach_booster_id"],
+        title=format("{0} - Boosters Obtained", ROUTE_NAMES[route_id]["leg"]),
+        description=format(
+            "Obtain {0} Boosters and complete {1} - {2}", 
+            ROUTE_PARAMS[route_id]["ach_shortcut_amount"],
+            ROUTE_NAMES[route_id]["route"],
+            ROUTE_NAMES[route_id]["leg"]
+       ),
+        points=ROUTE_PARAMS[route_id]["ach_booster_points"],
+        trigger=
+            RouteFinished(route_id) &&
+            g_boosters_obtained >= ROUTE_PARAMS[route_id]["ach_booster_amount"]
+            //measured(
+            //    g_boosters_obtained >= ROUTE_PARAMS[route_id]["ach_booster_amount"],
+            //    when=g_route_id == route_id && prev(g_game_state) == GAME_STATE_DRIVING
+            //)
+    )
+    
+    achievement(
+        id=ROUTE_PARAMS[route_id]["ach_shortcut_id"],
+        title=format("{0} - Risky Routes", ROUTE_NAMES[route_id]["leg"]),
+        description=format(
+            "Take {0} Risky Routes and complete {1} - {2}", 
+            ROUTE_PARAMS[route_id]["ach_shortcut_amount"],
+            ROUTE_NAMES[route_id]["route"],
+            ROUTE_NAMES[route_id]["leg"]
+       ),
+        points=ROUTE_PARAMS[route_id]["ach_shortcut_points"],
+        trigger=
+            RouteFinished(route_id) &&
+            measured(
+                g_risky_routes >= ROUTE_PARAMS[route_id]["ach_shortcut_amount"],
+                when=g_route_id == route_id && prev(g_game_state) == GAME_STATE_DRIVING
+            )
+    )
+}
+
