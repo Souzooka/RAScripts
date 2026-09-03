@@ -23,6 +23,7 @@ g_game_state = u32(0x1ee660)
 g_game_state_sub = u32(0x1ee664)
 
 GAME_STATE_MENU = 0x1
+GAME_STATE_MENU_CHOICE = 0x2
 GAME_STATE_DRIVING_START = 0xB
 GAME_STATE_DRIVING = 0x4
 GAME_STATE_HIT_GOAL = 0x5
@@ -160,26 +161,32 @@ leaderboard(
 
 ROUTE_PARAMS = {
     ROUTE_EARLYBIRD_1: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
+        "lb_booster_id": 171592,
+        "lb_time_id": 171580,
+        "ach_booster_id": 634130,
+        "ach_shortcut_id": 634131,
         "ach_booster_amount": 11,
         "ach_shortcut_amount": 3,
         "ach_booster_points": 2, // easy enough
         "ach_shortcut_points": 2, // easy enough
     },
     ROUTE_EARLYBIRD_2: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
+        "lb_booster_id": 171593,
+        "lb_time_id": 171581,
+        "ach_booster_id": 634132,
+        "ach_shortcut_id": 634133,
         "ach_booster_amount": 9,
         "ach_shortcut_amount": 5,
         "ach_booster_points": 3, // bit trickier
         "ach_shortcut_points": 3, // easy enough
     },
     ROUTE_EARLYBIRD_3: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
-        "ach_progression_id": 0,
-        "ach_survival_id": 0,
+        "lb_booster_id": 171594,
+        "lb_time_id": 171582,
+        "ach_booster_id": 634134,
+        "ach_shortcut_id": 634135,
+        "ach_progression_id": 634119,
+        "ach_survival_id": 634126,
         "ach_booster_amount": 19,
         "ach_shortcut_amount": 5,
         "ach_booster_points": 3, // is this possible??
@@ -188,20 +195,24 @@ ROUTE_PARAMS = {
         "ach_survival_points": 3,
     },
     ROUTE_EARLYBIRD_BONUS: {
-        "ach_bonus_id": 0,
+        "ach_bonus_id": 634123,
         "ach_bonus_points": 5,
     },
     ROUTE_RUSHHOUR_1: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
+        "lb_booster_id": 171595,
+        "lb_time_id": 171583,
+        "ach_booster_id": 634136,
+        "ach_shortcut_id": 634137,
         "ach_booster_amount": 12,
         "ach_shortcut_amount": 5,
         "ach_booster_points": 4, // Bit trickier
         "ach_shortcut_points": 3, // Easy enough, game also doublecounts some for some reason
     },
     ROUTE_RUSHHOUR_2: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
+        "lb_booster_id": 171596,
+        "lb_time_id": 171584,
+        "ach_booster_id": 634138,
+        "ach_shortcut_id": 634139,
         "ach_booster_amount": 11, // Nerfed from 12 for anti-frustration
         // Maybe there's 5 in total? Though there only seem to be 4,
         // and 3 seems to be the practical max to get in one run.
@@ -210,10 +221,12 @@ ROUTE_PARAMS = {
         "ach_shortcut_points": 4,
     },
     ROUTE_RUSHHOUR_3: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
-        "ach_progression_id": 0,
-        "ach_survival_id": 0,
+        "lb_booster_id": 171597,
+        "lb_time_id": 171585,
+        "ach_booster_id": 634140,
+        "ach_shortcut_id": 634141,
+        "ach_progression_id": 634120,
+        "ach_survival_id": 634127,
         "ach_booster_amount": 11, // Nerfed from 12 for anti-frustration
         "ach_shortcut_amount": 5,
         "ach_booster_points": 5, 
@@ -222,30 +235,36 @@ ROUTE_PARAMS = {
         "ach_survival_points": 3,
     },
     ROUTE_RUSHHOUR_BONUS: {
-        "ach_bonus_id": 0,
+        "ach_bonus_id": 634124,
         "ach_bonus_points": 5,
     },
     ROUTE_NIGHTOWL_1: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
+        "lb_booster_id": 171598,
+        "lb_time_id": 171586,
+        "ach_booster_id": 634142,
+        "ach_shortcut_id": 634143,
         "ach_booster_amount": 15,
         "ach_shortcut_amount": 3, // dunno where this 4th shortcut is...
         "ach_booster_points": 3, // should be easy enough
         "ach_shortcut_points": 3,
     },
     ROUTE_NIGHTOWL_2: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
+        "lb_booster_id": 171599,
+        "lb_time_id": 171587,
+        "ach_booster_id": 634144,
+        "ach_shortcut_id": 634145,
         "ach_booster_amount": 14,
         "ach_shortcut_amount": 3,
         "ach_booster_points": 3, // doable
         "ach_shortcut_points": 3, // easy enough
     },
     ROUTE_NIGHTOWL_3: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
-        "ach_progression_id": 0,
-        "ach_survival_id": 0,
+        "lb_booster_id": 171600,
+        "lb_time_id": 171588,
+        "ach_booster_id": 634146,
+        "ach_shortcut_id": 634147,
+        "ach_progression_id": 634121,
+        "ach_survival_id": 634128,
         "ach_booster_amount": 17,
         "ach_shortcut_amount": 4,
         "ach_booster_points": 5, // doable if you avoid shortcuts
@@ -254,14 +273,16 @@ ROUTE_PARAMS = {
         "ach_survival_points": 3,
     },
     ROUTE_NIGHTOWL_BONUS: {
-        "ach_bonus_id": 0,
+        "ach_bonus_id": 634125,
         "ach_bonus_points": 5,
     },
     ROUTE_DUSKANDWIRED: {
-        "ach_booster_id": 0,
-        "ach_shortcut_id": 0,
-        "ach_progression_id": 0,
-        "ach_survival_id": 0,
+        "lb_booster_id": 171601,
+        "lb_time_id": 171589,
+        "ach_booster_id": 634148,
+        "ach_shortcut_id": 634149,
+        "ach_progression_id": 634122,
+        "ach_survival_id": 634129,
         "ach_booster_amount": 28, // Nerfed from 35
         // Nerfed from 9 -- I think 9 is possible, though the 9th is probably
         // the fountain near the end, which seems to not work or be unreliable?
@@ -390,3 +411,25 @@ for route_id in range(ROUTE_EARLYBIRD_1, ROUTE_DUSKANDWIRED)
     )
 }
 
+rp_mode_lookup = {
+    0x0: "Arcade Mode",
+    0x1: "Survival Mode",
+    0x2: "Head 2 Head",
+}
+rp_route_lookup = {}
+rp_leg_lookup = {}
+
+for route_id in ROUTE_NAMES
+{
+    rp_route_lookup[route_id] = ROUTE_NAMES[route_id]["route"]
+    rp_leg_lookup[route_id] = ROUTE_NAMES[route_id]["leg"]
+}
+
+rich_presence_conditional_display(
+    !InDemo() && g_game_state != GAME_STATE_MENU && g_game_state != GAME_STATE_MENU_CHOICE,
+    "{0} | {1} - {2}",
+    rich_presence_lookup("MODE", g_game_mode, rp_mode_lookup, "Unknown Mode"),
+    rich_presence_lookup("ROUTE", g_route_id, rp_route_lookup, "Unknown Route"),
+    rich_presence_lookup("LEG", g_route_id, rp_leg_lookup, "Unknown Leg")
+)
+rich_presence_display("In menu")
