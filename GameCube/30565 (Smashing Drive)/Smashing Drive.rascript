@@ -295,11 +295,10 @@ ROUTE_PARAMS = {
     },
 }
 
-LB_START_ID = 171580
 for route_id in range(ROUTE_EARLYBIRD_1, ROUTE_DUSKANDWIRED)
 {
     leaderboard(
-        id=LB_START_ID + route_id - ROUTE_EARLYBIRD_1,
+        id=ROUTE_PARAMS[route_id]["lb_time_id"],
         title=format("{0} - Fastest Time", ROUTE_NAMES[route_id]["leg"]),
         description=format("Drive the fastest lap in {0} - {1}!", ROUTE_NAMES[route_id]["route"], ROUTE_NAMES[route_id]["leg"]),
         format="FRAMES",
@@ -371,7 +370,7 @@ for route_id in range(ROUTE_EARLYBIRD_1, ROUTE_DUSKANDWIRED)
     
     // Hidden leaderboards to work around measured spam
     leaderboard(
-        id=0,
+        id=ROUTE_PARAMS[route_id]["lb_booster_id"],
         title="Booster Counter!",
         description=format("Aim for {0}", ROUTE_PARAMS[route_id]["ach_booster_amount"]),
         format="VALUE",
