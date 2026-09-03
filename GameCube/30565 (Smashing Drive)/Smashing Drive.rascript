@@ -158,22 +158,6 @@ leaderboard(
     value=g_score
 )
 
-LB_START_ID = 171580
-for route_id in range(ROUTE_EARLYBIRD_1, ROUTE_DUSKANDWIRED)
-{
-    leaderboard(
-        id=LB_START_ID + route_id - ROUTE_EARLYBIRD_1,
-        title=format("{0} - Fastest Time", ROUTE_NAMES[route_id]["leg"]),
-        description=format("Drive the fastest lap in {0} - {1}!", ROUTE_NAMES[route_id]["route"], ROUTE_NAMES[route_id]["leg"]),
-        format="FRAMES",
-        lower_is_better=true,
-        start=RouteFinished(route_id),
-        cancel=always_false(),
-        submit=always_true(),
-        value=g_route_time
-    )
-}
-
 ROUTE_PARAMS = {
     ROUTE_EARLYBIRD_1: {
         "ach_booster_id": 0,
@@ -290,6 +274,22 @@ ROUTE_PARAMS = {
     },
 }
 
+LB_START_ID = 171580
+for route_id in range(ROUTE_EARLYBIRD_1, ROUTE_DUSKANDWIRED)
+{
+    leaderboard(
+        id=LB_START_ID + route_id - ROUTE_EARLYBIRD_1,
+        title=format("{0} - Fastest Time", ROUTE_NAMES[route_id]["leg"]),
+        description=format("Drive the fastest lap in {0} - {1}!", ROUTE_NAMES[route_id]["route"], ROUTE_NAMES[route_id]["leg"]),
+        format="FRAMES",
+        lower_is_better=true,
+        start=RouteFinished(route_id),
+        cancel=always_false(),
+        submit=always_true(),
+        value=g_route_time
+    )
+}
+
 for route_id in [ROUTE_EARLYBIRD_3, ROUTE_RUSHHOUR_3, ROUTE_NIGHTOWL_3, ROUTE_DUSKANDWIRED]
 {
     achievement(
@@ -341,7 +341,10 @@ for route_id in range(ROUTE_EARLYBIRD_1, ROUTE_DUSKANDWIRED)
             g_boosters_obtained >= ROUTE_PARAMS[route_id]["ach_booster_amount"]
             //measured(
             //    g_boosters_obtained >= ROUTE_PARAMS[route_id]["ach_booster_amount"],
-            //    when=g_route_id == route_id && prev(g_game_state) == GAME_STATE_DRIVING
+            //    when=
+            //        g_route_id == route_id && 
+            //        prev(g_game_state) == GAME_STATE_DRIVING &&
+            //        !InDemo()
             //)
     )
     
