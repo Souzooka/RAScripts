@@ -187,6 +187,8 @@ ROUTE_PARAMS = {
         "ach_shortcut_id": 634135,
         "ach_progression_id": 634119,
         "ach_survival_id": 634126,
+        "ach_progression_title": "Keep Your Hands on Wheel",
+        "ach_survival_title": "No One's Gonna Crash",
         "ach_booster_amount": 19,
         "ach_shortcut_amount": 5,
         "ach_booster_points": 3, // is this possible??
@@ -196,6 +198,7 @@ ROUTE_PARAMS = {
     },
     ROUTE_EARLYBIRD_BONUS: {
         "ach_bonus_id": 634123,
+        "ach_bonus_title": "Make It Fast",
         "ach_bonus_points": 5,
     },
     ROUTE_RUSHHOUR_1: {
@@ -227,6 +230,8 @@ ROUTE_PARAMS = {
         "ach_shortcut_id": 634141,
         "ach_progression_id": 634120,
         "ach_survival_id": 634127,
+        "ach_progression_title": "You Better Move On",
+        "ach_survival_title": "Stay on the Sidewalk, Grandpa",
         "ach_booster_amount": 11, // Nerfed from 12 for anti-frustration
         "ach_shortcut_amount": 5,
         "ach_booster_points": 5, 
@@ -236,6 +241,7 @@ ROUTE_PARAMS = {
     },
     ROUTE_RUSHHOUR_BONUS: {
         "ach_bonus_id": 634124,
+        "ach_bonus_title": "Step on It, Step on It, Step on It",
         "ach_bonus_points": 5,
     },
     ROUTE_NIGHTOWL_1: {
@@ -265,6 +271,8 @@ ROUTE_PARAMS = {
         "ach_shortcut_id": 634147,
         "ach_progression_id": 634121,
         "ach_survival_id": 634128,
+        "ach_progression_title": "Cabbie, Take Me Through the Streets",
+        "ach_survival_title": "We Play a Dangerous Game",
         "ach_booster_amount": 17,
         "ach_shortcut_amount": 4,
         "ach_booster_points": 3, // doable if you avoid shortcuts
@@ -274,6 +282,7 @@ ROUTE_PARAMS = {
     },
     ROUTE_NIGHTOWL_BONUS: {
         "ach_bonus_id": 634125,
+        "ach_bonus_title": "Driving Through the Speed of Sound",
         "ach_bonus_points": 5,
     },
     ROUTE_DUSKANDWIRED: {
@@ -283,6 +292,8 @@ ROUTE_PARAMS = {
         "ach_shortcut_id": 634149,
         "ach_progression_id": 634122,
         "ach_survival_id": 634129,
+        "ach_progression_title": "Step Aboard the Yellow Sun",
+        "ach_survival_title": "Let's Smash This Town",
         "ach_booster_amount": 28, // Nerfed from 35
         // Nerfed from 9 -- I think 9 is possible, though the 9th is probably
         // the fountain near the end, which seems to not work or be unreliable?
@@ -314,8 +325,8 @@ for route_id in [ROUTE_EARLYBIRD_3, ROUTE_RUSHHOUR_3, ROUTE_NIGHTOWL_3, ROUTE_DU
 {
     achievement(
         id=ROUTE_PARAMS[route_id]["ach_progression_id"],
-        title=format("{0} - Progression", ROUTE_NAMES[route_id]["route"]),
-        description=format("Complete {0}", ROUTE_NAMES[route_id]["route"]),
+        title=ROUTE_PARAMS[route_id]["ach_progression_title"],
+        description=format("Complete the {0} route", ROUTE_NAMES[route_id]["route"]),
         type=if_else(route_id == ROUTE_DUSKANDWIRED, "win_condition", "progression"),
         points=ROUTE_PARAMS[route_id]["ach_progression_points"],
         trigger=RouteFinished(route_id)
@@ -326,7 +337,7 @@ for route_id in [ROUTE_EARLYBIRD_BONUS, ROUTE_RUSHHOUR_BONUS, ROUTE_NIGHTOWL_BON
 {
     achievement(
         id=ROUTE_PARAMS[route_id]["ach_bonus_id"],
-        title=format("{0} - Bonus", ROUTE_NAMES[route_id]["route"]),
+        title=ROUTE_PARAMS[route_id]["ach_bonus_title"],
         description=format("Earn a high enough score to access and then complete the Bonus Route for {0}", ROUTE_NAMES[route_id]["route"]),
         points=ROUTE_PARAMS[route_id]["ach_bonus_points"],
         trigger=RouteFinished(route_id)
@@ -337,8 +348,8 @@ for route_id in [ROUTE_EARLYBIRD_3, ROUTE_RUSHHOUR_3, ROUTE_NIGHTOWL_3, ROUTE_DU
 {
     achievement(
         id=ROUTE_PARAMS[route_id]["ach_survival_id"],
-        title=format("{0} - Survival", ROUTE_NAMES[route_id]["route"]),
-        description=format("Complete {0} in the Survival Mode", ROUTE_NAMES[route_id]["route"]),
+        title=ROUTE_PARAMS[route_id]["ach_survival_title"],
+        description=format("Complete the {0} route in the Survival Mode", ROUTE_NAMES[route_id]["route"]),
         points=ROUTE_PARAMS[route_id]["ach_survival_points"],
         trigger=RouteFinished(route_id) && g_game_mode == GAME_MODE_SURVIVAL
     )
