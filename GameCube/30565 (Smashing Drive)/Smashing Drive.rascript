@@ -189,9 +189,9 @@ ROUTE_PARAMS = {
         "ach_survival_id": 634126,
         "ach_progression_title": "Keep Your Hands on Wheel",
         "ach_survival_title": "No One's Gonna Crash",
-        "ach_booster_amount": 19,
+        "ach_booster_amount": 15, // Is 19 possible?
         "ach_shortcut_amount": 5,
-        "ach_booster_points": 3, // is this possible??
+        "ach_booster_points": 3,
         "ach_shortcut_points": 3, // Easy enough
         "ach_progression_points": 4,
         "ach_survival_points": 3,
