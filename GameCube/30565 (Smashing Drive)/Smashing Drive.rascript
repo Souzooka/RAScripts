@@ -267,7 +267,7 @@ ROUTE_PARAMS = {
         "ach_survival_id": 634128,
         "ach_booster_amount": 17,
         "ach_shortcut_amount": 4,
-        "ach_booster_points": 5, // doable if you avoid shortcuts
+        "ach_booster_points": 3, // doable if you avoid shortcuts
         "ach_shortcut_points": 3, // take every shortcut on way, easy enough
         "ach_progression_points": 4,
         "ach_survival_points": 3,
@@ -351,7 +351,7 @@ for route_id in range(ROUTE_EARLYBIRD_1, ROUTE_DUSKANDWIRED)
         title=format("{0} - Boosters Obtained", ROUTE_NAMES[route_id]["leg"]),
         description=format(
             "Obtain {0} Boosters and complete {1} - {2}", 
-            ROUTE_PARAMS[route_id]["ach_shortcut_amount"],
+            ROUTE_PARAMS[route_id]["ach_booster_amount"],
             ROUTE_NAMES[route_id]["route"],
             ROUTE_NAMES[route_id]["leg"]
        ),
@@ -425,7 +425,7 @@ for route_id in ROUTE_NAMES
 }
 
 rich_presence_conditional_display(
-    !InDemo() && g_game_state != GAME_STATE_MENU && g_game_state != GAME_STATE_MENU_CHOICE,
+    !InDemo() && g_game_state > GAME_STATE_MENU_CHOICE,
     "{0} | {1} - {2}",
     rich_presence_lookup("MODE", g_game_mode, rp_mode_lookup, "Unknown Mode"),
     rich_presence_lookup("ROUTE", g_route_id, rp_route_lookup, "Unknown Route"),
