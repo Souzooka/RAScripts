@@ -896,7 +896,7 @@ EpisodeHeroParams = {
             "id": 417904,
             "title": "Red Rose",
             "points": 5,
-            "victims": [FIREMAN, VICTIM_C, ROSE],
+            "victims": [VICTIM_C, ROSE],
         },
         3: {
             "id": 417881,
